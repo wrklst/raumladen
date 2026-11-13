@@ -11,6 +11,12 @@ php artisan db:seed
 environment file from `.env.example` if there is none, generates the
 application key, runs the migrations and builds the front end.
 
+The example environment expects a MySQL or MariaDB database named
+`raumladen` on this machine, reachable as `root` without a password. Create
+it first, or create the environment file yourself with other `DB_*` values.
+Without a database server, set `DB_CONNECTION=sqlite` and remove the other
+`DB_*` lines.
+
 `php artisan db:seed` creates what a shop needs to start:
 
 - the customer groups "b2c" (prices including VAT, the default) and "b2b"

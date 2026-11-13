@@ -21,14 +21,16 @@ Every part is optional.
 
 ### theme.json
 
+The built-in theme's file, `resources/themes/default/theme.json`:
+
 ```json
 {
-    "name": "Example",
-    "provides": ["high-contrast", "no-motion"]
+    "name": "Default",
+    "provides": []
 }
 ```
 
-- `name` becomes the class on `<html>` of storefront pages: `theme-example`.
+- `name` becomes the class on `<html>` of storefront pages: `theme-default`.
   The theme's CSS hangs on that class, so dialogs rendered outside the page
   body inherit it and the backend stays as it is.
 - `provides` lists what the theme already does for everyone. The display
@@ -42,27 +44,31 @@ Every part is optional.
 components read CSS variables; a theme sets them:
 
 ```css
-html.theme-example:root {
-    --background: #fff;
-    --foreground: #000;
-    --primary: #000;
-    --primary-foreground: #fff;
-    --muted: #fff;
-    --muted-foreground: #000;
-    --border: #000;
-    --input: #000;
-    --focus: #000;
-    --radius-lg: 0;
-    --radius-md: 0;
-    --radius-sm: 0;
-    --font-sans: 'Example Sans', ui-sans-serif, system-ui, sans-serif;
+html.theme-default:root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.46 0 0);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.556 0 0);
+    --focus: oklch(0.45 0.2 264);
+    --radius-lg: 0.625rem;
+    --radius-md: calc(0.625rem - 2px);
+    --radius-sm: calc(0.625rem - 4px);
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
 }
 
-html.theme-example.dark:root {
-    --background: #000;
-    --foreground: #fff;
+html.theme-default.dark:root {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
 }
 ```
+
+These are the values of the built-in theme, listed (commented out, because
+they are the shop's own defaults) in
+`resources/themes/default/resources/css/theme.css`.
 
 The full list of variables is at the top of `resources/css/app.css`. Fonts
 go next to the CSS and are referenced with relative `url()`s; the build
@@ -126,14 +132,18 @@ built-in layout sets the shop's name in type instead.
 
 ## Installing a theme
 
+The built-in theme needs no installation: leave `SHOP_THEME` empty. Any
+other theme is a Composer package; `<vendor>/raumladen-theme-<name>` below
+stands for its package name.
+
 ```
-composer require acme/raumladen-theme-example
+composer require <vendor>/raumladen-theme-<name>
 ```
 
 Select it in the environment and build:
 
 ```
-SHOP_THEME=acme/raumladen-theme-example
+SHOP_THEME=<vendor>/raumladen-theme-<name>
 npm run build:ssr
 ```
 
@@ -163,14 +173,14 @@ with the machine's own git access, usually an SSH key, and needs no token.
 instead of downloading an archive:
 
 ```
-composer config repositories.theme '{"type": "vcs", "url": "git@github.com:acme/raumladen-theme-example.git", "no-api": true}'
-composer require acme/raumladen-theme-example:dev-main --prefer-source
+composer config repositories.theme '{"type": "vcs", "url": "git@github.com:<vendor>/raumladen-theme-<name>.git", "no-api": true}'
+composer require <vendor>/raumladen-theme-<name>:dev-main --prefer-source
 ```
 
 This works wherever this does:
 
 ```
-git ls-remote git@github.com:acme/raumladen-theme-example.git
+git ls-remote git@github.com:<vendor>/raumladen-theme-<name>.git
 ```
 
 If it does not, give the machine's SSH key read access to the theme's
@@ -181,9 +191,9 @@ that pulls the shop cannot be reused if it is itself a deploy key.
 **With a token.** Composer talks to the GitHub API:
 
 ```
-composer config repositories.theme vcs https://github.com/acme/raumladen-theme-example
+composer config repositories.theme vcs https://github.com/<vendor>/raumladen-theme-<name>
 composer config --global github-oauth.github.com <token>
-composer require acme/raumladen-theme-example:dev-main
+composer require <vendor>/raumladen-theme-<name>:dev-main
 ```
 
 GitHub answers "404 Not Found" both when the token is missing and when it
@@ -193,7 +203,7 @@ owner (and approved by it, if the organisation requires that), with the
 repository selected and read access to "Contents". Check a token with:
 
 ```
-curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer <token>" https://api.github.com/repos/acme/raumladen-theme-example
+curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer <token>" https://api.github.com/repos/<vendor>/raumladen-theme-<name>
 ```
 
 `200` means Composer will get in. Store the token with `--global`, for the
@@ -204,8 +214,8 @@ On a server that builds each release from the public repository, add the
 theme in the deploy script after `composer install`:
 
 ```
-$FORGE_COMPOSER config repositories.theme '{"type": "vcs", "url": "git@github.com:acme/raumladen-theme-example.git", "no-api": true}'
-$FORGE_COMPOSER require acme/raumladen-theme-example:dev-main --no-interaction --prefer-source --update-no-dev
+$FORGE_COMPOSER config repositories.theme '{"type": "vcs", "url": "git@github.com:<vendor>/raumladen-theme-<name>.git", "no-api": true}'
+$FORGE_COMPOSER require <vendor>/raumladen-theme-<name>:dev-main --no-interaction --prefer-source --update-no-dev
 ```
 
 ## Making a theme

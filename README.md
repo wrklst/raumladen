@@ -46,6 +46,7 @@ It is not a marketplace and not a general-purpose shop system.
 ```
 git clone https://github.com/wrklst/raumladen.git
 cd raumladen
+mysql -e 'CREATE DATABASE raumladen'   # or set DB_CONNECTION=sqlite, see .env.example
 composer setup            # installs, creates the environment file and app key, migrates, builds
 php artisan db:seed       # legal pages, customer groups, three demo books, an administrator
 composer dev              # serves the shop with hot reloading

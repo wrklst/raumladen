@@ -31,8 +31,12 @@ jobs:
         with:
           node-version: '22'
 
+      # The example environment points at MySQL; CI has no database server.
       - name: Setup Application
         run: composer setup
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
 
       - name: Install the browser for browser tests
         run: npx playwright install --with-deps chromium

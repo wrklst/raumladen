@@ -21,14 +21,14 @@ every theme uses them.
 ## Making a theme
 
 1. Copy this directory into a repository of its own and give it a
-   `composer.json` with a package name, e.g. `acme/raumladen-theme-example`
+   `composer.json` with a package name of the form `<vendor>/raumladen-theme-<name>`
    (name the package `raumladen-theme-*` so the shop finds its components
    when it compiles the styles).
 2. Install it in the shop with Composer and select it:
 
     ```
-    composer require acme/raumladen-theme-example
-    SHOP_THEME=acme/raumladen-theme-example
+    composer require <vendor>/raumladen-theme-<name>
+    SHOP_THEME=<vendor>/raumladen-theme-<name>
     ```
 
     `SHOP_THEME` also accepts a path, which is handy while working on a theme:
