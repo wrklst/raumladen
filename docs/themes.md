@@ -155,7 +155,30 @@ A theme for one shop usually lives in a private repository, while the shop
 software is public. Keep the theme out of the shop's `composer.json` and add
 it where the shop is installed.
 
-Composer needs to know where the package is and how to authenticate:
+Composer has two ways to reach a private repository.
+
+**Through git (recommended on servers).** Composer clones the repository
+with the machine's own git access, usually an SSH key, and needs no token.
+`no-api` tells it not to ask the GitHub API, and `--prefer-source` to clone
+instead of downloading an archive:
+
+```
+composer config repositories.theme '{"type": "vcs", "url": "git@github.com:acme/raumladen-theme-example.git", "no-api": true}'
+composer require acme/raumladen-theme-example:dev-main --prefer-source
+```
+
+This works wherever this does:
+
+```
+git ls-remote git@github.com:acme/raumladen-theme-example.git
+```
+
+If it does not, give the machine's SSH key read access to the theme's
+repository (as a deploy key on that repository, or through an account that
+may read it). A deploy key can belong to one repository only, so the key
+that pulls the shop cannot be reused if it is itself a deploy key.
+
+**With a token.** Composer talks to the GitHub API:
 
 ```
 composer config repositories.theme vcs https://github.com/acme/raumladen-theme-example
@@ -163,16 +186,26 @@ composer config --global github-oauth.github.com <token>
 composer require acme/raumladen-theme-example:dev-main
 ```
 
-The token is a personal access token with read access to that repository.
-It is stored for the user on that machine, not in the project. In CI, pass
-it in the `COMPOSER_AUTH` environment variable.
+GitHub answers "404 Not Found" both when the token is missing and when it
+may not read the repository. For a repository owned by an organisation, a
+fine-grained token has to be created with that organisation as its resource
+owner (and approved by it, if the organisation requires that), with the
+repository selected and read access to "Contents". Check a token with:
+
+```
+curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer <token>" https://api.github.com/repos/acme/raumladen-theme-example
+```
+
+`200` means Composer will get in. Store the token with `--global`, for the
+user that runs Composer, not in a release directory that the next deploy
+replaces. In CI, pass it in the `COMPOSER_AUTH` environment variable.
 
 On a server that builds each release from the public repository, add the
 theme in the deploy script after `composer install`:
 
 ```
-$FORGE_COMPOSER config repositories.theme vcs https://github.com/acme/raumladen-theme-example
-$FORGE_COMPOSER require acme/raumladen-theme-example:dev-main --no-interaction --update-no-dev
+$FORGE_COMPOSER config repositories.theme '{"type": "vcs", "url": "git@github.com:acme/raumladen-theme-example.git", "no-api": true}'
+$FORGE_COMPOSER require acme/raumladen-theme-example:dev-main --no-interaction --prefer-source --update-no-dev
 ```
 
 ## Making a theme
