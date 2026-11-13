@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { Accessibility } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,6 +64,32 @@ export function DisplaySettings() {
     const { t } = useTrans();
     const { appearance, updateAppearance } = useAppearance();
     const { prefs, setPref, resetPrefs } = useA11yPrefs();
+    const { theme } = usePage<{
+        theme: { high_contrast: boolean; no_motion: boolean };
+    }>().props;
+
+    const toggles = (
+        [
+            {
+                key: 'a11yContrast',
+                on: 'more',
+                label: t('Higher contrast'),
+                offered: !theme.high_contrast,
+            },
+            {
+                key: 'a11yMotion',
+                on: 'reduce',
+                label: t('Reduce motion'),
+                offered: !theme.no_motion,
+            },
+            {
+                key: 'a11yLinks',
+                on: 'underline',
+                label: t('Underline links'),
+                offered: true,
+            },
+        ] as const
+    ).filter((toggle) => toggle.offered);
 
     return (
         <Sheet>
@@ -116,24 +143,34 @@ export function DisplaySettings() {
                         ]}
                     />
 
-                    {/* The theme is black on white without motion, so there is no
-                        contrast or motion switch: an option has to change something. */}
-                    <label className="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            className="size-4 accent-primary"
-                            checked={prefs.a11yLinks === 'underline'}
-                            onChange={(event) =>
-                                setPref(
-                                    'a11yLinks',
-                                    event.target.checked
-                                        ? 'underline'
-                                        : undefined,
-                                )
-                            }
-                        />
-                        {t('Underline links')}
-                    </label>
+                    {/* An option has to change something: a theme that is already at
+                        full contrast or has no motion leaves that switch out. */}
+                    <fieldset className="space-y-2">
+                        <legend className="text-sm font-medium">
+                            {t('Reading aids')}
+                        </legend>
+                        {toggles.map(({ key, on, label }) => (
+                            <label
+                                key={key}
+                                className="flex items-center gap-2 text-sm"
+                            >
+                                <input
+                                    type="checkbox"
+                                    className="size-4 accent-primary"
+                                    checked={prefs[key] === on}
+                                    onChange={(event) =>
+                                        setPref(
+                                            key,
+                                            event.target.checked
+                                                ? (on as never)
+                                                : undefined,
+                                        )
+                                    }
+                                />
+                                {label}
+                            </label>
+                        ))}
+                    </fieldset>
 
                     <Button
                         variant="outline"

@@ -3,7 +3,7 @@
  * as the `name` prop) wins over the one baked in at build time, so a title
  * can never disagree with og:site_name.
  */
-let siteName: string = import.meta.env.VITE_APP_NAME || 'Space Issues';
+let siteName: string = import.meta.env.VITE_APP_NAME || 'Raumladen';
 
 export const setSiteName = (name: string): void => {
     siteName = name;

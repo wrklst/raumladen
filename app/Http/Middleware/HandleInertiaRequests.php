@@ -4,7 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Cart\Cart;
 use App\Models\Page;
+use App\Settings\Appearance;
 use App\Shop\ProductSearch;
+use App\Theme\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
@@ -58,7 +60,15 @@ class HandleInertiaRequests extends Middleware
             'translations' => fn () => $this->translations(app()->getLocale()),
             'shop' => [
                 'name' => config('app.name'),
+                // For themes that show it; the built-in storefront sets the name in type.
+                'logo' => Appearance::logoUrl(),
                 'currency' => config('shop.currency'),
+            ],
+            // The storefront's theme: its class on <html> and what it already provides for everyone.
+            'theme' => [
+                'class' => Theme::current()->cssClass(),
+                'high_contrast' => Theme::current()->provides('high-contrast'),
+                'no_motion' => Theme::current()->provides('no-motion'),
             ],
             'cart_count' => fn () => app(Cart::class)->count(),
             // Storefront only: where the browser gets the search index, or null when the catalogue is too large for it.

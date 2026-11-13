@@ -3,7 +3,8 @@
  * read the page from here.
  */
 export const sharedProps = {
-    name: 'Space Issues',
+    name: 'Raumladen',
+    theme: { class: 'theme-default', high_contrast: false, no_motion: false },
     locale: 'de',
     locales: ['de', 'en'],
     translations: {} as Record<string, string>,

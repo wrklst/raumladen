@@ -9,7 +9,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
     CustomerGroup::factory()->consumer()->create();
-    config(['shop.seller.email' => 'shop@space-issues.test']);
+    config(['shop.seller.email' => 'shop@raumladen.test']);
     Mail::fake();
 });
 
@@ -42,7 +42,7 @@ test('a withdrawal is stored with its time and acknowledged to the consumer and 
         ->and($withdrawal->created_at->toDateTimeString())->toBe(now()->toDateTimeString());
 
     Mail::assertSent(WithdrawalReceived::class, fn (WithdrawalReceived $mail) => $mail->hasTo('kundin@example.com'));
-    Mail::assertSent(WithdrawalReceived::class, fn (WithdrawalReceived $mail) => $mail->hasTo('shop@space-issues.test'));
+    Mail::assertSent(WithdrawalReceived::class, fn (WithdrawalReceived $mail) => $mail->hasTo('shop@raumladen.test'));
 
     // The page then shows the acknowledgement instead of the form.
     $this->get(route('shop.withdrawal.create', ['locale' => 'de']))

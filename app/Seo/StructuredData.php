@@ -3,6 +3,7 @@
 namespace App\Seo;
 
 use App\Models\Product;
+use App\Settings\Appearance;
 use App\Support\Money;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -24,7 +25,7 @@ class StructuredData
             '@id' => url('/').'#organization',
             'name' => $seller['name'],
             'url' => url('/'),
-            'logo' => asset('apple-touch-icon.png'),
+            'logo' => Appearance::logoUrl() ?? Appearance::iconUrl() ?? asset('apple-touch-icon.png'),
             'sameAs' => config('shop.site.same_as') ?: null,
             'email' => $seller['email'],
             'telephone' => $seller['phone'] ?: null,
@@ -56,7 +57,7 @@ class StructuredData
             '@type' => 'WebSite',
             'url' => route('shop.home', ['locale' => $locale]),
             'name' => config('app.name'),
-            'description' => __('Space Issues is a series of books published at the Sandberg Instituut, Amsterdam, initiated by Something Fantastic and Ludwig Engel. Order online, shipped from Germany.', [], $locale),
+            'description' => Seo::siteDescription($locale),
             'inLanguage' => $locale,
             'publisher' => ['@id' => url('/').'#organization'],
             'potentialAction' => [

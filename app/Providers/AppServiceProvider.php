@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Settings\ShopSettings;
+use App\Theme\Theme;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
@@ -17,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(Theme::class, fn () => Theme::load(config('shop.theme')));
     }
 
     /**
@@ -29,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Settings made in the backend replace the config file values.
         ShopSettings::apply();
+
+        // The theme's invoice and mail views win over the built-in ones.
+        Theme::current()->register();
     }
 
     /**

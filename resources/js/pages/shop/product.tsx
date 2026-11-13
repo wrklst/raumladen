@@ -1,4 +1,4 @@
-import { Form, Link } from '@inertiajs/react';
+import { Form, Link, usePage } from '@inertiajs/react';
 import CartController from '@/actions/App/Http/Controllers/Shop/CartController';
 import InputError from '@/components/input-error';
 import { TextCover } from '@/components/shop/text-cover';
@@ -31,6 +31,7 @@ export default function Product({
     manufacturer?: string;
 }) {
     const { t, locale } = useTrans();
+    const shopName = usePage<{ name: string }>().props.name;
 
     return (
         <article className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
@@ -66,6 +67,7 @@ export default function Product({
                     <TextCover
                         title={product.title}
                         authors={product.authors}
+                        series={shopName}
                         aria-hidden
                     />
                 )}

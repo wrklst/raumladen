@@ -9,5 +9,5 @@
 
 {{ __('The link is valid for :days days. If you did not expect this invitation, you can ignore this email.', ['days' => $days]) }}
 
-{{ config('app.name') }}
+@include('mail.signature')
 </x-mail::message>

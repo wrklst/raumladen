@@ -5,6 +5,7 @@ use App\Enums\TaxTreatment;
 use App\Mail\WithdrawalReceived;
 use App\Models\Order;
 use App\Models\Withdrawal;
+use App\Theme\Theme;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
  */
 beforeEach(function () {
     $this->seed(DatabaseSeeder::class);
-    config(['shop.seller.iban' => 'DE02120300000000202051', 'app.name' => 'Space Issues']);
+    config(['shop.seller.iban' => 'DE02120300000000202051', 'app.name' => 'Raumladen']);
     Storage::fake('local');
     Mail::fake();
     Http::fake([AddressSuggester::ENDPOINT.'*' => Http::response(['features' => [
@@ -24,9 +25,9 @@ beforeEach(function () {
     ]])]);
 });
 
-const ISSUE = '/de/products/the-mourning-of-space';
+const ISSUE = '/de/products/die-kunst-des-langsamen-lesens';
 
-dataset('storefront pages', ['/de', ISSUE, '/en/products/the-mourning-of-space', '/de/pages/imprint', '/de/pages/accessibility', '/de/cart', '/de/account/login', '/de/withdraw']);
+dataset('storefront pages', ['/de', ISSUE, '/en/products/the-art-of-slow-reading', '/de/pages/imprint', '/de/pages/accessibility', '/de/cart', '/de/account/login', '/de/withdraw']);
 
 test('pages load without console errors or accessibility issues', function (string $path) {
     visit($path)->assertNoSmoke()->assertNoAccessibilityIssues();
@@ -65,10 +66,10 @@ test('the first tab stop is a skip link that moves focus into the content', func
 
 test('following a link moves focus to the new page content', function () {
     visit('/de')
-        ->click('The Mourning of Space')
+        ->click('Die Kunst des langsamen Lesens')
         ->assertPathIs(ISSUE)
         ->assertScript('document.activeElement.id', 'main')
-        ->assertTitle('The Mourning of Space – Space Issues');
+        ->assertTitle('Die Kunst des langsamen Lesens – Raumladen');
 });
 
 test('the colour scheme can be switched and survives a reload', function () {
@@ -78,11 +79,12 @@ test('the colour scheme can be switched and survives a reload', function () {
         ->assertSee('Anzeige und Barrierefreiheit')
         ->click('Dunkel')
         ->assertScript('document.documentElement.classList.contains("dark")')
-        ->assertScript('getComputedStyle(document.body).backgroundColor', 'rgb(0, 0, 0)')
+        // A theme may fade its colours; judge the contrast once they have arrived.
+        ->wait(0.7)
         ->assertNoAccessibilityIssues()
         ->refresh()
         // Rendered dark by the server from the cookie: no flash of the light theme.
-        ->assertSourceHas('class="dark theme-space-issues"');
+        ->assertSourceHas('class="dark '.Theme::current()->cssClass().'"');
 });
 
 test('the accessibility tools change the page and survive a reload', function () {
@@ -90,9 +92,6 @@ test('the accessibility tools change the page and survive a reload', function ()
         ->press('Anzeige')
         ->click('150 %')
         ->click('Links unterstreichen')
-        // Already black on white and still: neither option would change anything.
-        ->assertDontSee('Höherer Kontrast')
-        ->assertDontSee('Bewegung reduzieren')
         ->assertScript('getComputedStyle(document.documentElement).fontSize', '24px')
         ->assertScript('getComputedStyle(document.querySelector("footer a")).textDecorationLine', 'underline')
         ->refresh()
@@ -103,11 +102,8 @@ test('the accessibility tools change the page and survive a reload', function ()
         ->assertScript('document.documentElement.scrollWidth <= window.innerWidth');
 });
 
-test('the storefront is black on white in one self-hosted typeface', function () {
+test('everything the storefront loads comes from the shop itself', function () {
     visit('/de')
-        ->assertScript('getComputedStyle(document.body).color', 'rgb(0, 0, 0)')
-        ->assertScript('getComputedStyle(document.body).backgroundColor', 'rgb(255, 255, 255)')
-        ->assertScript('getComputedStyle(document.body).fontFamily.startsWith("Manrope")')
         ->assertScript('performance.getEntriesByType("resource").filter((entry) => entry.name.startsWith("http")).every((entry) => new URL(entry.name).host === location.host)');
 });
 
@@ -134,7 +130,7 @@ test('a visitor orders a book with a suggested address in as few steps as possib
     expect($order->email)->toBe('kundin@example.com')
         ->and($order->shipping_address)->toMatchArray(['address1' => 'Hauptstraße 157', 'zip' => '51465', 'city' => 'Bergisch Gladbach', 'country' => 'DE'])
         ->and($order->tax_treatment)->toBe(TaxTreatment::Domestic)
-        ->and($order->total_cents)->toBe(1500 + 390);
+        ->and($order->total_cents)->toBe(2400 + 390);
 });
 
 test('an incomplete order puts focus on the first invalid field and says why', function () {
@@ -154,8 +150,7 @@ test('an incomplete order puts focus on the first invalid field and says why', f
 
 test('the dark catalogue has no light block where a row of the grid is not full', function () {
     visit('/de')->inDarkMode()
-        ->assertScript('getComputedStyle(document.querySelector("main ul")).backgroundColor', 'rgba(0, 0, 0, 0)')
-        ->assertScript('getComputedStyle(document.body).backgroundColor', 'rgb(0, 0, 0)');
+        ->assertScript('getComputedStyle(document.querySelector("main ul")).backgroundColor', 'rgba(0, 0, 0, 0)');
 });
 
 test('the header stays in place while the page scrolls', function () {
@@ -169,23 +164,23 @@ test('the header stays in place while the page scrolls', function () {
 
 test('the search in the header finds an issue', function () {
     visit('/de/pages/imprint')
-        ->type('q', 'mourning')
+        ->type('q', 'kunst')
         ->keys('[name="q"]', 'Enter')
         ->assertPathIs('/de')
-        ->assertQueryStringHas('q', 'mourning')
-        ->assertSee('Suche: mourning')
+        ->assertQueryStringHas('q', 'kunst')
+        ->assertSee('Suche: kunst')
         ->assertSee('Treffer: 1')
-        ->assertSee('The Mourning of Space')
+        ->assertSee('Die Kunst des langsamen Lesens')
         ->assertDontSee('Typografie für Vereine')
         ->assertNoAccessibilityIssues();
 });
 
 test('clicking an author lists all issues by that author', function () {
     visit(ISSUE)
-        ->click('Blanca Borrell')
+        ->click('Lena Hartmann')
         ->assertPathIs('/de')
-        ->assertQueryStringHas('author', 'Blanca Borrell')
-        ->assertSeeIn('#main h1', 'Blanca Borrell')
+        ->assertQueryStringHas('author', 'Lena Hartmann')
+        ->assertSeeIn('#main h1', 'Lena Hartmann')
         ->assertSee('Treffer: 1')
         ->assertNoAccessibilityIssues();
 });
@@ -214,24 +209,24 @@ test('results appear while typing in the search, and the caret stays in the fiel
     config(['shop.search.browser_index_max' => 0]);
 
     visit('/de/pages/imprint')
-        ->typeSlowly('q', 'mourn', 30)
+        ->typeSlowly('q', 'kunst', 30)
         ->assertSee('Treffer: 1')
         ->assertPathIs('/de')
-        ->assertQueryStringHas('q', 'mourn')
+        ->assertQueryStringHas('q', 'kunst')
         ->assertScript('document.activeElement.id', 'site-search')
-        ->assertValue('q', 'mourn')
+        ->assertValue('q', 'kunst')
         ->assertDontSee('Typografie für Vereine')
         ->assertNoSmoke();
 });
 
 test('with a small catalogue the search answers from the browser, without a request per keystroke', function () {
     visit('/de/pages/imprint')
-        ->typeSlowly('q', 'mourn', 30)
+        ->typeSlowly('q', 'kunst', 30)
         ->assertSee('Treffer: 1')
         ->assertPathIs('/de')
-        ->assertQueryStringHas('q', 'mourn')
+        ->assertQueryStringHas('q', 'kunst')
         ->assertScript('document.activeElement.id', 'site-search')
-        ->assertTitle('Suche: mourn – Space Issues')
+        ->assertTitle('Suche: kunst – Raumladen')
         // One download of the index, no search request to the server.
         ->assertScript('performance.getEntriesByType("resource").filter((entry) => entry.name.includes("/search-index")).length', 1)
         ->assertScript('performance.getEntriesByType("resource").filter((entry) => entry.name.includes("q=")).length', 0)
@@ -240,25 +235,18 @@ test('with a small catalogue the search answers from the browser, without a requ
         ->assertNoSmoke();
 });
 
-test('nothing in the storefront moves: the settings panel is simply there', function () {
-    visit('/de')
-        ->press('Anzeige')
-        ->assertScript('parseFloat(getComputedStyle(document.querySelector("[data-slot=sheet-content]")).animationDuration) < 0.001')
-        ->assertScript('parseFloat(getComputedStyle(document.querySelector("header a")).transitionDuration) < 0.001');
-});
-
 test('the cart shows each issue with its cover', function () {
     visit(ISSUE)
         ->press('In den Warenkorb')
         ->assertPathIs('/de/cart')
         // A text-only cover in portrait format, set in type like on the catalogue.
-        ->assertScript('(() => { const cover = document.querySelector("main li [aria-hidden=true]"); const box = cover.getBoundingClientRect(); return cover.textContent === "The Mourning of Space" && Math.round(box.height / box.width * 3) === 4; })()')
+        ->assertScript('(() => { const cover = document.querySelector("main li [aria-hidden=true]"); const box = cover.getBoundingClientRect(); return cover.textContent === "Die Kunst des langsamen Lesens" && Math.round(box.height / box.width * 3) === 4; })()')
         ->assertNoAccessibilityIssues();
 });
 
 test('a visit is reported in one batch, without a cookie and without anything stored in the browser', function () {
     $page = visit('/de')
-        ->click('The Mourning of Space')
+        ->click('Die Kunst des langsamen Lesens')
         ->assertPathIs(ISSUE);
 
     // Leaving the tab sends the batch.
@@ -272,4 +260,24 @@ test('a visit is reported in one batch, without a cookie and without anything st
     // One batch for the whole visit. (That the batch is stored anonymously is tested in
     // tests/Feature/Analytics; this test browser announces itself as headless and is filtered out as a bot.)
     $page->assertScript('performance.getEntriesByType("resource").filter((entry) => entry.name.endsWith("/site-events")).length', 1);
+});
+
+test('contrast and motion are offered unless the theme already provides them', function () {
+    $theme = Theme::current();
+    $page = visit('/de')->press('Anzeige');
+
+    if ($theme->provides('high-contrast')) {
+        $page->assertDontSee('Höherer Kontrast');
+    } else {
+        $page->click('Höherer Kontrast')->assertScript('document.documentElement.dataset.a11yContrast', 'more');
+    }
+
+    if ($theme->provides('no-motion')) {
+        $page->assertDontSee('Bewegung reduzieren');
+    } else {
+        $page->click('Bewegung reduzieren');
+    }
+
+    // Either way nothing fades or slides now: by the theme, or by the visitor's choice.
+    $page->assertScript('parseFloat(getComputedStyle(document.querySelector("[data-slot=sheet-content]")).transitionDuration) < 0.001');
 });

@@ -18,9 +18,7 @@ export default function AuthSimpleLayout({
                             href={home()}
                             className="flex flex-col items-center gap-2 font-medium"
                         >
-                            <span className="font-[Manrope] text-2xl font-bold tracking-[0.01em]">
-                                {name}
-                            </span>
+                            <span className="text-2xl font-bold">{name}</span>
                         </Link>
 
                         <div className="space-y-2 text-center">

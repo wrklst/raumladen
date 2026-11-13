@@ -7,5 +7,5 @@
 
 {{ __('Enter this code to sign in. It is valid for :minutes minutes. If you did not request it, you can ignore this email.', ['minutes' => $minutes]) }}
 
-{{ config('shop.seller.name') }}
+@include('mail.signature')
 </x-mail::message>

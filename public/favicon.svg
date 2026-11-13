@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
     <style>
         rect { fill: #000; }
-        text { fill: #fff; font: 700 38px Manrope, "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        path { fill: #fff; }
         @media (prefers-color-scheme: dark) {
             rect { fill: #fff; }
-            text { fill: #000; }
+            path { fill: #000; }
         }
     </style>
     <rect width="64" height="64"/>
-    <text x="32" y="45.5" text-anchor="middle">SI</text>
+    <!-- An open book: two pages. -->
+    <path d="M12 18h18v30H12zM34 18h18v30H34z"/>
 </svg>

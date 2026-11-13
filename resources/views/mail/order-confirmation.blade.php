@@ -19,5 +19,5 @@
 {{ __('Shipping to') }}:
 {{ $order->shipping_address['first_name'] }} {{ $order->shipping_address['last_name'] }}, {{ $order->shipping_address['address1'] }}, {{ $order->shipping_address['zip'] }} {{ $order->shipping_address['city'] }}, {{ \App\Support\Countries::name($order->shipping_address['country'], $order->locale) }}
 
-{{ config('shop.seller.name') }}
+@include('mail.signature')
 </x-mail::message>

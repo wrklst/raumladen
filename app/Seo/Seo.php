@@ -54,6 +54,18 @@ class Seo
     }
 
     /**
+     * How the shop describes itself in one or two sentences: set per language
+     * under Shop settings, a generic sentence otherwise.
+     */
+    public static function siteDescription(?string $locale = null): string
+    {
+        $locale ??= app()->getLocale();
+
+        return trim((string) config('shop.site.description.'.$locale))
+            ?: __('Books from :name. Order online.', ['name' => rtrim((string) config('shop.seller.name'), '.')], $locale);
+    }
+
+    /**
      * Open Graph wants language_TERRITORY.
      */
     private static function ogLocale(string $locale): string

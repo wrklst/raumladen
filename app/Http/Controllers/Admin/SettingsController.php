@@ -47,7 +47,12 @@ class SettingsController extends Controller
             attributes: collect($definition['fields'])->mapWithKeys(fn (array $field) => [$field['name'] => $field['label']])->all(),
         );
 
-        ShopSettings::save($group, $data);
+        // "Remove" ticks of image fields travel next to the validated values.
+        $removals = collect($definition['fields'])->where('type', 'image')
+            ->mapWithKeys(fn (array $field) => [$field['name'].'_remove' => $request->boolean($field['name'].'_remove')])
+            ->all();
+
+        ShopSettings::save($group, [...$data, ...$removals]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __(':group saved.', ['group' => $definition['label']])]);
 

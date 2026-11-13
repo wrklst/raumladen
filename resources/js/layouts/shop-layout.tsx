@@ -27,6 +27,7 @@ export default function ShopLayout({ children }: PropsWithChildren) {
         ShopSharedProps & {
             name: string;
             search_index_url: string | null;
+            theme: { class: string };
             errors?: Record<string, string>;
         }
     >();
@@ -62,12 +63,13 @@ export default function ShopLayout({ children }: PropsWithChildren) {
 
     // The theme class is on <html> from the server; keep it right when the
     // visitor moves between storefront and admin without a page load.
-    useEffect(() => {
-        document.documentElement.classList.add('theme-space-issues');
+    const themeClass = props.theme.class;
 
-        return () =>
-            document.documentElement.classList.remove('theme-space-issues');
-    }, []);
+    useEffect(() => {
+        document.documentElement.classList.add(themeClass);
+
+        return () => document.documentElement.classList.remove(themeClass);
+    }, [themeClass]);
 
     // Search as you type: results follow the input after a short pause. One
     // letter is noise; an emptied field returns to the full catalogue.

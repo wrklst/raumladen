@@ -1,7 +1,7 @@
 import type { SVGAttributes } from 'react';
 
 /**
- * The Space Issues mark: the initials, set in the current text colour.
+ * The shop's default mark, an open book, in the current text colour.
  */
 export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
     return (
@@ -11,16 +11,7 @@ export default function AppLogoIcon(props: SVGAttributes<SVGElement>) {
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
         >
-            <text
-                x="20"
-                y="29.5"
-                textAnchor="middle"
-                fontSize="26"
-                fontWeight="700"
-                fontFamily="Manrope, ui-sans-serif, system-ui, sans-serif"
-            >
-                SI
-            </text>
+            <path d="M5 9h13v22H5zM22 9h13v22H22z" />
         </svg>
     );
 }

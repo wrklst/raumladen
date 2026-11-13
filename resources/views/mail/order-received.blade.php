@@ -33,7 +33,7 @@ BIC: {{ $bank['bic'] }}
 {{ __('View order') }}
 </x-mail::button>
 
-{{ config('shop.seller.name') }}
+@include('mail.signature')
 
 @foreach($legal as $page)
 ---

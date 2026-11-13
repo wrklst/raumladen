@@ -16,8 +16,8 @@ use Throwable;
  * photon.komoot.io is free under fair use ("extensive usage will be throttled
  * or completely banned"), so every answer is cached for 30 days, the empty
  * ones too: prefixes repeat ("Haupt", "Haupts", "Hauptst") and addresses
- * change on a scale of years. Four guards, taken from the Kulmine shop where
- * they were measured against the service:
+ * change on a scale of years. Four guards, each from a measurement against
+ * the service:
  *
  *  1. No request below three characters.
  *  2. At most 120 characters (a 2,400 character query took 4.45 s).

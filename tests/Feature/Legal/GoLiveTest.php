@@ -18,9 +18,9 @@ test('every response carries the baseline security headers', function () {
 
 test('the legal texts follow the shop settings and mark what is not set', function () {
     config([
-        'shop.seller.name' => 'Space Issues e.V.',
+        'shop.seller.name' => 'Beispielverlag e.V.',
         'shop.seller.vat_id' => '',
-        'shop.processor.name' => 'WL Artworld Solutions GmbH',
+        'shop.processor.name' => 'Hosting Beispiel GmbH',
         'shop.processor.address' => '',
     ]);
 
@@ -31,10 +31,10 @@ test('the legal texts follow the shop settings and mark what is not set', functi
     $withdrawal = Page::query()->where('slug', 'withdrawal')->sole();
 
     expect($imprint->renderedBody('de'))
-        ->toContain("<strong>Space Issues e.V.</strong><br>\n")
-        ->toContain('[TODO: USt-IdNr.]', 'WL Artworld Solutions GmbH, [TODO: Anschrift]')
+        ->toContain("<strong>Beispielverlag e.V.</strong><br>\n")
+        ->toContain('[TODO: USt-IdNr.]', 'Hosting Beispiel GmbH, [TODO: Anschrift]')
         ->and($imprint->renderedBody('en'))->toContain('[TODO: VAT ID]')
-        ->and($privacy->renderedBody('de'))->toContain('WL Artworld Solutions GmbH', 'Mollie B.V.', 'Photon', 'Auftragsverarbeit')
+        ->and($privacy->renderedBody('de'))->toContain('Hosting Beispiel GmbH', 'Mollie B.V.', 'Photon', 'Auftragsverarbeit')
         ->and($withdrawal->renderedBody('de'))->toContain('Muster-Widerrufsformular', '„Vertrag widerrufen“');
 
     // Changing a setting changes the published text, without editing the page.
@@ -55,16 +55,16 @@ test('shop:check lists what blocks going live and passes when nothing does', fun
     $this->seed(DatabaseSeeder::class);
 
     $this->artisan('shop:check')
-        ->expectsOutputToContain('house number')
+        ->expectsOutputToContain('the name is still the example')
         ->expectsOutputToContain('invoices would be invalid')
         ->expectsOutputToContain('Represented by is not set')
         ->assertFailed();
 
     Page::query()->delete();
     config([
-        'app.debug' => false, 'app.url' => 'https://space-issues.test', 'mail.default' => 'smtp',
-        'shop.seller' => ['name' => 'Space Issues e.V.', 'address1' => 'Weg 1', 'zip' => '10178', 'city' => 'Berlin', 'country' => 'DE', 'email' => 'shop@space-issues.test', 'phone' => '030 1', 'vat_id' => 'DE123456789', 'tax_number' => '', 'register' => 'VR 1 B', 'representatives' => 'A, B', 'iban' => 'DE02', 'bic' => 'BYLA', 'bank' => 'Bank'],
-        'shop.processor' => ['name' => 'WL Artworld Solutions GmbH', 'address' => 'Weg 2, Berlin', 'location' => 'Deutschland', 'log_retention' => '14 Tagen'],
+        'app.debug' => false, 'app.url' => 'https://raumladen.test', 'mail.default' => 'smtp',
+        'shop.seller' => ['name' => 'Musterverlag e.V.', 'address1' => 'Weg 1', 'zip' => '10178', 'city' => 'Berlin', 'country' => 'DE', 'email' => 'shop@raumladen.test', 'phone' => '030 1', 'vat_id' => 'DE123456789', 'tax_number' => '', 'register' => 'VR 1 B', 'representatives' => 'A, B', 'iban' => 'DE02', 'bic' => 'BYLA', 'bank' => 'Bank'],
+        'shop.processor' => ['name' => 'Hosting Beispiel GmbH', 'address' => 'Weg 2, Berlin', 'location' => 'Deutschland', 'log_retention' => '14 Tagen'],
         'shop.carrier' => 'Deutsche Post',
         'shop.shipping' => array_map(fn (array $zone) => [...$zone, 'delivery_days' => [3, 9]], config('shop.shipping')),
         'shop.payments.mollie.api_key' => 'live_abc',

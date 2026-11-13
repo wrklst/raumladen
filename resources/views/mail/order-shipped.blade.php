@@ -12,5 +12,5 @@
 {{ __('View order') }}
 </x-mail::button>
 
-{{ config('shop.seller.name') }}
+@include('mail.signature')
 </x-mail::message>

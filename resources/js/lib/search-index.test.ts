@@ -20,13 +20,13 @@ const entry = (
 const index = [
     entry(2, 'Zürich bauen', {
         title: 'zurich bauen building zurich',
-        authors: 'ludwig engel, blanca borrell',
-        codes: '978-3-69354-013-8 9783693540138 si-2',
+        authors: 'jonas weber, anna beispiel',
+        codes: '978-3-00-000002-8 9783000000028 si-2',
         text: 'on space and the city.',
     }),
-    entry(1, 'The Mourning of Space', {
-        authors: 'blanca borrell',
-        codes: '978-3-69354-012-1 9783693540121 si-1',
+    entry(1, 'The Morning of Space', {
+        authors: 'anna beispiel',
+        codes: '978-3-00-000001-1 9783000000011 si-1',
         text: 'olive landscapes of jaen.',
     }),
 ];
@@ -36,24 +36,24 @@ const titles = (query: string) =>
 
 // The same cases as tests/Feature/Shop/SearchTest.php: browser and server must agree.
 test.each([
-    ['mourning', ['The Mourning of Space']],
-    ['  MOURNING   space ', ['The Mourning of Space']],
+    ['morning', ['The Morning of Space']],
+    ['  MORNING   space ', ['The Morning of Space']],
     ['Zürich', ['Zürich bauen']],
     ['zurich', ['Zürich bauen']],
     ['building', ['Zürich bauen']],
-    ['engel', ['Zürich bauen']],
-    ['978-3-69354-012-1', ['The Mourning of Space']],
-    ['9783693540121', ['The Mourning of Space']],
+    ['weber', ['Zürich bauen']],
+    ['978-3-00-000001-1', ['The Morning of Space']],
+    ['9783000000011', ['The Morning of Space']],
     ['si-2', ['Zürich bauen']],
-    ['Jaén', ['The Mourning of Space']],
-    ['mourning zurich', []],
+    ['Jaén', ['The Morning of Space']],
+    ['morning zurich', []],
 ])('"%s" finds %j', (query, expected) => {
     expect(titles(query)).toEqual(expected);
 });
 
 test('a title hit ranks above a description hit; no query lists everything in catalogue order', () => {
-    expect(titles('space')).toEqual(['The Mourning of Space', 'Zürich bauen']);
-    expect(titles('')).toEqual(['Zürich bauen', 'The Mourning of Space']);
+    expect(titles('space')).toEqual(['The Morning of Space', 'Zürich bauen']);
+    expect(titles('')).toEqual(['Zürich bauen', 'The Morning of Space']);
 });
 
 test('the query is folded like the server folds the index', () => {

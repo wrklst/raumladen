@@ -124,18 +124,6 @@ class DatabaseSeeder extends Seeder
                 'specs' => ['isbn' => '9783000000035', 'authors' => 'Mara Klein, Tim Vogt', 'pages' => '160', 'binding' => 'Paperback', 'language' => 'de', 'published' => '2025-06-20'],
                 'weight_grams' => 480,
             ],
-            [
-                // A real issue (sandberg.nl/archive/197055), seeded last so it lists
-                // first. Price and stock are placeholders: neither is published yet.
-                'sku' => 'SI-9783693540121',
-                'title' => ['de' => 'The Mourning of Space', 'en' => 'The Mourning of Space'],
-                'description' => [
-                    'de' => "El Luto del Espacio – The Mourning of Space untersucht die Aufgabe ländlicher Räume in den Olivenlandschaften von Jaén, Andalusien, anhand von Erinnerung, Landschaft und persönlichen Geschichten: Entvölkerung, Klimawandel und Touristifizierung.\n\nKonzipiert und geschrieben von Blanca Borrell Araúz de Robles. Reihenherausgeber:innen: Ludwig Engel, Maria Mazzanti, Julian Schubert. Art Direction: Something Fantastic A.D. 1. Auflage 2026, gedruckt in Deutschland.",
-                    'en' => "El Luto del Espacio – The Mourning of Space looks at rural abandonment in the olive landscapes of Jaén, Andalusia, through memory, landscape and personal histories: depopulation, climate change and touristification.\n\nConceptualised and written by Blanca Borrell Araúz de Robles. Series editors: Ludwig Engel, Maria Mazzanti, Julian Schubert. Art direction: Something Fantastic A.D. First edition 2026, printed in Germany.",
-                ],
-                'price_cents' => 1500,
-                'specs' => ['isbn' => '978-3-69354-012-1', 'authors' => 'Blanca Borrell', 'publisher' => 'Space Issues, Sandberg Instituut', 'published' => '2026'],
-            ],
         ];
 
         foreach ($books as $book) {
@@ -149,7 +137,7 @@ class DatabaseSeeder extends Seeder
                 'price_cents' => $book['price_cents'],
                 'stock' => 20,
                 'track_stock' => true,
-                'weight_grams' => $book['weight_grams'] ?? null,
+                'weight_grams' => $book['weight_grams'],
                 'specs' => $book['specs'],
                 'is_active' => true,
                 'published_at' => now()->subDay(),

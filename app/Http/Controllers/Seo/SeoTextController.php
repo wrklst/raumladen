@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Seo;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Product;
+use App\Seo\Seo;
 use App\Support\Money;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
@@ -49,10 +50,9 @@ class SeoTextController extends Controller
         $out = [
             '# '.config('app.name'),
             '',
-            '> '.__('Space Issues is a series of books published at the Sandberg Instituut, Amsterdam, initiated by Something Fantastic and Ludwig Engel. Order online, shipped from Germany.'),
+            '> '.Seo::siteDescription($default),
             '',
             ...array_map(fn (string $locale) => '- '.__('Website').' ('.$locale.'): '.route('shop.home', ['locale' => $locale]), config('shop.locales')),
-            '- '.__('Series editors').': '.config('shop.site.editors'),
             '- '.__('Publisher').': '.$seller['name'],
             '- '.__('Contact').': '.$seller['email'],
             '- Sitemap: '.route('seo.sitemap.index'),

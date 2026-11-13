@@ -8,6 +8,11 @@
         "framework"
     ],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "WL Artworld Solutions GmbH"
+        }
+    ],
     "require": {
         "php": "^8.3",
         "dompdf/dompdf": "^3.1",

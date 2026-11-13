@@ -2,17 +2,19 @@ import { useSyncExternalStore } from 'react';
 
 /**
  * Visitor display preferences. Stored in the shape of <html>'s dataset
- * (data-a11y-text, data-a11y-links) so the inline script in
+ * (data-a11y-text, data-a11y-contrast, ...) so the inline script in
  * app.blade.php can apply them before first paint with one Object.assign;
  * app.css holds the rules.
  */
 export type A11yPrefs = {
     a11yText?: 'lg' | 'xl' | '2xl';
+    a11yContrast?: 'more';
+    a11yMotion?: 'reduce';
     a11yLinks?: 'underline';
 };
 
 const STORAGE_KEY = 'a11y';
-const KEYS = ['a11yText', 'a11yLinks'] as const;
+const KEYS = ['a11yText', 'a11yContrast', 'a11yMotion', 'a11yLinks'] as const;
 const NONE: A11yPrefs = {};
 const listeners = new Set<() => void>();
 

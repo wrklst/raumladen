@@ -35,6 +35,10 @@ class GoLiveCheck
             }
         }
 
+        if (str_starts_with((string) $seller['name'], 'Beispielverlag')) {
+            $problems[] = __('Seller: the name is still the example.');
+        }
+
         if (! preg_match('/\d/', (string) $seller['address1'])) {
             $problems[] = __('Seller: the address has no house number.');
         }
@@ -48,7 +52,7 @@ class GoLiveCheck
             $problems[] = __('Seller: the email is still the example address.');
         }
 
-        foreach (['address' => 'Address', 'location' => 'Server location', 'log_retention' => 'Server logs are deleted after'] as $key => $label) {
+        foreach (['name' => 'Company', 'address' => 'Address', 'location' => 'Server location', 'log_retention' => 'Server logs are deleted after'] as $key => $label) {
             if ((string) config("shop.processor.{$key}") === '') {
                 $problems[] = __('Hosting: :field is not set.', ['field' => __($label)]);
             }

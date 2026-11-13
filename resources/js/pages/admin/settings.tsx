@@ -24,7 +24,9 @@ type Field = {
         | 'bool'
         | 'secret'
         | 'select'
-        | 'lines';
+        | 'lines'
+        | 'textarea'
+        | 'image';
     label: string;
     help: string | null;
     options: Record<string, string> | null;
@@ -82,7 +84,35 @@ function SettingField({
                 {field.label}
                 {field.type === 'money' && ' (EUR)'}
             </Label>
-            {field.type === 'lines' ? (
+            {field.type === 'image' ? (
+                <div className="space-y-2">
+                    {typeof value === 'string' && (
+                        <img
+                            src={value}
+                            alt={t('Current logo')}
+                            className="max-h-16 max-w-60 border bg-white p-1"
+                        />
+                    )}
+                    <Input
+                        id={field.name}
+                        name={field.name}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        aria-describedby={describedBy}
+                    />
+                    {typeof value === 'string' && (
+                        <label className="flex items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                name={`${field.name}_remove`}
+                                value="1"
+                                className="size-4"
+                            />
+                            {t('Remove the logo')}
+                        </label>
+                    )}
+                </div>
+            ) : field.type === 'lines' || field.type === 'textarea' ? (
                 <textarea
                     id={field.name}
                     name={field.name}

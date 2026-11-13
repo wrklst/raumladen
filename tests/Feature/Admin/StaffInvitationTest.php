@@ -29,20 +29,20 @@ test('there is no public registration', function () {
 
 test('an administrator invites a person with a role', function () {
     $this->actingAs($this->admin)
-        ->post(route('admin.staff.store'), ['name' => 'Ludwig Engel', 'email' => 'Ludwig@Example.com', 'role' => 'editor'])
+        ->post(route('admin.staff.store'), ['name' => 'Jonas Weber', 'email' => 'Jonas@Example.com', 'role' => 'editor'])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
-    $user = User::query()->where('email', 'ludwig@example.com')->sole();
+    $user = User::query()->where('email', 'jonas@example.com')->sole();
 
     expect($user->role)->toBe(UserRole::Editor)
         ->and($user->password)->toBeNull();
 
-    Mail::assertSent(StaffInvitation::class, fn (StaffInvitation $mail) => $mail->hasTo('ludwig@example.com') && $mail->user->is($user));
+    Mail::assertSent(StaffInvitation::class, fn (StaffInvitation $mail) => $mail->hasTo('jonas@example.com') && $mail->user->is($user));
 });
 
 test('the invitation mail carries a signed link that expires', function () {
-    $user = User::factory()->create(['role' => UserRole::Editor, 'password' => null, 'name' => 'Ludwig']);
+    $user = User::factory()->create(['role' => UserRole::Editor, 'password' => null, 'name' => 'Jonas']);
 
     $mail = new StaffInvitation($user, $this->admin);
 

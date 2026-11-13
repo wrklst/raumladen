@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vite-plus/test';
 import { DisplaySettings } from '@/components/shop/display-settings';
+import { setPage } from '@/test-utils';
 
 async function openPanel() {
     const user = userEvent.setup();
@@ -32,24 +33,26 @@ test('the panel is a labelled dialog with light, dark and system', async () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false);
 });
 
-test('only options that change something in this theme are offered', async () => {
+test('accessibility tools change <html> and reset restores the defaults', async () => {
     const user = await openPanel();
 
-    // Black on white without motion: no contrast switch, no motion switch.
-    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
-    expect(screen.queryByRole('checkbox', { name: /contrast/i })).toBeNull();
-    expect(screen.queryByRole('checkbox', { name: /motion/i })).toBeNull();
-
     await user.click(screen.getByRole('radio', { name: '125 %' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Higher contrast' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Reduce motion' }));
     await user.click(screen.getByRole('checkbox', { name: 'Underline links' }));
 
     expect(
         Object.fromEntries(Object.entries(document.documentElement.dataset)),
-    ).toEqual({ a11yText: 'xl', a11yLinks: 'underline' });
+    ).toEqual({
+        a11yText: 'xl',
+        a11yContrast: 'more',
+        a11yMotion: 'reduce',
+        a11yLinks: 'underline',
+    });
 
-    await user.click(screen.getByRole('checkbox', { name: 'Underline links' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Reduce motion' }));
 
-    expect(document.documentElement.dataset.a11yLinks).toBeUndefined();
+    expect(document.documentElement.dataset.a11yMotion).toBeUndefined();
 
     await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
 
@@ -60,4 +63,23 @@ test('only options that change something in this theme are offered', async () =>
         'checked',
         true,
     );
+});
+
+test('a theme that is already at full contrast and has no motion offers neither switch', async () => {
+    setPage({
+        theme: { class: 'theme-x', high_contrast: true, no_motion: true },
+    });
+
+    await openPanel();
+
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+    expect(
+        screen.getByRole('checkbox', { name: 'Underline links' }),
+    ).toBeTruthy();
+    expect(
+        screen.queryByRole('checkbox', { name: 'Higher contrast' }),
+    ).toBeNull();
+    expect(
+        screen.queryByRole('checkbox', { name: 'Reduce motion' }),
+    ).toBeNull();
 });

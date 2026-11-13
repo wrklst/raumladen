@@ -17,5 +17,5 @@
 
 {{ __('We refund your payment within fourteen days, as described in the withdrawal information.') }}
 
-{{ config('shop.seller.name') }}
+@include('mail.signature')
 </x-mail::message>

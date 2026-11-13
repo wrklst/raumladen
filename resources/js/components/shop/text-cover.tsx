@@ -1,19 +1,23 @@
 import { cn } from '@/lib/utils';
 
 /**
- * Space Issues books have text-only covers, so the shop sets them in type
+ * For books with text-only covers (and any book without an image) the shop
+ * sets the cover in type
  * instead of loading an image. Decorative where the title is on the page
  * anyway: pass `aria-hidden`.
  */
 export function TextCover({
     title,
     authors,
+    series,
     small = false,
     className,
     ...props
 }: {
     title: string;
     authors?: string | null;
+    /** The line under the authors: the shop's name. */
+    series?: string;
     /** Thumbnail (cart): title only, in tiny type. */
     small?: boolean;
     className?: string;
@@ -40,7 +44,7 @@ export function TextCover({
                 <p className="text-sm">
                     {authors}
                     {authors && <br />}
-                    Space Issues
+                    {series}
                 </p>
             )}
         </div>

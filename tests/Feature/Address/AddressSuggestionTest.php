@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 /*
  * No test calls photon.komoot.io: that would be the bulk querying its fair-use
- * terms forbid. The response shapes are the ones recorded for the Kulmine shop.
+ * terms forbid. The response shapes below were recorded from the service once.
  */
 function photonHouse(): array
 {

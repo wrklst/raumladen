@@ -15,7 +15,7 @@ return [
     | backend under Shop settings and stored in the database; those values
     | replace the ones here when the application boots (App\Settings\
     | ShopSettings). The environment only carries what the server needs to
-    | start: app key and URL, database, cache, session, queue.
+    | start: app key and URL, database, cache, session, queue, and the theme.
     |
     */
 
@@ -31,6 +31,22 @@ return [
 
     'locales' => ['de', 'en'],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Theme
+    |--------------------------------------------------------------------------
+    |
+    | How the storefront, the invoices and the emails look (App\Theme\Theme).
+    | The name of an installed theme package, e.g.
+    | "acme/raumladen-theme-example", or a path; empty for the
+    | built-in theme. This is the one design decision that lives in the
+    | environment, because the front end is compiled with it: changing the
+    | theme means `composer require`, a build and a deploy.
+    |
+    */
+
+    'theme' => env('SHOP_THEME'),
+
     'currency' => 'EUR',
 
     /*
@@ -44,8 +60,11 @@ return [
     */
 
     'site' => [
-        'editors' => 'Ludwig Engel, Maria Mazzanti, Julian Schubert',
-        'same_as' => ['http://spacedepartment.net'],
+        // Per language: how the shop describes itself to search engines and AI
+        // assistants. Empty: "Books from <seller>. Order online."
+        'description' => [],
+        // Profiles and websites that belong to the shop (JSON-LD sameAs).
+        'same_as' => [],
     ],
 
     /*
@@ -59,10 +78,9 @@ return [
     */
 
     'seller' => [
-        'name' => 'Space Issues e.V.',
-        // ponytail: house number still missing; an invoice and the imprint need the full address.
-        'address1' => 'Wedingerstraße',
-        'zip' => '10178',
+        'name' => 'Beispielverlag e.V.',
+        'address1' => 'Musterstraße 1',
+        'zip' => '10115',
         'city' => 'Berlin',
         'country' => 'DE',
         'email' => 'shop@example.org',
@@ -87,7 +105,7 @@ return [
     */
 
     'processor' => [
-        'name' => 'WL Artworld Solutions GmbH',
+        'name' => '',
         'address' => '',
         'location' => '',
         'log_retention' => '',
@@ -230,6 +248,16 @@ return [
         'meta_feed' => false,
         'google_verification' => '',
         'meta_verification' => '',
+    ],
+
+    /*
+    | General appearance, set in the backend; themes decide how it is shown.
+    */
+    'appearance' => [
+        'logo' => null,
+        'icon' => null,
+        'invoice_note' => '',
+        'mail_signature' => '',
     ],
 
     /*

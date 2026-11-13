@@ -1,4 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
+// The theme's colours, type and fonts (app/Theme/Theme.php; `@theme` is set in vite.config.ts).
+import '@theme/css/theme.css';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';

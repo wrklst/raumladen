@@ -16,7 +16,7 @@ function beacon(array $events, array $overrides = [], string $userAgent = BROWSE
     $body = json_encode([
         'visit' => 'abcdefgh12345678',
         'locale' => 'de',
-        'landing' => ['path' => '/de', 'referrer' => 'https://www.sandberg.nl/archive/197055', 'utm_source' => 'newsletter', 'utm_campaign' => 'herbst'],
+        'landing' => ['path' => '/de', 'referrer' => 'https://www.example.org/archive/1', 'utm_source' => 'newsletter', 'utm_campaign' => 'herbst'],
         'events' => $events,
         ...$overrides,
     ]);
@@ -27,7 +27,7 @@ function beacon(array $events, array $overrides = [], string $userAgent = BROWSE
 test('page views are stored without anything that identifies the visitor', function () {
     $response = beacon([
         ['type' => 'pageview', 'path' => '/de', 'seconds' => 12, 'ago' => 40],
-        ['type' => 'pageview', 'path' => '/de/products/the-mourning-of-space?utm_source=x#top', 'seconds' => 95, 'ago' => 5],
+        ['type' => 'pageview', 'path' => '/de/products/the-morning-of-space?utm_source=x#top', 'seconds' => 95, 'ago' => 5],
     ])->assertNoContent();
 
     // The door sets no cookie and starts no session.
@@ -37,8 +37,8 @@ test('page views are stored without anything that identifies the visitor', funct
 
     expect($events)->toHaveCount(2)
         ->and($events[1]->only(['type', 'path', 'locale', 'visit', 'landing_path', 'referrer_host', 'utm_source', 'utm_campaign', 'device', 'seconds']))->toBe([
-            'type' => 'pageview', 'path' => '/de/products/the-mourning-of-space', 'locale' => 'de', 'visit' => 'abcdefgh12345678',
-            'landing_path' => '/de', 'referrer_host' => 'sandberg.nl', 'utm_source' => 'newsletter', 'utm_campaign' => 'herbst',
+            'type' => 'pageview', 'path' => '/de/products/the-morning-of-space', 'locale' => 'de', 'visit' => 'abcdefgh12345678',
+            'landing_path' => '/de', 'referrer_host' => 'example.org', 'utm_source' => 'newsletter', 'utm_campaign' => 'herbst',
             'device' => 'desktop', 'seconds' => 95,
         ])
         ->and($events[0]->created_at->diffInSeconds($events[1]->created_at))->toEqualWithDelta(35, 1);
@@ -120,7 +120,7 @@ test('the report counts visits, pages, sources and the way to an order', functio
     // Visit one: from the newsletter to checkout.
     beacon([
         ['type' => 'pageview', 'path' => '/de', 'seconds' => 10],
-        ['type' => 'pageview', 'path' => '/de/products/the-mourning-of-space', 'seconds' => 50],
+        ['type' => 'pageview', 'path' => '/de/products/the-morning-of-space', 'seconds' => 50],
         ['type' => 'pageview', 'path' => '/de/cart', 'seconds' => 5],
         ['type' => 'pageview', 'path' => '/de/checkout', 'seconds' => 55],
     ]);
@@ -136,7 +136,7 @@ test('the report counts visits, pages, sources and the way to an order', functio
             ->where('days', 7)
             ->where('totals', ['visits' => 2, 'visitors' => 2, 'pageviews' => 5, 'seconds_per_visit' => 70])
             ->where('funnel', ['visits' => 2, 'product' => 1, 'cart' => 1, 'checkout' => 1, 'orders' => 1])
-            ->where('referrers', [['name' => 'sandberg.nl', 'count' => 1]])
+            ->where('referrers', [['name' => 'example.org', 'count' => 1]])
             ->where('campaigns', [['name' => 'herbst', 'count' => 1]])
             ->where('devices', [['name' => 'desktop', 'count' => 1], ['name' => 'phone', 'count' => 1]])
             ->where('locales', [['name' => 'de', 'count' => 1], ['name' => 'en', 'count' => 1]])

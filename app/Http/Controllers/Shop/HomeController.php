@@ -53,8 +53,8 @@ class HomeController extends Controller
                     default => __('Books'),
                 },
                 description: $author !== '' && $query === ''
-                    ? __('All issues by :author at Space Issues.', ['author' => $author])
-                    : __('Space Issues is a series of books published at the Sandberg Instituut, Amsterdam, initiated by Something Fantastic and Ludwig Engel. Order online, shipped from Germany.'),
+                    ? __('All issues by :author at :shop.', ['author' => $author, 'shop' => config('app.name')])
+                    : Seo::siteDescription(),
                 canonical: route('shop.home', array_filter([...($query === '' ? ['author' => $author] : []), 'page' => $page > 1 ? $page : null])),
                 alternates: $query === '' ? Seo::alternates('shop.home', array_filter(['author' => $author])) : [],
                 jsonLd: [$itemList],

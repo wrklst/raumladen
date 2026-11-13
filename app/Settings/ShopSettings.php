@@ -4,8 +4,10 @@ namespace App\Settings;
 
 use App\Models\Setting;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 /**
@@ -28,7 +30,7 @@ class ShopSettings
     /**
      * Groups of fields, in the order of the settings page.
      *
-     * @return array<string, array{label: string, description: string, fields: list<array{name: string, path: string, type: string, label: string, rules: list<mixed>, options?: array<string, string>, help?: string}>}>
+     * @return array<string, array{label: string, description: string, fields: array<int, array<string, mixed>>}>
      */
     public static function groups(): array
     {
@@ -129,10 +131,21 @@ class ShopSettings
                     $account('datev_account_small', 'shop.datev.accounts.small_business', __('Revenue account: small business')),
                 ],
             ],
+            'appearance' => [
+                'label' => __('Appearance'),
+                'description' => __('What every theme uses. The design itself (colours, type, layout of shop, invoice and emails) comes from the theme, which is installed with the shop.'),
+                'fields' => [
+                    ['name' => 'logo', 'path' => 'shop.appearance.logo', 'type' => 'image', 'label' => __('Logo'), 'rules' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'], 'help' => __('PNG, JPG or WebP, up to 1 MB. Shown on invoices and in emails; whether the shop shows it is up to the theme.')],
+                    ['name' => 'icon', 'path' => 'shop.appearance.icon', 'type' => 'image', 'label' => __('Icon'), 'rules' => ['nullable', 'image', 'mimes:png', 'dimensions:ratio=1/1,min_width=180', 'max:512'], 'help' => __('Square PNG, at least 180 pixels wide. Shown in the browser tab and on home screens.')],
+                    ['name' => 'invoice_note', 'path' => 'shop.appearance.invoice_note', 'type' => 'textarea', 'label' => __('Note on every invoice'), 'rules' => ['nullable', 'string', 'max:1000']],
+                    ['name' => 'mail_signature', 'path' => 'shop.appearance.mail_signature', 'type' => 'textarea', 'label' => __('Closing lines of every email'), 'rules' => ['nullable', 'string', 'max:500'], 'help' => __('Leave empty to sign with the seller\'s name.')],
+                ],
+            ],
             'channels' => [
                 'label' => __('Channels and search engines'),
                 'description' => __('Where else the books are offered, and who may read the shop.'),
                 'fields' => [
+                    ...array_map(fn (string $locale): array => ['name' => 'site_description_'.$locale, 'path' => 'shop.site.description.'.$locale, 'type' => 'textarea', 'label' => __('What the shop is, in one or two sentences (:language)', ['language' => strtoupper($locale)]), 'rules' => ['nullable', 'string', 'max:300'], 'help' => __('Shown in search results and told to AI assistants.')], config('shop.locales')),
                     ['name' => 'seo_indexable', 'path' => 'shop.seo.indexable', 'type' => 'bool', 'label' => __('Search engines may index the shop (switch off until the shop is ready)'), 'rules' => ['boolean']],
                     ['name' => 'seo_llms_txt', 'path' => 'shop.seo.llms_txt', 'type' => 'bool', 'label' => __('Publish the catalogue for AI assistants (llms.txt)'), 'rules' => ['boolean']],
                     ['name' => 'analytics_enabled', 'path' => 'shop.analytics.enabled', 'type' => 'bool', 'label' => __('Count visitors anonymously, without cookies'), 'rules' => ['boolean'], 'help' => __('No cookie, no stored address, no profile; visitors who send Do Not Track are not counted. Described in the privacy policy.')],
@@ -186,6 +199,7 @@ class ShopSettings
                 'money' => $value === null ? null : number_format($value / 100, 2, '.', ''),
                 'bool' => (bool) $value,
                 'lines' => implode("\n", (array) $value),
+                'image' => Appearance::url($field['path']),
                 default => $value,
             };
         }
@@ -202,6 +216,12 @@ class ShopSettings
     {
         foreach (self::groups()[$group]['fields'] as $field) {
             $value = $input[$field['name']] ?? null;
+
+            if ($field['type'] === 'image') {
+                self::saveImage($field['path'], $value, (bool) ($input[$field['name'].'_remove'] ?? false));
+
+                continue;
+            }
 
             if ($field['type'] === 'secret') {
                 // An empty secret field means "keep what is saved".
@@ -225,6 +245,27 @@ class ShopSettings
 
         Cache::forget(self::CACHE_KEY);
         self::apply();
+    }
+
+    /**
+     * A new file replaces the old one; the remove flag deletes it; nothing sent keeps it.
+     */
+    private static function saveImage(string $path, mixed $file, bool $remove): void
+    {
+        if (! $file instanceof UploadedFile && ! $remove) {
+            return;
+        }
+
+        $disk = Storage::disk(Appearance::DISK);
+        $old = (string) config($path);
+
+        if ($old !== '') {
+            $disk->delete($old);
+        }
+
+        Setting::query()->updateOrCreate(['key' => $path], [
+            'value' => json_encode($file instanceof UploadedFile ? $file->store('branding', Appearance::DISK) : null),
+        ]);
     }
 
     /**

@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
- * The shop's visitor statistics, the way WrkLst websites count theirs:
- * cookieless and anonymous by construction.
+ * The shop's visitor statistics: cookieless and anonymous by construction.
  *
  * The browser stores nothing (no cookie, no storage); resources/js/lib/
  * site-beacon.ts keeps a random visit id in the tab's memory and sends page

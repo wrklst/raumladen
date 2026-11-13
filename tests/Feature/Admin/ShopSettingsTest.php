@@ -1,13 +1,19 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Invoicing\InvoiceIssuer;
+use App\Mail\OrderShipped;
 use App\Models\CustomerGroup;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
 use App\Payments\PaymentManager;
+use App\Settings\Appearance;
 use App\Settings\ShopSettings;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -18,8 +24,8 @@ beforeEach(function () {
 test('seller details saved in the backend replace the config values', function () {
     $this->actingAs($this->admin)
         ->put(route('admin.settings.update', 'seller'), [
-            'seller_name' => 'Space Issues e.V.', 'seller_address1' => 'Weydingerstraße 14', 'seller_zip' => '10178',
-            'seller_city' => 'Berlin', 'seller_email' => 'shop@space-issues.test', 'seller_vat_id' => 'DE123456789',
+            'seller_name' => 'Beispielverlag e.V.', 'seller_address1' => 'Weydingerstraße 14', 'seller_zip' => '10178',
+            'seller_city' => 'Berlin', 'seller_email' => 'shop@raumladen.test', 'seller_vat_id' => 'DE123456789',
             'seller_iban' => 'DE02120300000000202051',
         ])
         ->assertRedirect()
@@ -71,16 +77,16 @@ test('the mollie key is stored encrypted, switches online payment on and is neve
 test('mail settings are applied and can be tried with a test message', function () {
     $this->actingAs($this->admin)
         ->put(route('admin.settings.update', 'mail'), [
-            'mail_mailer' => 'smtp', 'mail_host' => 'mail.artworld.test', 'mail_port' => 587, 'mail_scheme' => '',
-            'mail_username' => 'shop', 'mail_password' => 's3cret', 'mail_from_address' => 'shop@space-issues.test', 'mail_from_name' => 'Space Issues',
+            'mail_mailer' => 'smtp', 'mail_host' => 'mail.example.test', 'mail_port' => 587, 'mail_scheme' => '',
+            'mail_username' => 'shop', 'mail_password' => 's3cret', 'mail_from_address' => 'shop@raumladen.test', 'mail_from_name' => 'Raumladen',
         ])
         ->assertSessionHasNoErrors();
 
     expect(config('mail.default'))->toBe('smtp')
-        ->and(config('mail.mailers.smtp.host'))->toBe('mail.artworld.test')
+        ->and(config('mail.mailers.smtp.host'))->toBe('mail.example.test')
         ->and(config('mail.mailers.smtp.port'))->toBe(587)
         ->and(config('mail.mailers.smtp.password'))->toBe('s3cret')
-        ->and(config('mail.from.address'))->toBe('shop@space-issues.test')
+        ->and(config('mail.from.address'))->toBe('shop@raumladen.test')
         ->and(Setting::query()->find('mail.mailers.smtp.password')->value)->not->toContain('s3cret');
 
     Mail::fake();
@@ -128,7 +134,7 @@ test('the settings page lists what still blocks going live', function () {
     $this->actingAs($this->admin)->get(route('admin.settings.edit'))
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/settings')
-            ->has('groups', 8)
+            ->has('groups', 9)
             ->where('problems', fn ($problems) => collect($problems)->contains(fn (string $problem) => str_contains($problem, 'invoices would be invalid'))));
 });
 
@@ -173,9 +179,9 @@ test('feeds for Google and Meta are switched on and off in the backend', functio
 
     $this->actingAs($this->admin)
         ->put(route('admin.settings.update', 'channels'), [
-            'seo_indexable' => '1', 'seo_llms_txt' => '1', 'google_feed' => '0', 'meta_feed' => '1',
+            'site_description_de' => 'Ein Beispielladen für Bücher.', 'seo_indexable' => '1', 'seo_llms_txt' => '1', 'google_feed' => '0', 'meta_feed' => '1',
             'google_verification' => 'abc_123-XYZ', 'meta_verification' => 'meta456',
-            'same_as' => "http://spacedepartment.net\n\n https://instagram.com/spaceissues \n",
+            'same_as' => "https://example.org/about\n\n https://instagram.com/example \n",
         ])
         ->assertSessionHasNoErrors();
 
@@ -188,8 +194,11 @@ test('feeds for Google and Meta are switched on and off in the backend', functio
     expect($html)
         ->toContain('<meta name="google-site-verification" content="abc_123-XYZ">')
         ->toContain('<meta name="facebook-domain-verification" content="meta456">')
-        ->and(config('shop.site.same_as'))->toBe(['http://spacedepartment.net', 'https://instagram.com/spaceissues'])
-        ->and($html)->toContain('instagram.com/spaceissues');
+        ->and(config('shop.site.same_as'))->toBe(['https://example.org/about', 'https://instagram.com/example'])
+        // The shop's own words reach search engines and AI assistants.
+        ->and($html)->toContain('<meta name="description" content="Ein Beispielladen für Bücher.">')
+        ->and($this->get('/llms.txt')->getContent())->toContain('> Ein Beispielladen für Bücher.')
+        ->and($html)->toContain('instagram.com/example');
 
     // A verification code is pasted into the page head: only plain codes are accepted.
     $this->actingAs($this->admin)
@@ -214,4 +223,72 @@ test('a shop that is not ready keeps search engines and AI crawlers out', functi
             collect(collect($groups)->firstWhere('key', 'channels')['fields'])->firstWhere('name', 'google_feed')['help'],
             url('/feeds/google-de.xml'),
         )));
+});
+
+test('logo, invoice note and mail signature are set in the backend and used by invoice and emails', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+    $logo = UploadedFile::fake()->image('logo.png', 300, 100);
+
+    $this->actingAs($this->admin)
+        ->put(route('admin.settings.update', 'appearance'), [
+            'logo' => $logo,
+            'invoice_note' => "Vielen Dank.\nRaumladen",
+            'mail_signature' => "Herzlich\nRaumladen",
+        ])
+        ->assertSessionHasNoErrors();
+
+    $path = config('shop.appearance.logo');
+
+    Storage::disk('public')->assertExists($path);
+
+    expect(Appearance::logoUrl())->toContain($path)
+        ->and(Appearance::logoDataUri())->toStartWith('data:image/png;base64,')
+        ->and(Appearance::mailSignature())->toBe("Herzlich\nRaumladen");
+
+    $order = Order::factory()->create(['status' => 'paid', 'paid_at' => now()]);
+    $invoice = app(InvoiceIssuer::class)->issueInvoice($order);
+    $html = view('invoices.pdf', ['invoice' => $invoice, 's' => $invoice->snapshot])->render();
+
+    expect($html)->toContain('data:image/png;base64,')->toContain("Vielen Dank.<br />\nRaumladen");
+
+    (new OrderShipped($order))
+        ->assertSeeInHtml($path, false)
+        ->assertSeeInOrderInText(['Herzlich', 'Raumladen']);
+
+    // Saving again without a file keeps the logo; the remove tick deletes it.
+    $this->actingAs($this->admin)->put(route('admin.settings.update', 'appearance'), ['invoice_note' => ''])->assertSessionHasNoErrors();
+
+    expect(config('shop.appearance.logo'))->toBe($path);
+
+    $this->actingAs($this->admin)->put(route('admin.settings.update', 'appearance'), ['logo_remove' => '1'])->assertSessionHasNoErrors();
+
+    Storage::disk('public')->assertMissing($path);
+
+    expect(Appearance::logoUrl())->toBeNull()
+        // Without a signature the seller signs.
+        ->and(Appearance::mailSignature())->toBe(config('shop.seller.name'));
+
+    $this->actingAs($this->admin)
+        ->put(route('admin.settings.update', 'appearance'), ['logo' => UploadedFile::fake()->create('logo.svg', 10, 'image/svg+xml')])
+        ->assertSessionHasErrors('logo');
+});
+
+test('the shop can bring its own icon for the browser tab and home screens', function () {
+    Storage::fake('public');
+
+    expect($this->get('/de')->getContent())->toContain('href="/favicon.svg"');
+
+    $this->actingAs($this->admin)
+        ->put(route('admin.settings.update', 'appearance'), ['icon' => UploadedFile::fake()->image('icon.png', 200, 100)])
+        ->assertSessionHasErrors('icon');
+
+    $this->actingAs($this->admin)
+        ->put(route('admin.settings.update', 'appearance'), ['icon' => UploadedFile::fake()->image('icon.png', 512, 512)])
+        ->assertSessionHasNoErrors();
+
+    $html = $this->get('/de')->getContent();
+
+    expect($html)->toContain('<link rel="apple-touch-icon" href="'.Appearance::iconUrl().'">')
+        ->not->toContain('href="/favicon.svg"');
 });

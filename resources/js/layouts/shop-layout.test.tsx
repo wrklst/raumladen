@@ -39,7 +39,7 @@ test('landmarks, skip link and named header links', () => {
 });
 
 test('the header search is a labelled form that keeps the current query', () => {
-    setPage({ seo: seo('Search') }, '/de?q=mourning');
+    setPage({ seo: seo('Search') }, '/de?q=morning');
 
     render(<ShopLayout>results</ShopLayout>);
 
@@ -48,7 +48,7 @@ test('the header search is a labelled form that keeps the current query', () => 
 
     expect(search.getAttribute('method')).toBe('get');
     expect(input.getAttribute('name')).toBe('q');
-    expect(input).toHaveProperty('value', 'mourning');
+    expect(input).toHaveProperty('value', 'morning');
     expect(screen.getByRole('button', { name: 'Search' })).toBeTruthy();
 });
 
@@ -146,15 +146,15 @@ test('typing in the search loads results after a pause, without stealing the car
     // One letter is not a search.
     expect(get).not.toHaveBeenCalled();
 
-    await user.type(input, 'ourning');
+    await user.type(input, 'orning');
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     // Seven more keystrokes, one request.
     expect(get).toHaveBeenCalledTimes(1);
-    expect(get.mock.calls[0][1]).toEqual({ q: 'mourning' });
+    expect(get.mock.calls[0][1]).toEqual({ q: 'morning' });
 
     // The results page arrives: focus stays in the field instead of jumping to the content.
-    setPage({ seo: seo('Search: mourning') }, '/de?q=mourning');
+    setPage({ seo: seo('Search: morning') }, '/de?q=morning');
     view.rerender(<ShopLayout>results</ShopLayout>);
 
     expect(document.activeElement).toBe(input);
@@ -169,14 +169,14 @@ test('with the index in the browser, typing shows results at once and asks the s
         >,
     );
     const user = (await import('@testing-library/user-event')).default.setup();
-    const card = { id: 1, title: 'The Mourning of Space' };
+    const card = { id: 1, title: 'The Morning of Space' };
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
         ok: true,
         json: async () => [
             {
                 card,
-                title: 'the mourning of space',
+                title: 'the morning of space',
                 authors: '',
                 codes: '',
                 text: '',

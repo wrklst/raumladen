@@ -33,7 +33,7 @@ module.exports = {
             url: [
                 `${base}/de`,
                 `${base}/de/products/die-kunst-des-langsamen-lesens`,
-                `${base}/en/products/the-mourning-of-space`,
+                `${base}/en/products/the-art-of-slow-reading`,
                 `${base}/de/pages/imprint`,
                 `${base}/de/cart`,
                 `${base}/de/withdraw`,

@@ -9,16 +9,16 @@ use Inertia\Testing\AssertableInertia as Assert;
 beforeEach(function () {
     CustomerGroup::factory()->consumer()->create();
 
-    $this->mourning = Product::factory()->create([
-        'title' => ['de' => 'The Mourning of Space', 'en' => 'The Mourning of Space'],
+    $this->morning = Product::factory()->create([
+        'title' => ['de' => 'The Morning of Space', 'en' => 'The Morning of Space'],
         'description' => ['de' => 'Olivenlandschaften von Jaén.', 'en' => 'Olive landscapes of Jaén.'],
-        'specs' => ['isbn' => '978-3-69354-012-1', 'authors' => 'Blanca Borrell'],
+        'specs' => ['isbn' => '978-3-00-000001-1', 'authors' => 'Anna Beispiel'],
         'sku' => 'SI-1',
     ]);
     $this->zurich = Product::factory()->create([
         'title' => ['de' => 'Zürich bauen', 'en' => 'Building Zurich'],
         'description' => ['de' => 'Über Raum und Stadt.', 'en' => 'On space and the city.'],
-        'specs' => ['isbn' => '978-3-69354-013-8', 'authors' => 'Ludwig Engel, Blanca Borrell'],
+        'specs' => ['isbn' => '978-3-00-000002-8', 'authors' => 'Jonas Weber, Anna Beispiel'],
         'sku' => 'SI-2',
     ]);
     Product::factory()->inactive()->create(['title' => ['de' => 'Space unsichtbar', 'en' => 'Space hidden']]);
@@ -41,58 +41,58 @@ function searchTitles(string $query, string $locale = 'de'): array
 test('the search finds by title, author, isbn and description, ignoring case, accents and hyphens', function (string $query, array $expected) {
     expect(searchTitles($query))->toBe($expected);
 })->with([
-    'title word' => ['mourning', ['The Mourning of Space']],
-    'case and spacing' => ['  MOURNING   space ', ['The Mourning of Space']],
+    'title word' => ['morning', ['The Morning of Space']],
+    'case and spacing' => ['  MORNING   space ', ['The Morning of Space']],
     'umlaut typed plainly' => ['zurich', ['Zürich bauen']],
     'title in the other language' => ['building', ['Zürich bauen']],
-    'author' => ['engel', ['Zürich bauen']],
-    'isbn with hyphens' => ['978-3-69354-012-1', ['The Mourning of Space']],
-    'isbn without hyphens' => ['9783693540121', ['The Mourning of Space']],
+    'author' => ['weber', ['Zürich bauen']],
+    'isbn with hyphens' => ['978-3-00-000001-1', ['The Morning of Space']],
+    'isbn without hyphens' => ['9783000000011', ['The Morning of Space']],
     'article number' => ['si-2', ['Zürich bauen']],
-    'accent in the description' => ['jaen', ['The Mourning of Space']],
-    'every word has to match' => ['mourning zurich', []],
+    'accent in the description' => ['jaen', ['The Morning of Space']],
+    'every word has to match' => ['morning zurich', []],
     'inactive books stay hidden' => ['unsichtbar', []],
 ]);
 
 test('a title hit ranks above a description hit', function () {
     // "space" is in one title and only in the other's English description.
-    expect(searchTitles('space', 'en'))->toBe(['The Mourning of Space', 'Building Zurich']);
+    expect(searchTitles('space', 'en'))->toBe(['The Morning of Space', 'Building Zurich']);
 });
 
 test('search results are not indexed and empty input lists everything', function () {
-    $this->get(route('shop.home', ['locale' => 'de', 'q' => 'mourning']))
-        ->assertInertia(fn (Assert $page) => $page->where('seo.index', false)->where('seo.title', 'Suche: mourning'));
+    $this->get(route('shop.home', ['locale' => 'de', 'q' => 'morning']))
+        ->assertInertia(fn (Assert $page) => $page->where('seo.index', false)->where('seo.title', 'Suche: morning'));
 
     expect(searchTitles(''))->toHaveCount(2);
 });
 
 test('an author link lists all issues by that author', function () {
-    $this->get(route('shop.home', ['locale' => 'de', 'author' => 'Blanca Borrell']))
+    $this->get(route('shop.home', ['locale' => 'de', 'author' => 'Anna Beispiel']))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->has('products.data', 2)
-            ->where('filters.author', 'Blanca Borrell')
-            ->where('seo.title', 'Blanca Borrell')
+            ->where('filters.author', 'Anna Beispiel')
+            ->where('seo.title', 'Anna Beispiel')
             ->where('seo.index', true)
-            ->where('seo.canonical', route('shop.home', ['locale' => 'de', 'author' => 'Blanca Borrell'])));
+            ->where('seo.canonical', route('shop.home', ['locale' => 'de', 'author' => 'Anna Beispiel'])));
 
-    $this->get(route('shop.home', ['locale' => 'de', 'author' => 'ludwig engel']))
+    $this->get(route('shop.home', ['locale' => 'de', 'author' => 'jonas weber']))
         ->assertInertia(fn (Assert $page) => $page->has('products.data', 1)->where('products.data.0.title', 'Zürich bauen'));
 
     // A partial name is a search, not an author.
-    $this->get(route('shop.home', ['locale' => 'de', 'author' => 'Blanca']))
+    $this->get(route('shop.home', ['locale' => 'de', 'author' => 'Anna']))
         ->assertInertia(fn (Assert $page) => $page->has('products.data', 0));
 });
 
 test('the issue page lists its authors one by one for the links', function () {
     $this->get($this->zurich->urlFor('de'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('product.author_list', ['Ludwig Engel', 'Blanca Borrell'])
+            ->where('product.author_list', ['Jonas Weber', 'Anna Beispiel'])
             ->where('manufacturer', fn (string $line) => str_contains($line, config('shop.seller.name'))));
 });
 
 test('the search runs on a cached index and loads only the products it shows', function () {
-    searchTitles('mourning');
+    searchTitles('morning');
 
     $queries = [];
     DB::listen(function ($query) use (&$queries) {
@@ -109,7 +109,7 @@ test('the search runs on a cached index and loads only the products it shows', f
 });
 
 test('the index follows the catalogue: new, changed, deleted and newly published issues', function () {
-    searchTitles('mourning');
+    searchTitles('morning');
 
     $new = Product::factory()->create(['title' => ['de' => 'Neuland', 'en' => 'New Ground'], 'published_at' => now()->addDay()]);
 
@@ -145,8 +145,8 @@ test('a small catalogue is handed to the browser as a search index it may cache'
         // Catalogue order, text already folded for searching, cards as on the catalogue page.
         ->and($response->json('0'))->toMatchArray([
             'title' => 'zurich bauen building zurich',
-            'authors' => 'ludwig engel, blanca borrell',
-            'codes' => '978-3-69354-013-8 9783693540138 si-2',
+            'authors' => 'jonas weber, anna beispiel',
+            'codes' => '978-3-00-000002-8 9783000000028 si-2',
             'text' => 'uber raum und stadt.',
         ])
         ->and($response->json('0.card'))->toMatchArray(['title' => 'Zürich bauen', 'url' => $this->zurich->urlFor('de'), 'price_cents' => $this->zurich->price_cents])

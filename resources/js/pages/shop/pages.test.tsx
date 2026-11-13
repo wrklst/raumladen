@@ -8,16 +8,16 @@ import type { ProductCard, ProductDetail, ResourcePaginated } from '@/types';
 const card: ProductCard = {
     id: 1,
     type: 'book',
-    title: 'The Mourning of Space',
-    slug: 'the-mourning-of-space',
-    url: '/de/products/the-mourning-of-space',
+    title: 'The Morning of Space',
+    slug: 'the-morning-of-space',
+    url: '/de/products/the-morning-of-space',
     price_cents: 1500,
     prices_include_tax: true,
     tax_rate: 7,
     currency: 'EUR',
     image: null,
     in_stock: true,
-    authors: 'Blanca Borrell',
+    authors: 'Anna Beispiel',
 };
 
 const list = (data: ProductCard[]) =>
@@ -33,10 +33,10 @@ test('the catalogue sets each issue as a text-only cover inside one link', () =>
         screen.getByRole('heading', { level: 1, name: 'Issues' }),
     ).toBeTruthy();
 
-    const link = screen.getByRole('link', { name: /The Mourning of Space/ });
+    const link = screen.getByRole('link', { name: /The Morning of Space/ });
 
     expect(link.getAttribute('href')).toBe(card.url);
-    expect(link.textContent).toContain('Blanca Borrell');
+    expect(link.textContent).toContain('Anna Beispiel');
     expect(link.textContent).toContain('15,00');
     expect(screen.queryByRole('img')).toBeNull();
     expect(screen.queryByRole('status')).toBeNull();
@@ -44,14 +44,11 @@ test('the catalogue sets each issue as a text-only cover inside one link', () =>
 
 test('a search names the query, counts the results and offers the way back', () => {
     render(
-        <Home
-            products={list([card])}
-            filters={{ q: 'mourning', author: '' }}
-        />,
+        <Home products={list([card])} filters={{ q: 'morning', author: '' }} />,
     );
 
     expect(
-        screen.getByRole('heading', { level: 1, name: 'Search: mourning' }),
+        screen.getByRole('heading', { level: 1, name: 'Search: morning' }),
     ).toBeTruthy();
     expect(screen.getByRole('status').textContent).toBe('Results: 1');
     expect(screen.getByRole('link', { name: 'Show all issues' })).toBeTruthy();
@@ -67,12 +64,12 @@ test('an empty search says so; an author listing is headed by the name', () => {
     view.rerender(
         <Home
             products={list([card])}
-            filters={{ q: '', author: 'Blanca Borrell' }}
+            filters={{ q: '', author: 'Anna Beispiel' }}
         />,
     );
 
     expect(
-        screen.getByRole('heading', { level: 1, name: 'Blanca Borrell' }),
+        screen.getByRole('heading', { level: 1, name: 'Anna Beispiel' }),
     ).toBeTruthy();
 });
 
@@ -80,7 +77,7 @@ test('each author on an issue links to all issues by that author', () => {
     const product: ProductDetail = {
         ...card,
         sku: 'SI-1',
-        author_list: ['Ludwig Engel', 'Blanca Borrell'],
+        author_list: ['Jonas Weber', 'Anna Beispiel'],
         description: 'Text.',
         images: [],
         specs: {},
@@ -93,18 +90,18 @@ test('each author on an issue links to all issues by that author', () => {
         <Product
             product={product}
             delivery_days={null}
-            manufacturer="Space Issues e.V., Berlin"
+            manufacturer="Beispielverlag e.V., Berlin"
         />,
     );
 
     expect(
         screen
-            .getByRole('link', { name: 'Blanca Borrell' })
+            .getByRole('link', { name: 'Anna Beispiel' })
             .getAttribute('href'),
-    ).toMatch(/author=Blanca(\+|%20)Borrell$/);
-    expect(screen.getByRole('link', { name: 'Ludwig Engel' })).toBeTruthy();
+    ).toMatch(/author=Anna(\+|%20)Beispiel$/);
+    expect(screen.getByRole('link', { name: 'Jonas Weber' })).toBeTruthy();
     // Product safety law wants the manufacturer on the offer.
-    expect(screen.getByText('Space Issues e.V., Berlin')).toBeTruthy();
+    expect(screen.getByText('Beispielverlag e.V., Berlin')).toBeTruthy();
 });
 
 test('the withdrawal form asks for order, name and email and confirms with one button', () => {

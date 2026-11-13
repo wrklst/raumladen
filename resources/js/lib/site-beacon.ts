@@ -1,8 +1,7 @@
 import { router } from '@inertiajs/react';
 
 /**
- * The storefront's visitor statistics: cookieless and anonymous (a port of
- * the beacon of WrkLst websites). Nothing is stored in the browser, no
+ * The storefront's visitor statistics: cookieless and anonymous. Nothing is stored in the browser, no
  * cookie, no storage, no id that outlives the tab: the visit id below lives
  * in this script's memory only. The server keeps no address and no browser
  * string (App\Analytics\SiteVisits). Silent under Do Not Track and Global

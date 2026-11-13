@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\URL;
  */
 beforeEach(function () {
     $this->seed(DatabaseSeeder::class);
-    config(['app.name' => 'Space Issues']);
+    config(['app.name' => 'Raumladen']);
     Mail::fake();
 });
 
 test('the login page shows the shop name, offers no registration and switches language', function () {
     visit('/login')
-        ->assertSee('Space Issues')
+        ->assertSee('Raumladen')
         ->assertDontSee('Sign up')
         ->assertNoSmoke()
         ->click('Deutsch')
@@ -68,20 +68,20 @@ test('a person is invited, sets a password through the link and lands in the bac
     $this->actingAs(User::factory()->admin()->create(['locale' => 'de']));
 
     visit('/admin/staff')
-        ->fill('name', 'Ludwig Engel')
-        ->fill('email', 'ludwig@example.com')
+        ->fill('name', 'Jonas Weber')
+        ->fill('email', 'jonas@example.com')
         ->select('#role', 'editor')
         ->press('Einladung senden')
         ->assertSee('Einladung offen')
         ->assertNoSmoke();
 
-    $invited = User::query()->where('email', 'ludwig@example.com')->sole();
+    $invited = User::query()->where('email', 'jonas@example.com')->sole();
     Mail::assertSent(StaffInvitation::class);
 
     auth()->logout();
 
     visit(URL::temporarySignedRoute('invitation.show', now()->addDays(7), ['user' => $invited]))
-        ->assertSee('Ludwig Engel')
+        ->assertSee('Jonas Weber')
         ->fill('password', 'correct horse battery')
         ->fill('password_confirmation', 'correct horse battery')
         ->press('[type=submit]')

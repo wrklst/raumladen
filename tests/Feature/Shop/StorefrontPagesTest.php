@@ -3,6 +3,7 @@
 use App\Models\CustomerGroup;
 use App\Models\Page;
 use App\Models\Product;
+use App\Theme\Theme;
 use Database\Seeders\DatabaseSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -38,19 +39,18 @@ test('inactive and unpublished products are not reachable', function () {
     $this->get($future->urlFor('de'))->assertNotFound();
 });
 
-test('the storefront html carries the theme, not the admin fonts', function () {
+test('the storefront html carries the class of its theme', function () {
     $html = $this->get('/de')->assertOk()->getContent();
 
     expect($html)
-        ->toContain('<html lang="de" class="theme-space-issues">')
-        ->toContain('<meta name="color-scheme" content="light dark">')
-        ->not->toContain('instrument-sans');
+        ->toContain('<html lang="de" class="'.Theme::current()->cssClass().'">')
+        ->toContain('<meta name="color-scheme" content="light dark">');
 });
 
 test('the colour scheme cookie decides the server-rendered class', function () {
     $html = $this->withUnencryptedCookie('appearance', 'dark')->get('/de')->getContent();
 
-    expect($html)->toContain('<html lang="de" class="dark theme-space-issues">');
+    expect($html)->toContain('<html lang="de" class="dark '.Theme::current()->cssClass().'">');
 });
 
 test('a content page renders its markdown without raw html', function () {
@@ -70,21 +70,20 @@ test('a content page renders its markdown without raw html', function () {
     $this->get('/de/pages/draft')->assertNotFound();
 });
 
-test('the seeder provides the legal pages, the accessibility statement and the example issue', function () {
+test('the seeder provides the legal pages, the accessibility statement and a demo catalogue', function () {
     $this->seed(DatabaseSeeder::class);
 
     expect(Page::query()->where('is_published', true)->pluck('slug')->all())
         ->toEqualCanonicalizing(['imprint', 'terms', 'withdrawal', 'privacy', 'shipping', 'accessibility']);
 
-    $this->get('/en/products/the-mourning-of-space')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('product.title', 'The Mourning of Space')
-        ->where('product.authors', 'Blanca Borrell')
-        ->where('product.specs.isbn', '978-3-69354-012-1')
+    $this->get('/en/products/the-art-of-slow-reading')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('product.title', 'The Art of Slow Reading')
+        ->where('product.authors', 'Lena Hartmann')
         ->where('product.images', []));
 
     // Seeding twice must not duplicate anything.
     $this->seed(DatabaseSeeder::class);
 
     expect(Page::query()->count())->toBe(6)
-        ->and(Product::query()->where('sku', 'SI-9783693540121')->count())->toBe(1);
+        ->and(Product::query()->count())->toBe(3);
 });

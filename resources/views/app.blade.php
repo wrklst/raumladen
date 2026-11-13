@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 @php($isStorefront = str_starts_with($page['component'], 'shop/') || str_starts_with($page['component'], 'account/'))
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark', 'theme-space-issues' => $isStorefront])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark', \App\Theme\Theme::current()->cssClass() => $isStorefront])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -72,20 +72,19 @@
             html.dark {
                 background-color: oklch(0.145 0 0);
             }
-
-            html.theme-space-issues.dark {
-                background-color: #000;
-            }
         </style>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        {{-- The shop's own icon (Shop settings, Appearance), or the built-in one. --}}
+        @if($icon = \App\Settings\Appearance::iconUrl())
+            <link rel="icon" href="{{ $icon }}" type="image/png">
+            <link rel="apple-touch-icon" href="{{ $icon }}">
+        @else
+            <link rel="icon" href="/favicon.ico" sizes="any">
+            <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        @endif
 
-        {{-- Instrument Sans is the admin's typeface; the storefront theme brings its own. --}}
-        @unless($isStorefront)
-            @fonts
-        @endunless
+        @fonts
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
