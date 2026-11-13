@@ -55,6 +55,16 @@ test('a theme is found as a package, as a path, and a missing one is named', fun
         ->and(fn () => Theme::resolvePath('acme/not-installed'))->toThrow(RuntimeException::class, 'acme/not-installed');
 });
 
+test('artisan still boots while the selected theme is not installed yet', function () {
+    // `composer install` runs artisan before a deploy script adds the theme package.
+    config(['shop.theme' => 'acme/not-installed-yet']);
+    app()->forgetInstance(Theme::class);
+
+    expect(Theme::current()->path)->toBe(resource_path('themes/default'));
+
+    $this->artisan('package:discover')->assertSuccessful();
+});
+
 test('the theme names its class and what it already provides, for the page and the display options', function () {
     CustomerGroup::factory()->consumer()->create();
     $theme = useFixtureTheme();

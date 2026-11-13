@@ -47,7 +47,19 @@ class Theme
 
     public static function load(?string $theme): self
     {
-        $path = self::resolvePath($theme);
+        try {
+            $path = self::resolvePath($theme);
+        } catch (RuntimeException $e) {
+            // On the command line the theme may simply not be there yet: Composer
+            // boots the application at the end of `composer install`, before a
+            // deploy script has added the theme package. A web request never gets
+            // here without the theme, because the front-end build stops first.
+            if (! app()->runningInConsole()) {
+                throw $e;
+            }
+
+            $path = self::resolvePath(null);
+        }
         $meta = File::exists($path.'/theme.json') ? File::json($path.'/theme.json') : [];
         $name = (string) ($meta['name'] ?? basename($path));
 
