@@ -40,7 +40,6 @@ server-side rendering.
 | `resources/js/pages/shop`, `account`           | Storefront pages.                                                                       |
 | `resources/js/pages/admin`, `auth`, `settings` | Backend pages.                                                                          |
 | `resources/js/layouts/shop-layout.tsx`         | The storefront frame.                                                                   |
-| `resources/themes/default`                     | The built-in theme.                                                                     |
 | `database/seeders/pages`                       | The legal texts as Markdown, German and English.                                        |
 | `lang/de.json`                                 | German UI texts; the English text is the key.                                           |
 

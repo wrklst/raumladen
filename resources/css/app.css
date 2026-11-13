@@ -4,7 +4,6 @@
 
 @source '../views';
 /* Themes may bring their own pages and components (app/Theme/Theme.php). */
-@source '../themes';
 @source '../../themes';
 @source '../../vendor/*/raumladen-theme-*/resources/js';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

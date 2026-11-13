@@ -109,7 +109,7 @@
         "skipLibCheck": true /* Skip type checking all .d.ts files. */,
         "paths": {
             "@/*": ["./resources/js/*"],
-            "@theme/*": ["./resources/themes/default/resources/*"]
+            "@theme/*": ["./vendor/wrklst/raumladen-theme-default/resources/*"]
         },
         "jsx": "react-jsx"
     },

@@ -14,8 +14,6 @@ application key, runs the migrations and builds the front end.
 The example environment expects a MySQL or MariaDB database named
 `raumladen` on this machine, reachable as `root` without a password. Create
 it first, or create the environment file yourself with other `DB_*` values.
-Without a database server, set `DB_CONNECTION=sqlite` and remove the other
-`DB_*` lines.
 
 `php artisan db:seed` creates what a shop needs to start:
 
@@ -43,7 +41,7 @@ owner decides is set in the backend.
 | `APP_ENV`, `APP_DEBUG`, `APP_KEY`                   | As in every Laravel application. The key also encrypts the payment key and the mail password stored in the database: keep it when you move the shop. |
 | `DB_*`                                              | The database.                                                                                                                                        |
 | `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` | The database drivers work out of the box. The shop sends its mail directly, so no queue worker is needed.                                            |
-| `SHOP_THEME`                                        | The theme: a package name, a path, or empty for the built-in theme. Read when the front end is built. See [Themes](themes.md).                       |
+| `SHOP_THEME`                                        | The theme: the name of an installed theme package. Read when the front end is built. See [Themes](themes.md).                                        |
 | `INERTIA_SSR_ENABLED`                               | `true` to render pages on the server (needs the SSR process, see below).                                                                             |
 
 After changing the environment on a server, run `php artisan optimize` (or

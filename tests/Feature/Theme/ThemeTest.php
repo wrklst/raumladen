@@ -35,10 +35,10 @@ function useFixtureTheme(): Theme
     return Theme::current();
 }
 
-test('without SHOP_THEME the built-in theme is used', function () {
+test('without SHOP_THEME the default theme package is used', function () {
     CustomerGroup::factory()->consumer()->create();
 
-    expect(Theme::current()->path)->toBe(resource_path('themes/default'))
+    expect(Theme::current()->path)->toBe(base_path('vendor/'.Theme::DEFAULT))
         ->and(Theme::current()->cssClass())->toBe('theme-default')
         ->and(Theme::current()->provides('no-motion'))->toBeFalse();
 
@@ -60,7 +60,7 @@ test('artisan still boots while the selected theme is not installed yet', functi
     config(['shop.theme' => 'acme/not-installed-yet']);
     app()->forgetInstance(Theme::class);
 
-    expect(Theme::current()->path)->toBe(resource_path('themes/default'));
+    expect(Theme::current()->path)->toBe(base_path('vendor/'.Theme::DEFAULT));
 
     $this->artisan('package:discover')->assertSuccessful();
 });

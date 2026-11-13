@@ -22,7 +22,8 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "mollie/mollie-api-php": "^4.1"
+        "mollie/mollie-api-php": "^4.1",
+        "wrklst/raumladen-theme-default": "^1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -55,7 +56,6 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --force",
             "npm install",
             "npm run build"
@@ -124,5 +124,12 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "name": "theme-default",
+            "type": "vcs",
+            "url": "https://github.com/wrklst/raumladen-theme-default"
+        }
+    ]
 }

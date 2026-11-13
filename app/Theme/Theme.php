@@ -13,9 +13,9 @@ use RuntimeException;
  * The storefront's theme: how the shop, its invoices and its emails look.
  *
  * A theme is a directory, usually a Composer package in its own Git
- * repository, selected with SHOP_THEME (a package name such as
- * "acme/raumladen-theme-example", or a path). Without SHOP_THEME the
- * built-in theme in resources/themes/default is used. A theme may contain:
+ * repository, selected with SHOP_THEME (a package name, or a path). Without
+ * SHOP_THEME the default theme, a package the shop requires, is used. A
+ * theme may contain:
  *
  *   theme.json                        name, CSS class and what it already provides
  *   resources/css/theme.css           colours, type, fonts (loaded after the shop's CSS)
@@ -32,6 +32,8 @@ use RuntimeException;
  */
 class Theme
 {
+    public const DEFAULT = 'wrklst/raumladen-theme-default';
+
     /**
      * @param  array{name: string, class: string, provides: list<string>}  $meta
      */
@@ -72,12 +74,12 @@ class Theme
 
     /**
      * A package name resolves to vendor/, anything else is a path (absolute or
-     * relative to the application), nothing is the built-in theme.
+     * relative to the application), nothing is the default theme.
      */
     public static function resolvePath(?string $theme): string
     {
         if ($theme === null || $theme === '') {
-            return resource_path('themes/default');
+            $theme = self::DEFAULT;
         }
 
         foreach ([base_path('vendor/'.$theme), base_path($theme), $theme] as $candidate) {

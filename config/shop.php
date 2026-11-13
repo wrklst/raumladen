@@ -2,6 +2,7 @@
 
 use App\Payments\BankTransferGateway;
 use App\Payments\MollieGateway;
+use App\Theme\Theme;
 
 return [
 
@@ -37,15 +38,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | How the storefront, the invoices and the emails look (App\Theme\Theme).
-    | The name of an installed theme package, e.g.
-    | "acme/raumladen-theme-example", or a path; empty for the
-    | built-in theme. This is the one design decision that lives in the
+    | The name of an installed theme package, or a path. The default theme
+    | is a package the shop requires. This is the one design decision that lives in the
     | environment, because the front end is compiled with it: changing the
     | theme means `composer require`, a build and a deploy.
     |
     */
 
-    'theme' => env('SHOP_THEME'),
+    'theme' => env('SHOP_THEME', Theme::DEFAULT),
 
     'currency' => 'EUR',
 

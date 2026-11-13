@@ -39,14 +39,14 @@ It is not a marketplace and not a general-purpose shop system.
 - PHP 8.3 or newer with the usual Laravel extensions and `intl`
 - Composer 2
 - Node.js 22.18 or newer
-- MySQL or MariaDB (SQLite works for trying it out and is used by the tests)
+- MySQL or MariaDB
 
 ## Quick start
 
 ```
 git clone https://github.com/wrklst/raumladen.git
 cd raumladen
-mysql -e 'CREATE DATABASE raumladen'   # or set DB_CONNECTION=sqlite, see .env.example
+mysql -e 'CREATE DATABASE raumladen'
 composer setup            # installs, creates the environment file and app key, migrates, builds
 php artisan db:seed       # legal pages, customer groups, three demo books, an administrator
 composer dev              # serves the shop with hot reloading

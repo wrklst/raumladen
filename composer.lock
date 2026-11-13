@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4d812ae6c2cdfca8d5f32ba36fdf57ea",
+    "content-hash": "2d3c3cb7dd1cd49838c4b2ee359fd7c8",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -8459,6 +8459,39 @@
             },
             "time": "2026-10-05T23:14:19+00:00",
             "published-time": "2026-10-05T23:14:25+00:00"
+        },
+        {
+            "name": "wrklst/raumladen-theme-default",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wrklst/raumladen-theme-default.git",
+                "reference": "90ea3e927eb1ab1633ba99cf23bdf314aff72797"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wrklst/raumladen-theme-default/zipball/90ea3e927eb1ab1633ba99cf23bdf314aff72797",
+                "reference": "90ea3e927eb1ab1633ba99cf23bdf314aff72797",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.3"
+            },
+            "type": "raumladen-theme",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "WL Artworld Solutions GmbH"
+                }
+            ],
+            "description": "Default theme for the Raumladen shop: neutral greys, the system typeface. The starting point for your own theme.",
+            "support": {
+                "source": "https://github.com/wrklst/raumladen-theme-default/tree/v1.0.0",
+                "issues": "https://github.com/wrklst/raumladen-theme-default/issues"
+            },
+            "time": "2026-11-13T18:31:09+00:00"
         }
     ],
     "packages-dev": [

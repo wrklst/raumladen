@@ -3,9 +3,10 @@
 A theme decides how the storefront, the invoice PDF and the emails look. The
 backend is not themed.
 
-The shop ships with one theme, `resources/themes/default`, which is used
-when `SHOP_THEME` is empty. Any other theme is a directory of the same
-layout, usually a Composer package in its own Git repository.
+Every theme is a Composer package in its own Git repository. The shop
+requires one, the default theme
+[`wrklst/raumladen-theme-default`](https://github.com/wrklst/raumladen-theme-default),
+and uses it until `SHOP_THEME` names another.
 
 ## What a theme can contain
 
@@ -21,7 +22,7 @@ Every part is optional.
 
 ### theme.json
 
-The built-in theme's file, `resources/themes/default/theme.json`:
+The default theme's `theme.json`:
 
 ```json
 {
@@ -66,9 +67,8 @@ html.theme-default.dark:root {
 }
 ```
 
-These are the values of the built-in theme, listed (commented out, because
-they are the shop's own defaults) in
-`resources/themes/default/resources/css/theme.css`.
+These are the values of the default theme, listed (commented out, because
+they are the shop's own defaults) in its `resources/css/theme.css`.
 
 The full list of variables is at the top of `resources/css/app.css`. Fonts
 go next to the CSS and are referenced with relative `url()`s; the build
@@ -98,9 +98,8 @@ A replacement takes the place of the original entirely. It cannot import the
 original and wrap it: an import of the shop's path resolves to the theme's
 file again. Copy the shop's file as a starting point.
 
-Tailwind classes work in theme files of packages named `raumladen-theme-*`
-and of themes in a `themes` directory of the shop; the shop's stylesheet
-scans those places.
+Tailwind classes work in theme files of packages named `raumladen-theme-*`;
+the shop's stylesheet scans those.
 
 ### Invoice
 
@@ -132,9 +131,9 @@ built-in layout sets the shop's name in type instead.
 
 ## Installing a theme
 
-The built-in theme needs no installation: leave `SHOP_THEME` empty. Any
-other theme is a Composer package; `<vendor>/raumladen-theme-<name>` below
-stands for its package name.
+The default theme comes with `composer install`. Another theme is added the
+same way the default one is; `<vendor>/raumladen-theme-<name>` below stands
+for its package name.
 
 ```
 composer require <vendor>/raumladen-theme-<name>
@@ -149,8 +148,8 @@ npm run build:ssr
 
 `SHOP_THEME` is read twice: by the build (`vite.config.ts`), which compiles
 the theme's styles and replacements into the front end, and by the
-application (`App\Theme\Theme`), which lets the theme's views win. A package
-name is looked up in `vendor/`; anything else is taken as a path.
+application (`App\Theme\Theme`), which lets the theme's views win. The
+package is looked up in `vendor/`.
 
 Changing or updating a theme is therefore always a build and a deploy, and a
 restart of the SSR process. Invoice and email views alone are picked up
@@ -165,12 +164,9 @@ A theme for one shop usually lives in a private repository, while the shop
 software is public. Keep the theme out of the shop's `composer.json` and add
 it where the shop is installed.
 
-Composer has two ways to reach a private repository.
-
-**Through git (recommended on servers).** Composer clones the repository
-with the machine's own git access, usually an SSH key, and needs no token.
-`no-api` tells it not to ask the GitHub API, and `--prefer-source` to clone
-instead of downloading an archive:
+Composer clones the repository with the machine's own git access, usually
+an SSH key. `no-api` tells it not to ask the GitHub API, and
+`--prefer-source` to clone instead of downloading an archive:
 
 ```
 composer config repositories.theme '{"type": "vcs", "url": "git@github.com:<vendor>/raumladen-theme-<name>.git", "no-api": true}'
@@ -188,28 +184,6 @@ repository (as a deploy key on that repository, or through an account that
 may read it). A deploy key can belong to one repository only, so the key
 that pulls the shop cannot be reused if it is itself a deploy key.
 
-**With a token.** Composer talks to the GitHub API:
-
-```
-composer config repositories.theme vcs https://github.com/<vendor>/raumladen-theme-<name>
-composer config --global github-oauth.github.com <token>
-composer require <vendor>/raumladen-theme-<name>:dev-main
-```
-
-GitHub answers "404 Not Found" both when the token is missing and when it
-may not read the repository. For a repository owned by an organisation, a
-fine-grained token has to be created with that organisation as its resource
-owner (and approved by it, if the organisation requires that), with the
-repository selected and read access to "Contents". Check a token with:
-
-```
-curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer <token>" https://api.github.com/repos/<vendor>/raumladen-theme-<name>
-```
-
-`200` means Composer will get in. Store the token with `--global`, for the
-user that runs Composer, not in a release directory that the next deploy
-replaces. In CI, pass it in the `COMPOSER_AUTH` environment variable.
-
 On a server that builds each release from the public repository, add the
 theme in the deploy script after `composer install`:
 
@@ -220,7 +194,7 @@ $FORGE_COMPOSER require <vendor>/raumladen-theme-<name>:dev-main --no-interactio
 
 ## Making a theme
 
-1. Copy `resources/themes/default` into a new repository.
+1. Copy the default theme's repository into a new one.
 2. Add a `composer.json` with a package name ending in
    `raumladen-theme-<something>` and the type `raumladen-theme`.
 3. Work on it against a shop checkout, without Composer:
