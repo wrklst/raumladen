@@ -2,7 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Cart\Cart;
+use App\Models\Page;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,13 +38,41 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user === null ? null : [
+                    ...$user->toArray(),
+                    'is_admin' => $user->isAdmin(),
+                ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'locale' => app()->getLocale(),
+            'locales' => config('shop.locales'),
+            'translations' => fn () => $this->translations(app()->getLocale()),
+            'shop' => [
+                'name' => config('shop.seller.name'),
+                'currency' => config('shop.currency'),
+            ],
+            'cart_count' => fn () => app(Cart::class)->count(),
+            'footer_pages' => fn () => Page::query()->where('is_published', true)->orderBy('id')->get()
+                ->map(fn (Page $page) => ['slug' => $page->slug, 'title' => $page->translate('title')])
+                ->all(),
         ];
+    }
+
+    /**
+     * UI strings for the current locale from lang/{locale}.json.
+     *
+     * @return array<string, string>
+     */
+    private function translations(string $locale): array
+    {
+        $path = lang_path($locale.'.json');
+
+        return File::exists($path) ? File::json($path) : [];
     }
 }

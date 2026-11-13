@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -18,8 +21,17 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property UserRole $role
+ * @property int|null $customer_group_id
+ * @property string|null $locale
+ * @property string|null $company
+ * @property string|null $vat_id
+ * @property Carbon|null $vat_id_validated_at
+ * @property string|null $phone
+ * @property array<string, string|null>|null $billing_address
+ * @property array<string, string|null>|null $shipping_address
  * @property Carbon|null $email_verified_at
- * @property string $password
+ * @property string|null $password
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -27,12 +39,35 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable([
+    'name', 'email', 'password', 'role', 'customer_group_id', 'locale', 'company', 'vat_id',
+    'vat_id_validated_at', 'phone', 'billing_address', 'shipping_address',
+])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
+    public function customerGroup(): BelongsTo
+    {
+        return $this->belongsTo(CustomerGroup::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function hasValidVatId(): bool
+    {
+        return $this->vat_id !== null && $this->vat_id_validated_at !== null;
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -44,7 +79,11 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
             'two_factor_confirmed_at' => 'datetime',
+            'vat_id_validated_at' => 'datetime',
+            'billing_address' => 'array',
+            'shipping_address' => 'array',
         ];
     }
 }

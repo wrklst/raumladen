@@ -3,7 +3,7 @@
 use App\Models\User;
 
 test('profile page is displayed', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this
         ->actingAs($user)
@@ -13,7 +13,7 @@ test('profile page is displayed', function () {
 });
 
 test('profile information can be updated', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this
         ->actingAs($user)
@@ -34,7 +34,7 @@ test('profile information can be updated', function () {
 });
 
 test('email is stored in lowercase so the user can still log in', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $this
         ->actingAs($user)
@@ -57,9 +57,9 @@ test('email is stored in lowercase so the user can still log in', function () {
 });
 
 test('email must be unique regardless of case', function () {
-    User::factory()->create(['email' => 'taken@example.com']);
+    User::factory()->admin()->create(['email' => 'taken@example.com']);
 
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this
         ->actingAs($user)
@@ -75,7 +75,7 @@ test('email must be unique regardless of case', function () {
 });
 
 test('email verification status is unchanged when the email address is unchanged', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this
         ->actingAs($user)
@@ -92,7 +92,7 @@ test('email verification status is unchanged when the email address is unchanged
 });
 
 test('user can delete their account', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this
         ->actingAs($user)
@@ -109,7 +109,7 @@ test('user can delete their account', function () {
 });
 
 test('correct password must be provided to delete account', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->admin()->create();
 
     $response = $this
         ->actingAs($user)
