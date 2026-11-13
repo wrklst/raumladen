@@ -14,6 +14,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Webauthn\Exception\WebauthnException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -52,6 +53,17 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // A passkey that fails verification is the visitor's or the configuration's
+        // problem, not a crash. The usual cause is an APP_URL that is not the
+        // address in the browser (http instead of https, another host): the
+        // exception is still reported, so the log names the reason.
+        $exceptions->render(fn (WebauthnException $e, Request $request) => $request->expectsJson()
+            ? response()->json([
+                'message' => __('The passkey could not be verified. If this keeps happening, the address of the shop (APP_URL) does not match the address in the browser.'),
+                'errors' => ['credential' => [__('The passkey could not be verified. If this keeps happening, the address of the shop (APP_URL) does not match the address in the browser.')]],
+            ], 422)
+            : null);
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

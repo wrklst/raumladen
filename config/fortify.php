@@ -144,7 +144,9 @@ return [
 
     'passkeys' => [
         'relying_party_id' => parse_url(config('app.url'), PHP_URL_HOST),
-        'allowed_origins' => [config('app.url')],
+        // The browser's origin is scheme, host and port only: a trailing slash or
+        // a path in APP_URL must not make every passkey fail verification.
+        'allowed_origins' => [preg_replace('#^([a-z]+://[^/]+).*$#i', '$1', (string) config('app.url'))],
         'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),
         'timeout' => 60000,
     ],

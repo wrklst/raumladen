@@ -570,6 +570,7 @@
     "The last administrator cannot be removed.": "Der letzte Administrator kann nicht entfernt werden.",
     "The legal entity: printed on invoices and used in the imprint and the legal texts.": "Die juristische Person: steht auf Rechnungen, im Impressum und in den Rechtstexten.",
     "The link is valid for :days days. If you did not expect this invitation, you can ignore this email.": "Der Link ist :days Tage gültig. Wenn Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren.",
+    "The passkey could not be verified. If this keeps happening, the address of the shop (APP_URL) does not match the address in the browser.": "Der Passkey konnte nicht bestätigt werden. Wenn das immer wieder passiert, stimmt die Adresse des Shops (APP_URL) nicht mit der Adresse im Browser überein.",
     "The test message could not be sent: :reason": "Die Testnachricht konnte nicht gesendet werden: :reason",
     "These points are still open:": "Diese Punkte sind noch offen:",
     "These settings are saved in this browser only.": "Diese Einstellungen werden nur in diesem Browser gespeichert.",
