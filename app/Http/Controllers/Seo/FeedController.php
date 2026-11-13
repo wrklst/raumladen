@@ -6,20 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Support\Money;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 
 /**
- * Google Merchant Center product feed (RSS 2.0 with the g: namespace).
+ * Product feed for Google Merchant Center and for Meta catalogues, which
+ * read the same format (RSS 2.0 with the g: namespace).
  * Consumer gross prices in EUR; shipping from the DE zone.
  */
 class FeedController extends Controller
 {
-    public function google(string $locale): Response
+    public function show(string $channel, string $locale): Response
     {
-        abort_unless(in_array($locale, config('shop.locales'), true), 404);
+        // Each channel is switched on in the backend (Shop settings, Channels).
+        abort_unless(config("shop.channels.{$channel}_feed") && in_array($locale, config('shop.locales'), true), 404);
 
         app()->setLocale($locale);
 
-        $zone = collect(config('shop.shipping'))->firstWhere('code', 'DE');
+        $zone = Arr::first(config('shop.shipping'), fn (array $zone) => $zone['code'] === 'DE');
 
         $items = Product::query()->active()->orderBy('id')->get()
             ->filter(fn (Product $product) => ! empty($product->slug[$locale]))

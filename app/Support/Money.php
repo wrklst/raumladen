@@ -10,7 +10,9 @@ class Money
     {
         $formatter = new NumberFormatter($locale ?? app()->getLocale(), NumberFormatter::CURRENCY);
 
-        return $formatter->formatCurrency($cents / 100, $currency ?? config('shop.currency'));
+        $formatted = $formatter->formatCurrency($cents / 100, $currency ?? config('shop.currency'));
+
+        return $formatted === false ? '' : $formatted;
     }
 
     /**

@@ -1,3 +1,5 @@
+import LanguageSwitcher from '@/components/language-switcher';
+import { useTrans } from '@/hooks/use-translation';
 import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
 
 export default function AuthLayout({
@@ -9,9 +11,15 @@ export default function AuthLayout({
     description?: string;
     children: React.ReactNode;
 }) {
+    const { t } = useTrans();
+
     return (
-        <AuthLayoutTemplate title={title} description={description}>
+        <AuthLayoutTemplate
+            title={title && t(title)}
+            description={description && t(description)}
+        >
             {children}
+            <LanguageSwitcher className="justify-center" />
         </AuthLayoutTemplate>
     );
 }

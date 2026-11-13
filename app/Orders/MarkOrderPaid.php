@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 /**
- * Idempotent: a second payment notification for a paid order does nothing.
+ * Idempotent: a payment notification for a paid or cancelled order does nothing.
  */
 class MarkOrderPaid
 {
@@ -21,7 +21,9 @@ class MarkOrderPaid
         $invoice = DB::transaction(function () use ($order, $gateway) {
             $locked = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
-            if ($locked->isPaid()) {
+            // Only an open order can be paid: a late notification must not
+            // revive a cancelled one whose stock is already back on the shelf.
+            if ($locked->isPaid() || ! $locked->isOpen()) {
                 return null;
             }
 

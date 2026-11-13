@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import OrderController from '@/actions/App/Http/Controllers/Account/OrderController';
 import { AccountShell } from '@/components/shop/account-nav';
 import { AddressBlock } from '@/components/shop/address-block';
@@ -5,6 +6,7 @@ import { OrderStatusBadge } from '@/components/shop/order-status-badge';
 import { OrderSummary } from '@/components/shop/order-summary';
 import { useTrans } from '@/hooks/use-translation';
 import { formatMoney } from '@/lib/money';
+import { create as withdraw } from '@/routes/shop/withdrawal';
 import type { Order } from '@/types';
 
 export default function OrderDetail({ order }: { order: Order }) {
@@ -16,9 +18,17 @@ export default function OrderDetail({ order }: { order: Order }) {
         <AccountShell title={t('Order :number', { number: order.number })}>
             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 <OrderStatusBadge status={order.status} />
-                <span>{t('Ordered on :date', { date: date(order.created_at) ?? '' })}</span>
+                <span>
+                    {t('Ordered on :date', {
+                        date: date(order.created_at) ?? '',
+                    })}
+                </span>
                 {order.shipped_at && (
-                    <span>{t('Shipped on :date', { date: date(order.shipped_at) ?? '' })}</span>
+                    <span>
+                        {t('Shipped on :date', {
+                            date: date(order.shipped_at) ?? '',
+                        })}
+                    </span>
                 )}
             </div>
 
@@ -54,7 +64,10 @@ export default function OrderDetail({ order }: { order: Order }) {
                     </h2>
                     <ul className="space-y-1 text-sm">
                         {order.invoices.map((invoice) => (
-                            <li key={invoice.id} className="flex justify-between gap-4">
+                            <li
+                                key={invoice.id}
+                                className="flex justify-between gap-4"
+                            >
                                 <a
                                     href={OrderController.invoice.url({
                                         order: order.uuid,
@@ -63,18 +76,37 @@ export default function OrderDetail({ order }: { order: Order }) {
                                     className="underline underline-offset-4"
                                 >
                                     {invoice.type === 'credit_note'
-                                        ? t('Credit note :number', { number: invoice.number })
-                                        : t('Invoice :number', { number: invoice.number })}
+                                        ? t('Credit note :number', {
+                                              number: invoice.number,
+                                          })
+                                        : t('Invoice :number', {
+                                              number: invoice.number,
+                                          })}
                                 </a>
                                 <span className="text-muted-foreground">
                                     {date(invoice.issued_at)} ·{' '}
-                                    {formatMoney(invoice.total_gross_cents, order.currency, locale)}
+                                    {formatMoney(
+                                        invoice.total_gross_cents,
+                                        order.currency,
+                                        locale,
+                                    )}
                                 </span>
                             </li>
                         ))}
                     </ul>
                 </div>
             )}
+
+            <p className="text-sm">
+                <Link
+                    href={withdraw(undefined, {
+                        query: { order: order.number },
+                    })}
+                    className="underline underline-offset-4"
+                >
+                    {t('Withdraw from contract')}
+                </Link>
+            </p>
         </AccountShell>
     );
 }

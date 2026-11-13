@@ -7,6 +7,7 @@ use App\Http\Resources\ProductDetailResource;
 use App\Models\Product;
 use App\Seo\Seo;
 use App\Seo\StructuredData;
+use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,8 +28,15 @@ class ProductController extends Controller
 
         return Inertia::render('shop/product', [
             'product' => new ProductDetailResource($product),
+            'manufacturer' => implode(', ', array_filter([
+                config('shop.seller.name'),
+                config('shop.seller.address1'),
+                config('shop.seller.zip').' '.config('shop.seller.city'),
+                config('shop.seller.email'),
+            ])),
+            'delivery_days' => Arr::first(config('shop.shipping'), fn (array $zone) => $zone['code'] === config('shop.tax.home_country'))['delivery_days'] ?? null,
             'seo' => Seo::make(
-                title: $product->translate('title').' – '.config('shop.seller.name'),
+                title: $product->translate('title'),
                 description: $product->translate('description'),
                 canonical: $product->urlFor($locale),
                 alternates: $alternates,

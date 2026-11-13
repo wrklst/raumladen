@@ -28,9 +28,11 @@ class BankTransferGateway implements PaymentGateway
 
     public function start(Order $order, string $returnUrl, string $webhookUrl): string
     {
-        $order->payments()->create([
+        // One transfer per order: a second attempt reuses the pending payment.
+        $order->payments()->firstOrCreate([
             'gateway' => $this->key(),
             'gateway_id' => $order->number,
+        ], [
             'status' => PaymentStatus::Pending,
             'amount_cents' => $order->total_cents,
             'currency' => $order->currency,

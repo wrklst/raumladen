@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Product;
+use App\Shop\ProductSearch;
 use Illuminate\Http\Request;
 
 /**
@@ -18,6 +19,7 @@ class ProductDetailResource extends ProductCardResource
         return [
             ...parent::toArray($request),
             'sku' => $this->sku,
+            'author_list' => ProductSearch::authors($this->resource),
             'description' => $this->translate('description'),
             'images' => array_map(fn (string $path) => asset('storage/'.$path), $this->images ?? []),
             'specs' => $this->specs ?? [],

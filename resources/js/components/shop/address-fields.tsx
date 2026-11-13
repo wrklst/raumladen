@@ -1,5 +1,6 @@
+import { AddressAutocomplete } from '@/components/shop/address-autocomplete';
+import { Field, RequiredMark } from '@/components/shop/field';
 import InputError from '@/components/input-error';
-import { Field } from '@/components/shop/field';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-translation';
 import type { Address } from '@/types';
@@ -15,6 +16,19 @@ type Props = {
     required?: boolean;
 };
 
+const setValue = (id: string, value: string): void => {
+    const element = document.getElementById(id);
+
+    if (element instanceof HTMLInputElement) {
+        element.value = value;
+    }
+};
+
+/**
+ * Name and address. The country comes first because it narrows the street
+ * suggestions; picking one fills street, postcode and city. Rarely needed
+ * fields sit behind one disclosure.
+ */
 export function AddressFields({
     prefix,
     values,
@@ -25,6 +39,16 @@ export function AddressFields({
     required = false,
 }: Props) {
     const { t } = useTrans();
+    // Lets browsers autofill billing and shipping separately (WCAG 1.3.5).
+    const section = prefix === 'billing_address' ? 'billing' : 'shipping';
+    const countryId = `${prefix}-country`;
+    const countryError = errors[`${prefix}.country`];
+    const hasExtras = Boolean(
+        values?.company ||
+        values?.address2 ||
+        errors[`${prefix}.company`] ||
+        errors[`${prefix}.address2`],
+    );
 
     return (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -33,7 +57,7 @@ export function AddressFields({
                 name={`${prefix}[first_name]`}
                 defaultValue={values?.first_name}
                 error={errors[`${prefix}.first_name`]}
-                autoComplete="given-name"
+                autoComplete={`${section} given-name`}
                 required={required}
             />
             <Field
@@ -41,61 +65,31 @@ export function AddressFields({
                 name={`${prefix}[last_name]`}
                 defaultValue={values?.last_name}
                 error={errors[`${prefix}.last_name`]}
-                autoComplete="family-name"
-                required={required}
-            />
-            <Field
-                className="sm:col-span-2"
-                label={t('Company (optional)')}
-                name={`${prefix}[company]`}
-                defaultValue={values?.company}
-                error={errors[`${prefix}.company`]}
-                autoComplete="organization"
-            />
-            <Field
-                className="sm:col-span-2"
-                label={t('Street and number')}
-                name={`${prefix}[address1]`}
-                defaultValue={values?.address1}
-                error={errors[`${prefix}.address1`]}
-                autoComplete="address-line1"
-                required={required}
-            />
-            <Field
-                className="sm:col-span-2"
-                label={t('Address line 2 (optional)')}
-                name={`${prefix}[address2]`}
-                defaultValue={values?.address2}
-                error={errors[`${prefix}.address2`]}
-                autoComplete="address-line2"
-            />
-            <Field
-                label={t('Postal code')}
-                name={`${prefix}[zip]`}
-                defaultValue={values?.zip}
-                error={errors[`${prefix}.zip`]}
-                autoComplete="postal-code"
-                required={required}
-            />
-            <Field
-                label={t('City')}
-                name={`${prefix}[city]`}
-                defaultValue={values?.city}
-                error={errors[`${prefix}.city`]}
-                autoComplete="address-level2"
+                autoComplete={`${section} family-name`}
                 required={required}
             />
             <div className="grid gap-1 sm:col-span-2">
-                <Label htmlFor={`${prefix}-country`}>{t('Country')}</Label>
+                <Label htmlFor={countryId}>
+                    {t('Country')}
+                    {required && <RequiredMark />}
+                </Label>
                 <select
-                    id={`${prefix}-country`}
+                    id={countryId}
                     name={`${prefix}[country]`}
                     value={onCountry ? country : undefined}
-                    defaultValue={onCountry ? undefined : (values?.country ?? '')}
-                    onChange={onCountry ? (e) => onCountry(e.target.value) : undefined}
-                    autoComplete="country"
+                    defaultValue={
+                        onCountry ? undefined : (values?.country ?? '')
+                    }
+                    onChange={
+                        onCountry ? (e) => onCountry(e.target.value) : undefined
+                    }
+                    autoComplete={`${section} country`}
                     required={required}
-                    className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs"
+                    aria-invalid={countryError ? true : undefined}
+                    aria-describedby={
+                        countryError ? `${countryId}-error` : undefined
+                    }
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
                 >
                     {!onCountry && <option value="">—</option>}
                     {Object.entries(countries).map(([code, name]) => (
@@ -104,8 +98,65 @@ export function AddressFields({
                         </option>
                     ))}
                 </select>
-                <InputError message={errors[`${prefix}.country`]} />
+                <InputError id={`${countryId}-error`} message={countryError} />
             </div>
+            <AddressAutocomplete
+                className="sm:col-span-2"
+                label={t('Street and number')}
+                name={`${prefix}[address1]`}
+                defaultValue={values?.address1}
+                error={errors[`${prefix}.address1`]}
+                autoComplete={`${section} address-line1`}
+                required={required}
+                country={() =>
+                    (
+                        document.getElementById(
+                            countryId,
+                        ) as HTMLSelectElement | null
+                    )?.value ?? ''
+                }
+                onSelect={(suggestion) => {
+                    setValue(`${prefix}[zip]`, suggestion.zip);
+                    setValue(`${prefix}[city]`, suggestion.city);
+                }}
+            />
+            <Field
+                label={t('Postal code')}
+                name={`${prefix}[zip]`}
+                defaultValue={values?.zip}
+                error={errors[`${prefix}.zip`]}
+                autoComplete={`${section} postal-code`}
+                required={required}
+            />
+            <Field
+                label={t('City')}
+                name={`${prefix}[city]`}
+                defaultValue={values?.city}
+                error={errors[`${prefix}.city`]}
+                autoComplete={`${section} address-level2`}
+                required={required}
+            />
+            <details className="sm:col-span-2" open={hasExtras || undefined}>
+                <summary className="cursor-pointer text-sm underline underline-offset-4">
+                    {t('Add company or address line 2')}
+                </summary>
+                <div className="mt-4 grid gap-4">
+                    <Field
+                        label={t('Company (optional)')}
+                        name={`${prefix}[company]`}
+                        defaultValue={values?.company}
+                        error={errors[`${prefix}.company`]}
+                        autoComplete={`${section} organization`}
+                    />
+                    <Field
+                        label={t('Address line 2 (optional)')}
+                        name={`${prefix}[address2]`}
+                        defaultValue={values?.address2}
+                        error={errors[`${prefix}.address2`]}
+                        autoComplete={`${section} address-line2`}
+                    />
+                </div>
+            </details>
         </div>
     );
 }

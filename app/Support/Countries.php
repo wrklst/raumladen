@@ -47,7 +47,7 @@ class Countries
                 $code = $a.$b;
                 $name = Locale::getDisplayRegion('-'.$code, $locale);
 
-                if ($name !== '' && $name !== $code && ! str_starts_with($name, 'Unknown')) {
+                if ($name !== false && $name !== '' && $name !== $code && ! str_starts_with($name, 'Unknown')) {
                     $all[$code] = $name;
                 }
             }

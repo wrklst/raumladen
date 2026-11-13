@@ -9,26 +9,44 @@ import { home } from '@/routes/shop';
 import { show } from '@/routes/shop/account/orders';
 import type { Order, ResourcePaginated } from '@/types';
 
-export default function Orders({ orders }: { orders: ResourcePaginated<Order> }) {
+export default function Orders({
+    orders,
+}: {
+    orders: ResourcePaginated<Order>;
+}) {
     const { t, locale } = useTrans();
 
     return (
         <AccountShell title={t('Your orders')}>
             {orders.data.length === 0 ? (
                 <div className="space-y-3">
-                    <p className="text-muted-foreground">{t('You have not ordered anything yet.')}</p>
+                    <p className="text-muted-foreground">
+                        {t('You have not ordered anything yet.')}
+                    </p>
                     <Button asChild>
                         <Link href={home()}>{t('Browse books')}</Link>
                     </Button>
                 </div>
             ) : (
                 <table className="w-full text-sm">
+                    <caption className="sr-only">{t('Your orders')}</caption>
                     <thead className="text-left text-muted-foreground">
                         <tr>
-                            <th className="py-2 font-medium">{t('Order')}</th>
-                            <th className="py-2 font-medium">{t('Date')}</th>
-                            <th className="py-2 font-medium">{t('Status')}</th>
-                            <th className="py-2 text-right font-medium">{t('Total')}</th>
+                            <th scope="col" className="py-2 font-medium">
+                                {t('Order')}
+                            </th>
+                            <th scope="col" className="py-2 font-medium">
+                                {t('Date')}
+                            </th>
+                            <th scope="col" className="py-2 font-medium">
+                                {t('Status')}
+                            </th>
+                            <th
+                                scope="col"
+                                className="py-2 text-right font-medium"
+                            >
+                                {t('Total')}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,20 +55,26 @@ export default function Orders({ orders }: { orders: ResourcePaginated<Order> })
                                 <td className="py-2">
                                     <Link
                                         href={show({ order: order.uuid })}
-                                        className="font-medium hover:underline"
+                                        className="font-medium underline underline-offset-4"
                                     >
                                         {order.number}
                                     </Link>
                                 </td>
                                 <td className="py-2">
                                     {order.created_at &&
-                                        new Date(order.created_at).toLocaleDateString(locale)}
+                                        new Date(
+                                            order.created_at,
+                                        ).toLocaleDateString(locale)}
                                 </td>
                                 <td className="py-2">
                                     <OrderStatusBadge status={order.status} />
                                 </td>
                                 <td className="py-2 text-right">
-                                    {formatMoney(order.total_cents, order.currency, locale)}
+                                    {formatMoney(
+                                        order.total_cents,
+                                        order.currency,
+                                        locale,
+                                    )}
                                 </td>
                             </tr>
                         ))}

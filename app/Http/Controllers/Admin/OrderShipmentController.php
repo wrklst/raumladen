@@ -14,13 +14,13 @@ class OrderShipmentController extends Controller
 {
     public function store(Order $order): RedirectResponse
     {
-        abort_unless($order->status === OrderStatus::Paid, 422, 'Only paid orders can be shipped.');
+        abort_unless($order->status === OrderStatus::Paid, 422, __('Only paid orders can be shipped.'));
 
         $order->update(['status' => OrderStatus::Shipped, 'shipped_at' => now()]);
 
         Mail::to($order->email)->locale($order->locale)->send(new OrderShipped($order));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Order marked as shipped.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Order marked as shipped.')]);
 
         return back();
     }

@@ -26,6 +26,9 @@ class CustomerGroup extends Model
         return self::query()->where('is_default', true)->firstOrFail();
     }
 
+    /**
+     * @return HasMany<User, $this>
+     */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);

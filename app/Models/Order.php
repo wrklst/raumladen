@@ -71,26 +71,41 @@ class Order extends Model
         return 'uuid';
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Coupon, $this>
+     */
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
     }
 
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * @return HasMany<Invoice, $this>
+     */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
@@ -99,6 +114,27 @@ class Order extends Model
     public function isPaid(): bool
     {
         return $this->paid_at !== null;
+    }
+
+    /**
+     * Whether a credit note already returned the shipping charge (or there was none).
+     */
+    public function shippingCredited(): bool
+    {
+        if ($this->shipping_net_cents + $this->shipping_tax_cents === 0) {
+            return true;
+        }
+
+        return $this->invoices
+            ->contains(fn (Invoice $invoice) => $invoice->isCreditNote() && ($invoice->snapshot['shipping'] ?? null) !== null);
+    }
+
+    /**
+     * Whether credit notes already cover every item and the shipping.
+     */
+    public function isFullyCredited(): bool
+    {
+        return $this->items->every(fn (OrderItem $item) => $item->refundableQuantity() === 0) && $this->shippingCredited();
     }
 
     public function isOpen(): bool

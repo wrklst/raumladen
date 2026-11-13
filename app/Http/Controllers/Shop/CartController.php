@@ -43,7 +43,7 @@ class CartController extends Controller
             'quantity' => ['nullable', 'integer', 'min:1', 'max:99'],
         ]);
 
-        $product = Product::query()->active()->findOrFail($data['product_id']);
+        $product = Product::query()->active()->findOrFail($request->integer('product_id'));
         $quantity = (int) ($data['quantity'] ?? 1);
         $inCart = $this->cart->items()[$product->id] ?? 0;
 

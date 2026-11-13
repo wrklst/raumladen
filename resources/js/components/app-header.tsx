@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { useTrans } from '@/hooks/use-translation';
 import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Breadcrumbs } from '@/components/breadcrumbs';
@@ -64,6 +65,7 @@ const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
+    const { t } = useTrans();
     const page = usePage();
     const { auth } = page.props;
     const getInitials = useInitials();
@@ -81,6 +83,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     variant="ghost"
                                     size="icon"
                                     className="mr-2 h-[34px] w-[34px]"
+                                    aria-label={t('Navigation menu')}
                                 >
                                     <Menu className="h-5 w-5" />
                                 </Button>
@@ -90,7 +93,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar"
                             >
                                 <SheetTitle className="sr-only">
-                                    Navigation menu
+                                    {t('Navigation menu')}
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
@@ -107,7 +110,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                     {item.icon && (
                                                         <item.icon className="h-5 w-5" />
                                                     )}
-                                                    <span>{item.title}</span>
+                                                    <span>{t(item.title)}</span>
                                                 </Link>
                                             ))}
                                         </div>
@@ -124,7 +127,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                     {item.icon && (
                                                         <item.icon className="h-5 w-5" />
                                                     )}
-                                                    <span>{item.title}</span>
+                                                    <span>{t(item.title)}</span>
                                                 </a>
                                             ))}
                                         </div>
@@ -165,7 +168,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             {item.icon && (
                                                 <item.icon className="mr-2 h-4 w-4" />
                                             )}
-                                            {item.title}
+                                            {t(item.title)}
                                         </Link>
                                         {isCurrentUrl(item.href) && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
@@ -182,6 +185,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                 variant="ghost"
                                 size="icon"
                                 className="group h-9 w-9 cursor-pointer"
+                                aria-label={t('Search')}
                             >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
@@ -196,7 +200,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                                 className="group inline-flex h-9 w-9 items-center justify-center rounded-md bg-transparent p-0 text-sm font-medium text-accent-foreground ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
                                             >
                                                 <span className="sr-only">
-                                                    {item.title}
+                                                    {t(item.title)}
                                                 </span>
                                                 {item.icon && (
                                                     <item.icon className="size-5 opacity-80 group-hover:opacity-100" />
@@ -204,7 +208,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             </a>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>{item.title}</p>
+                                            <p>{t(item.title)}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 ))}

@@ -34,7 +34,7 @@ class PageController extends Controller
     {
         $page = Page::query()->create($this->validated($request));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Page created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Page created.')]);
 
         return to_route('admin.pages.edit', $page);
     }
@@ -57,7 +57,7 @@ class PageController extends Controller
     {
         $page->update($this->validated($request, $page));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Page updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Page updated.')]);
 
         return to_route('admin.pages.edit', $page);
     }
@@ -66,7 +66,7 @@ class PageController extends Controller
     {
         $page->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Page deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Page deleted.')]);
 
         return to_route('admin.pages.index');
     }

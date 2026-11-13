@@ -49,16 +49,47 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    /**
+     * Works in the backend (any role but customer).
+     */
+    public function isStaff(): bool
+    {
+        return $this->backendRole()->isStaff();
+    }
+
+    /**
+     * Whether this user's role covers a backend area (App\Enums\UserRole::AREAS).
+     */
+    public function worksIn(string $area): bool
+    {
+        return $this->backendRole()->can($area);
+    }
+
+    /**
+     * A user created without a role is a customer (the column default), also
+     * before the model has been reloaded.
+     */
+    public function backendRole(): UserRole
+    {
+        return $this->role ?? UserRole::Customer;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
     }
 
+    /**
+     * @return BelongsTo<CustomerGroup, $this>
+     */
     public function customerGroup(): BelongsTo
     {
         return $this->belongsTo(CustomerGroup::class);
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

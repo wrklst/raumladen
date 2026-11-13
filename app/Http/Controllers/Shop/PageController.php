@@ -21,8 +21,8 @@ class PageController extends Controller
                 'html' => $page->renderedBody(),
             ],
             'seo' => Seo::make(
-                title: $page->translate('title').' – '.config('shop.seller.name'),
-                description: $page->translate('body'),
+                title: $page->translate('title'),
+                description: $page->renderedBody(),
                 canonical: route('shop.pages.show', $page),
                 alternates: Seo::alternates('shop.pages.show', ['page' => $page]),
             ),

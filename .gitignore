@@ -44,3 +44,6 @@ yarn-error.log
 /opencode.json
 /opencode.jsonc
 *.herd-services.bak
+/.lighthouseci
+/storage/logs/lighthouse
+/tests/Browser/Screenshots

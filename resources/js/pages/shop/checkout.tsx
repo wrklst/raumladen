@@ -6,7 +6,6 @@ import { AddressFields } from '@/components/shop/address-fields';
 import { Field } from '@/components/shop/field';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-translation';
 import { formatMoney, formatRate } from '@/lib/money';
@@ -80,10 +79,19 @@ export default function Checkout({
             {({ processing }) => (
                 <>
                     <div className="space-y-10">
-                        <h1 className="text-2xl font-semibold">{t('Checkout')}</h1>
+                        <div className="space-y-2">
+                            <h1 className="text-2xl font-semibold">
+                                {t('Checkout')}
+                            </h1>
+                            <p className="text-sm text-muted-foreground">
+                                {t('Fields marked with * are required.')}
+                            </p>
+                        </div>
 
                         <section className="space-y-4">
-                            <h2 className="text-lg font-medium">{t('Contact')}</h2>
+                            <h2 className="text-lg font-medium">
+                                {t('Contact')}
+                            </h2>
                             <Field
                                 label={t('Email address')}
                                 name="email"
@@ -95,10 +103,12 @@ export default function Checkout({
                             />
                         </section>
 
-                        <section className="space-y-4">
-                            <h2 className="text-lg font-medium">
-                                {t('Billing address')}
-                            </h2>
+                        <fieldset className="space-y-4">
+                            <legend>
+                                <h2 className="text-lg font-medium">
+                                    {t('Billing address')}
+                                </h2>
+                            </legend>
                             <AddressFields
                                 prefix="billing_address"
                                 values={billingDefaults}
@@ -108,26 +118,33 @@ export default function Checkout({
                                 onCountry={setBillingCountry}
                                 required
                             />
-                            <div className="grid gap-1">
-                                <Label htmlFor="vat_id">
-                                    {t('VAT ID (businesses in the EU)')}
-                                </Label>
-                                <Input
-                                    id="vat_id"
+                            <details
+                                open={
+                                    Boolean(vatId || errors.vat_id) || undefined
+                                }
+                            >
+                                <summary className="cursor-pointer text-sm underline underline-offset-4">
+                                    {t(
+                                        'Ordering as a business in the EU? Add your VAT ID',
+                                    )}
+                                </summary>
+                                <Field
+                                    className="mt-4 max-w-xs"
+                                    label={t('VAT ID (businesses in the EU)')}
                                     name="vat_id"
                                     value={vatId}
                                     onChange={(e) => setVatId(e.target.value)}
                                     placeholder="ATU12345678"
-                                    className="max-w-xs"
+                                    autoComplete="off"
+                                    error={errors.vat_id}
                                 />
-                                <InputError message={errors.vat_id} />
-                                {vatId && cart.vat_id_valid && (
-                                    <p className="text-sm text-green-700 dark:text-green-400">
-                                        {t('VAT ID confirmed.')}
-                                    </p>
-                                )}
-                            </div>
-                        </section>
+                                <p role="status" className="text-sm">
+                                    {vatId && cart.vat_id_valid
+                                        ? t('VAT ID confirmed.')
+                                        : ''}
+                                </p>
+                            </details>
+                        </fieldset>
 
                         <section className="space-y-4">
                             <label className="flex items-center gap-2 text-sm">
@@ -142,10 +159,12 @@ export default function Checkout({
                                 {t('Ship to a different address')}
                             </label>
                             {shipToDifferent && (
-                                <>
-                                    <h2 className="text-lg font-medium">
-                                        {t('Shipping address')}
-                                    </h2>
+                                <fieldset className="space-y-4">
+                                    <legend>
+                                        <h2 className="text-lg font-medium">
+                                            {t('Shipping address')}
+                                        </h2>
+                                    </legend>
                                     <AddressFields
                                         prefix="shipping_address"
                                         values={defaults.shipping_address}
@@ -155,16 +174,20 @@ export default function Checkout({
                                         onCountry={setShippingCountry}
                                         required
                                     />
-                                </>
+                                </fieldset>
                             )}
                         </section>
 
-                        <section className="space-y-3">
-                            <h2 className="text-lg font-medium">{t('Payment')}</h2>
+                        <fieldset className="space-y-3">
+                            <legend>
+                                <h2 className="text-lg font-medium">
+                                    {t('Payment')}
+                                </h2>
+                            </legend>
                             {gateways.map((gateway, index) => (
                                 <label
                                     key={gateway}
-                                    className="flex items-center gap-3 rounded-md border p-3 text-sm"
+                                    className="flex items-center gap-3 border p-3 text-sm"
                                 >
                                     <input
                                         type="radio"
@@ -172,28 +195,43 @@ export default function Checkout({
                                         value={gateway}
                                         defaultChecked={index === 0}
                                         required
+                                        className="size-4 accent-primary"
                                     />
                                     {t(gatewayLabels[gateway] ?? gateway)}
                                 </label>
                             ))}
                             <InputError message={errors.gateway} />
-                        </section>
+                        </fieldset>
 
-                        <section className="space-y-2">
-                            <Label htmlFor="customer_note">
-                                {t('Note (optional)')}
-                            </Label>
-                            <textarea
-                                id="customer_note"
-                                name="customer_note"
-                                rows={3}
-                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm shadow-xs"
-                            />
-                        </section>
+                        <details>
+                            <summary className="cursor-pointer text-sm underline underline-offset-4">
+                                {t('Add a note to your order')}
+                            </summary>
+                            <div className="mt-4 grid gap-1">
+                                <Label htmlFor="customer_note">
+                                    {t('Note (optional)')}
+                                </Label>
+                                <textarea
+                                    id="customer_note"
+                                    name="customer_note"
+                                    rows={3}
+                                    maxLength={1000}
+                                    className="w-full border border-input bg-background px-3 py-2 text-sm"
+                                />
+                            </div>
+                        </details>
                     </div>
 
-                    <aside className="h-fit space-y-6 rounded-lg border p-6 lg:sticky lg:top-6">
-                        <h2 className="text-lg font-semibold">{t('Your order')}</h2>
+                    <section
+                        className="h-fit space-y-6 border p-6 lg:sticky lg:top-6"
+                        aria-labelledby="checkout-order"
+                    >
+                        <h2
+                            id="checkout-order"
+                            className="text-lg font-semibold"
+                        >
+                            {t('Your order')}
+                        </h2>
 
                         <ul className="divide-y text-sm">
                             {cart.lines.map((line) => (
@@ -204,12 +242,15 @@ export default function Checkout({
                                     <span>
                                         {line.quantity} × {line.name}
                                     </span>
-                                    <span>{money(line.line_display_cents)}</span>
+                                    <span>
+                                        {money(line.line_display_cents)}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
 
-                        <dl className="space-y-1 text-sm">
+                        {/* Totals change with country and VAT ID: announce them. */}
+                        <dl className="space-y-1 text-sm" aria-live="polite">
                             <div className="flex justify-between">
                                 <dt>{t('Subtotal')}</dt>
                                 <dd>{money(cart.subtotal_display_cents)}</dd>
@@ -234,8 +275,15 @@ export default function Checkout({
                                 cart.tax_summary
                                     .filter((g) => g.tax > 0)
                                     .map((g) => (
-                                        <div key={g.rate} className="flex justify-between">
-                                            <dt>{t(':rate VAT', { rate: formatRate(g.rate) })}</dt>
+                                        <div
+                                            key={g.rate}
+                                            className="flex justify-between"
+                                        >
+                                            <dt>
+                                                {t(':rate VAT', {
+                                                    rate: formatRate(g.rate),
+                                                })}
+                                            </dt>
                                             <dd>{money(g.tax)}</dd>
                                         </div>
                                     ))}
@@ -251,36 +299,47 @@ export default function Checkout({
                                             key={g.rate}
                                             className="flex justify-between text-xs text-muted-foreground"
                                         >
-                                            <dt>{t('incl. :rate VAT', { rate: formatRate(g.rate) })}</dt>
+                                            <dt>
+                                                {t('incl. :rate VAT', {
+                                                    rate: formatRate(g.rate),
+                                                })}
+                                            </dt>
                                             <dd>{money(g.tax)}</dd>
                                         </div>
                                     ))}
                         </dl>
 
                         {cart.tax_note && (
-                            <p className="text-xs text-muted-foreground">{cart.tax_note}</p>
+                            <p className="text-xs text-muted-foreground">
+                                {cart.tax_note}
+                            </p>
                         )}
 
-                        <label className="flex items-start gap-2 text-sm">
-                            <Checkbox name="terms" value="1" className="mt-0.5" />
-                            <span>
-                                {t('I have read and accept the')}{' '}
-                                {legal_pages.map((page, index) => (
-                                    <span key={page.slug}>
-                                        {index > 0 && ', '}
-                                        <Link
-                                            href={pageShow({ page: page.slug })}
-                                            className="underline underline-offset-4"
-                                            target="_blank"
-                                        >
-                                            {page.title}
-                                        </Link>
-                                    </span>
-                                ))}
-                                .
-                            </span>
-                        </label>
-                        <InputError message={errors.terms} />
+                        {/* No checkbox: German law asks for the terms to be included and the
+                            withdrawal and privacy information to be given, not for a tick. */}
+                        <p className="text-sm">
+                            {t(
+                                'By placing your order you agree to our terms. Please note the information on:',
+                            )}{' '}
+                            {legal_pages.map((page, index) => (
+                                <span key={page.slug}>
+                                    {index > 0 && ', '}
+                                    <a
+                                        href={pageShow({ page: page.slug }).url}
+                                        className="underline underline-offset-4"
+                                        target="_blank"
+                                        rel="noopener"
+                                    >
+                                        {page.title}
+                                        <span className="sr-only">
+                                            {' '}
+                                            {t('(opens in a new tab)')}
+                                        </span>
+                                    </a>
+                                </span>
+                            ))}
+                            .
+                        </p>
 
                         <Button
                             type="submit"
@@ -296,7 +355,7 @@ export default function Checkout({
                                 {t('Back to cart')}
                             </Link>
                         </p>
-                    </aside>
+                    </section>
                 </>
             )}
         </Form>

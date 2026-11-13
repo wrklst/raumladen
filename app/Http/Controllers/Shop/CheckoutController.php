@@ -8,6 +8,7 @@ use App\Checkout\OutOfStockException;
 use App\Checkout\PlaceOrder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\CheckoutRequest;
+use App\Mail\OrderReceived;
 use App\Models\Coupon;
 use App\Models\Page;
 use App\Payments\PaymentManager;
@@ -18,6 +19,7 @@ use App\Support\Countries;
 use App\Tax\VatIdValidator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -40,7 +42,7 @@ class CheckoutController extends Controller
 
         $user = $request->user();
         $country = strtoupper($request->string('country')->toString() ?: CurrentCustomer::country());
-        $vatId = $request->string('vat_id')->toString() ?: ($user?->vat_id ?? '');
+        $vatId = $request->string('vat_id')->toString() ?: ($user->vat_id ?? '');
         $vatIdValid = $vatId !== '' && $this->vatIdValidator->validate($vatId)->valid;
         $coupon = $this->cart->couponCode() === null ? null : Coupon::findByCode($this->cart->couponCode());
 
@@ -107,7 +109,11 @@ class CheckoutController extends Controller
             ]);
         }
 
-        $order->user?->update([
+        // A guest order under an existing customer's email must not rewrite
+        // that customer's stored profile: anyone can type any email.
+        $ownsProfile = $request->user() !== null || $order->user?->billing_address === null;
+
+        ($ownsProfile ? $order->user : null)?->update([
             'billing_address' => $order->billing_address,
             'shipping_address' => $order->shipping_address,
             'company' => $order->billing_address['company'] ?? null,
@@ -117,6 +123,13 @@ class CheckoutController extends Controller
 
         $request->session()->push(OrderPolicy::SESSION_KEY, $order->uuid);
         $this->cart->clear();
+
+        try {
+            Mail::to($order->email)->locale($order->locale)->send(new OrderReceived($order, $request->validated('gateway') === 'bank_transfer'));
+        } catch (Throwable $e) {
+            // The order stands; a mail problem must not strand the customer before payment.
+            report($e);
+        }
 
         try {
             $url = $this->payments->gateway($request->validated('gateway'))->start(

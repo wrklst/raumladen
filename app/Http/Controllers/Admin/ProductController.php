@@ -11,7 +11,6 @@ use App\Models\Product;
 use App\Models\ProductPrice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -56,7 +55,7 @@ class ProductController extends Controller
         $product = Product::query()->create($request->productAttributes());
         $this->syncExtras($product, $request);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product created.')]);
 
         return to_route('admin.products.edit', $product);
     }
@@ -71,7 +70,7 @@ class ProductController extends Controller
         $product->update($request->productAttributes());
         $this->syncExtras($product, $request);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product updated.')]);
 
         return to_route('admin.products.edit', $product);
     }
@@ -80,7 +79,7 @@ class ProductController extends Controller
     {
         $product->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Product deleted.')]);
 
         return to_route('admin.products.index');
     }
@@ -90,9 +89,7 @@ class ProductController extends Controller
         $images = $request->input('existing_images', []);
 
         foreach ($request->file('images', []) as $file) {
-            if ($file instanceof UploadedFile) {
-                $images[] = $file->store('products', 'public');
-            }
+            $images[] = $file->store('products', 'public');
         }
 
         foreach (array_diff($product->images ?? [], $images) as $removed) {

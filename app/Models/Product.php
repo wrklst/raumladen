@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ProductType;
 use App\Enums\TaxClass;
 use App\Models\Concerns\HasTranslations;
+use App\Shop\ProductSearch;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -42,11 +43,31 @@ class Product extends Model
     /** @use HasFactory<ProductFactory> */
     use HasFactory, HasTranslations, SoftDeletes;
 
+    /**
+     * The search index is precomputed from the catalogue: any change to a
+     * product makes it stale.
+     */
+    protected static function booted(): void
+    {
+        static::saved(ProductSearch::forget(...));
+        // Stock is changed with increment/decrement, which fire "updated" only.
+        static::updated(ProductSearch::forget(...));
+        static::deleted(ProductSearch::forget(...));
+        static::restored(ProductSearch::forget(...));
+    }
+
+    /**
+     * @return HasMany<ProductPrice, $this>
+     */
     public function prices(): HasMany
     {
         return $this->hasMany(ProductPrice::class);
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {
@@ -54,6 +75,10 @@ class Product extends Model
             ->where(fn (Builder $q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     #[Scope]
     protected function whereSlug(Builder $query, string $slug, ?string $locale = null): Builder
     {
@@ -85,7 +110,7 @@ class Product extends Model
             ? $this->prices->firstWhere('customer_group_id', $group->id)
             : $this->prices()->where('customer_group_id', $group->id)->first();
 
-        return $price?->price_cents ?? $this->price_cents;
+        return $price->price_cents ?? $this->price_cents;
     }
 
     public function hasStockFor(int $quantity): bool

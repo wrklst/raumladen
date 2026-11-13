@@ -54,16 +54,25 @@ class Invoice extends Model
         });
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Invoice, $this>
+     */
     public function references(): BelongsTo
     {
         return $this->belongsTo(self::class, 'references_invoice_id');
     }
 
+    /**
+     * @return BelongsTo<DatevExport, $this>
+     */
     public function datevExport(): BelongsTo
     {
         return $this->belongsTo(DatevExport::class);

@@ -58,6 +58,7 @@ class OrderResource extends JsonResource
                 'name' => $item->name,
                 'sku' => $item->sku,
                 'quantity' => $item->quantity,
+                'refunded_quantity' => $item->refunded_quantity,
                 'unit_price_cents' => $item->unit_price_cents,
                 'tax_rate' => $item->tax_rate,
                 'discount_cents' => $item->discount_cents,
@@ -65,6 +66,7 @@ class OrderResource extends JsonResource
                 'line_tax_cents' => $item->line_tax_cents,
                 'line_gross_cents' => $item->line_gross_cents,
             ])),
+            'shipping_refunded' => $this->whenLoaded('invoices', fn () => $this->shippingCredited()),
             'invoices' => $this->whenLoaded('invoices', fn () => $this->invoices->map(fn (Invoice $invoice) => [
                 'id' => $invoice->id,
                 'number' => $invoice->number,

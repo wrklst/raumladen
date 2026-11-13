@@ -37,6 +37,9 @@ class Coupon extends Model
         return self::query()->whereRaw('UPPER(code) = ?', [mb_strtoupper(trim($code))])->first();
     }
 
+    /**
+     * @return BelongsTo<CustomerGroup, $this>
+     */
     public function customerGroup(): BelongsTo
     {
         return $this->belongsTo(CustomerGroup::class);

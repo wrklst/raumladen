@@ -16,7 +16,7 @@ class OrderPaymentConfirmationController extends Controller
 {
     public function store(Order $order, BankTransferGateway $gateway): RedirectResponse
     {
-        abort_if($order->isPaid(), 422, 'Order is already paid.');
+        abort_if($order->isPaid() || ! $order->isOpen(), 422, __('Only open orders can be marked paid.'));
 
         $payment = $order->payments()->where('gateway', $gateway->key())->latest('id')->first()
             ?? $order->payments()->create([
@@ -29,7 +29,7 @@ class OrderPaymentConfirmationController extends Controller
 
         $gateway->confirm($payment);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Payment confirmed, invoice issued and sent.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Payment confirmed, invoice issued and sent.')]);
 
         return back();
     }

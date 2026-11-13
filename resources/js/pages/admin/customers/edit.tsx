@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTrans } from '@/hooks/use-translation';
 import { index } from '@/routes/admin/customers';
 import type { Address } from '@/types';
 
@@ -54,6 +55,8 @@ function Field({
 }
 
 export default function CustomerEdit({ customer, groups }: Props) {
+    const { t } = useTrans();
+
     return (
         <>
             <Head title={customer.name} />
@@ -66,10 +69,14 @@ export default function CustomerEdit({ customer, groups }: Props) {
                     {({ processing, errors }) => (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Customer</CardTitle>
+                                <CardTitle>{t('Customer')}</CardTitle>
                             </CardHeader>
                             <CardContent className="grid gap-4 sm:grid-cols-2">
-                                <Field label="Name" htmlFor="name" error={errors.name}>
+                                <Field
+                                    label={t('Name')}
+                                    htmlFor="name"
+                                    error={errors.name}
+                                >
                                     <Input
                                         id="name"
                                         name="name"
@@ -77,7 +84,11 @@ export default function CustomerEdit({ customer, groups }: Props) {
                                         defaultValue={customer.name}
                                     />
                                 </Field>
-                                <Field label="Email" htmlFor="email" error={errors.email}>
+                                <Field
+                                    label={t('Email')}
+                                    htmlFor="email"
+                                    error={errors.email}
+                                >
                                     <Input
                                         id="email"
                                         name="email"
@@ -86,14 +97,22 @@ export default function CustomerEdit({ customer, groups }: Props) {
                                         defaultValue={customer.email}
                                     />
                                 </Field>
-                                <Field label="Company" htmlFor="company" error={errors.company}>
+                                <Field
+                                    label={t('Company')}
+                                    htmlFor="company"
+                                    error={errors.company}
+                                >
                                     <Input
                                         id="company"
                                         name="company"
                                         defaultValue={customer.company ?? ''}
                                     />
                                 </Field>
-                                <Field label="VAT ID" htmlFor="vat_id" error={errors.vat_id}>
+                                <Field
+                                    label={t('VAT ID')}
+                                    htmlFor="vat_id"
+                                    error={errors.vat_id}
+                                >
                                     <Input
                                         id="vat_id"
                                         name="vat_id"
@@ -101,19 +120,23 @@ export default function CustomerEdit({ customer, groups }: Props) {
                                     />
                                 </Field>
                                 <Field
-                                    label="Customer group"
+                                    label={t('Customer group')}
                                     error={errors.customer_group_id}
                                 >
                                     <Select
                                         name="customer_group_id"
                                         defaultValue={
                                             customer.customer_group_id
-                                                ? String(customer.customer_group_id)
+                                                ? String(
+                                                      customer.customer_group_id,
+                                                  )
                                                 : undefined
                                         }
                                     >
                                         <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select group" />
+                                            <SelectValue
+                                                placeholder={t('Select group')}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {groups.map((group) => (
@@ -132,14 +155,20 @@ export default function CustomerEdit({ customer, groups }: Props) {
                                         <Checkbox
                                             name="vat_id_valid"
                                             value="1"
-                                            defaultChecked={customer.vat_id_valid}
+                                            defaultChecked={
+                                                customer.vat_id_valid
+                                            }
                                         />
-                                        Treat VAT ID as verified (manual override)
+                                        {t(
+                                            'Treat VAT ID as verified (manual override)',
+                                        )}
                                     </label>
                                 </div>
                                 <InputError message={errors.vat_id_valid} />
                                 <div className="sm:col-span-2">
-                                    <Button disabled={processing}>Save</Button>
+                                    <Button disabled={processing}>
+                                        {t('Save')}
+                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -149,28 +178,32 @@ export default function CustomerEdit({ customer, groups }: Props) {
                 <div className="grid gap-4 sm:grid-cols-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Billing address</CardTitle>
+                            <CardTitle>{t('Billing address')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {customer.billing_address ? (
-                                <AddressBlock address={customer.billing_address} />
+                                <AddressBlock
+                                    address={customer.billing_address}
+                                />
                             ) : (
                                 <p className="text-sm text-muted-foreground">
-                                    No address on file.
+                                    {t('No address on file.')}
                                 </p>
                             )}
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Shipping address</CardTitle>
+                            <CardTitle>{t('Shipping address')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             {customer.shipping_address ? (
-                                <AddressBlock address={customer.shipping_address} />
+                                <AddressBlock
+                                    address={customer.shipping_address}
+                                />
                             ) : (
                                 <p className="text-sm text-muted-foreground">
-                                    No address on file.
+                                    {t('No address on file.')}
                                 </p>
                             )}
                         </CardContent>
@@ -184,6 +217,9 @@ export default function CustomerEdit({ customer, groups }: Props) {
 CustomerEdit.layout = ({ customer }: Props) => ({
     breadcrumbs: [
         { title: 'Customers', href: index() },
-        { title: customer.name, href: CustomerController.edit({ user: customer.id }) },
+        {
+            title: customer.name,
+            href: CustomerController.edit({ user: customer.id }),
+        },
     ],
 });

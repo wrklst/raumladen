@@ -33,7 +33,6 @@ class CheckoutRequest extends FormRequest
             'vat_id' => ['nullable', 'string', 'max:20'],
             'customer_note' => ['nullable', 'string', 'max:1000'],
             'gateway' => ['required', Rule::in(app(PaymentManager::class)->availableKeys())],
-            'terms' => ['accepted'],
         ];
     }
 

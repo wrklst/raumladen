@@ -25,7 +25,7 @@ class PaymentManager
      */
     public function keys(): array
     {
-        return array_keys(config('shop.payments.gateways'));
+        return array_values(array_filter(array_keys(config('shop.payments.gateways')), is_string(...)));
     }
 
     /**

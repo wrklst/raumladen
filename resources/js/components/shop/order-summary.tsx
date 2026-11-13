@@ -13,13 +13,16 @@ export function OrderSummary({ order }: { order: Order }) {
     return (
         <div className="space-y-4">
             <table className="w-full text-sm">
+                <caption className="sr-only">{t('Ordered items')}</caption>
                 <thead className="text-left text-muted-foreground">
                     <tr>
-                        <th className="py-2 font-medium">{t('Item')}</th>
-                        <th className="py-2 text-right font-medium">
+                        <th scope="col" className="py-2 font-medium">
+                            {t('Item')}
+                        </th>
+                        <th scope="col" className="py-2 text-right font-medium">
                             {t('Qty')}
                         </th>
-                        <th className="py-2 text-right font-medium">
+                        <th scope="col" className="py-2 text-right font-medium">
                             {t('Total')}
                         </th>
                     </tr>
@@ -105,12 +108,12 @@ export function OrderSummary({ order }: { order: Order }) {
                     <dt>{t('Total')}</dt>
                     <dd>{money(order.total_cents)}</dd>
                 </div>
-                {order.tax_note && (
-                    <p className="pt-2 text-xs text-muted-foreground">
-                        {order.tax_note}
-                    </p>
-                )}
             </dl>
+            {order.tax_note && (
+                <p className="ml-auto max-w-xs text-xs text-muted-foreground">
+                    {order.tax_note}
+                </p>
+            )}
         </div>
     );
 }

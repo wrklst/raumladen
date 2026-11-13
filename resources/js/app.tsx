@@ -6,11 +6,11 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import ShopLayout from '@/layouts/shop-layout';
-
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+import { startSiteBeacon } from '@/lib/site-beacon';
+import { pageTitle } from '@/lib/site';
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: pageTitle,
     layout: (name) => {
         switch (true) {
             case name.startsWith('shop/') || name.startsWith('account/'):
@@ -39,3 +39,9 @@ void createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+// Anonymous, cookieless visitor statistics (off in the backend and under Do Not Track).
+// Browser only: this file is also the entry of the server-side renderer.
+if (typeof window !== 'undefined') {
+    startSiteBeacon();
+}

@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import PageController from '@/actions/App/Http/Controllers/Admin/PageController';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTrans } from '@/hooks/use-translation';
 import { index } from '@/routes/admin/pages';
 
 type PageRow = {
@@ -13,49 +14,73 @@ type PageRow = {
 };
 
 export default function PagesIndex({ pages }: { pages: PageRow[] }) {
+    const { t } = useTrans();
+
     return (
         <>
-            <Head title="Pages" />
+            <Head title={t('Pages')} />
 
             <div className="space-y-6 p-4">
                 <Button asChild>
-                    <Link href={PageController.create()}>New page</Link>
+                    <Link href={PageController.create()}>{t('New page')}</Link>
                 </Button>
 
                 {pages.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No pages yet.</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('No pages yet.')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-muted-foreground">
                             <tr>
-                                <th className="px-3 py-2 font-medium">Title</th>
-                                <th className="px-3 py-2 font-medium">Slug</th>
-                                <th className="px-3 py-2 font-medium">Status</th>
-                                <th className="px-3 py-2 font-medium">Updated</th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Title')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Slug')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Status')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Updated')}
+                                </th>
                                 <th className="px-3 py-2 font-medium" />
                             </tr>
                         </thead>
                         <tbody>
                             {pages.map((page) => (
                                 <tr key={page.id} className="border-t">
-                                    <td className="px-3 py-2 font-medium">{page.title}</td>
+                                    <td className="px-3 py-2 font-medium">
+                                        {page.title}
+                                    </td>
                                     <td className="px-3 py-2 text-muted-foreground">
                                         {page.slug}
                                     </td>
                                     <td className="px-3 py-2">
                                         <Badge
-                                            variant={page.is_published ? 'default' : 'outline'}
+                                            variant={
+                                                page.is_published
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
                                         >
-                                            {page.is_published ? 'Published' : 'Draft'}
+                                            {page.is_published
+                                                ? t('Online')
+                                                : t('Draft')}
                                         </Badge>
                                     </td>
-                                    <td className="px-3 py-2">{page.updated_at ?? '—'}</td>
+                                    <td className="px-3 py-2">
+                                        {page.updated_at ?? '—'}
+                                    </td>
                                     <td className="px-3 py-2 text-right">
                                         <Link
-                                            href={PageController.edit(page.slug)}
+                                            href={PageController.edit(
+                                                page.slug,
+                                            )}
                                             className="underline underline-offset-4"
                                         >
-                                            Edit
+                                            {t('Edit')}
                                         </Link>
                                     </td>
                                 </tr>

@@ -4,6 +4,7 @@ import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTrans } from '@/hooks/use-translation';
 import { formatMoney } from '@/lib/money';
 import { create, index } from '@/routes/admin/products';
 import type { Paginated } from '@/types';
@@ -26,40 +27,56 @@ export default function ProductsIndex({
     products: Paginated<ProductRow>;
     filters: { q: string };
 }) {
+    const { t, locale } = useTrans();
+
     return (
         <>
-            <Head title="Products" />
+            <Head title={t('Products')} />
 
             <div className="space-y-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <form method="get" action={index.url()} className="flex gap-2">
+                    <form
+                        method="get"
+                        action={index.url()}
+                        className="flex gap-2"
+                    >
                         <Input
                             name="q"
                             defaultValue={filters.q}
-                            placeholder="Search title or SKU"
+                            placeholder={t('Search title or SKU')}
                             className="w-64"
                         />
                         <Button type="submit" variant="outline">
-                            Search
+                            {t('Search')}
                         </Button>
                     </form>
                     <Button asChild>
-                        <Link href={create()}>New product</Link>
+                        <Link href={create()}>{t('New product')}</Link>
                     </Button>
                 </div>
 
                 {products.data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No products found.</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('No products found.')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-muted-foreground">
                             <tr>
                                 <th className="px-3 py-2 font-medium" />
-                                <th className="px-3 py-2 font-medium">Title</th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Title')}
+                                </th>
                                 <th className="px-3 py-2 font-medium">SKU</th>
-                                <th className="px-3 py-2 text-right font-medium">Price</th>
-                                <th className="px-3 py-2 text-right font-medium">Stock</th>
-                                <th className="px-3 py-2 font-medium">Active</th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Price')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Stock')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Active')}
+                                </th>
                                 <th className="px-3 py-2 font-medium" />
                             </tr>
                         </thead>
@@ -82,7 +99,11 @@ export default function ProductsIndex({
                                         {product.sku ?? '—'}
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                        {formatMoney(product.price_cents, 'EUR', 'de')}
+                                        {formatMoney(
+                                            product.price_cents,
+                                            'EUR',
+                                            locale,
+                                        )}
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         {product.stock ?? '—'}
@@ -90,10 +111,14 @@ export default function ProductsIndex({
                                     <td className="px-3 py-2">
                                         <Badge
                                             variant={
-                                                product.is_active ? 'default' : 'outline'
+                                                product.is_active
+                                                    ? 'default'
+                                                    : 'outline'
                                             }
                                         >
-                                            {product.is_active ? 'Active' : 'Inactive'}
+                                            {product.is_active
+                                                ? t('Active')
+                                                : t('Inactive')}
                                         </Badge>
                                     </td>
                                     <td className="px-3 py-2 text-right">
@@ -103,7 +128,7 @@ export default function ProductsIndex({
                                             })}
                                             className="underline underline-offset-4"
                                         >
-                                            Edit
+                                            {t('Edit')}
                                         </Link>
                                     </td>
                                 </tr>

@@ -15,7 +15,8 @@ class PageFactory extends Factory
      */
     public function definition(): array
     {
-        $title = fake()->unique()->words(2, true);
+        $words = fake()->unique()->words(2);
+        $title = is_array($words) ? implode(' ', $words) : $words;
 
         return [
             'slug' => fake()->unique()->slug(2),

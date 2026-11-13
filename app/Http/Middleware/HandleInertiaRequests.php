@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Cart\Cart;
 use App\Models\Page;
+use App\Shop\ProductSearch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
@@ -46,7 +47,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user === null ? null : [
                     ...$user->toArray(),
-                    'is_admin' => $user->isAdmin(),
+                    'is_staff' => $user->isStaff(),
+                    // Backend areas of this user's role: decides which navigation and actions are shown.
+                    'areas' => $user->backendRole()->areas(),
                 ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
@@ -54,10 +57,14 @@ class HandleInertiaRequests extends Middleware
             'locales' => config('shop.locales'),
             'translations' => fn () => $this->translations(app()->getLocale()),
             'shop' => [
-                'name' => config('shop.seller.name'),
+                'name' => config('app.name'),
                 'currency' => config('shop.currency'),
             ],
             'cart_count' => fn () => app(Cart::class)->count(),
+            // Storefront only: where the browser gets the search index, or null when the catalogue is too large for it.
+            'search_index_url' => fn () => $request->routeIs('shop.*') && ProductSearch::fitsInBrowser()
+                ? route('shop.search-index', ['locale' => app()->getLocale(), 'v' => ProductSearch::version(), 'g' => $request->user()->customer_group_id ?? 0])
+                : null,
             'footer_pages' => fn () => Page::query()->where('is_published', true)->orderBy('id')->get()
                 ->map(fn (Page $page) => ['slug' => $page->slug, 'title' => $page->translate('title')])
                 ->all(),

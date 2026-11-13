@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasTranslations;
+use App\Settings\PageVariables;
 use Database\Factories\PageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * Content pages (imprint, terms, privacy, withdrawal). Body is Markdown.
+ * Content pages (imprint, terms, privacy, withdrawal). Body is Markdown and
+ * may contain placeholders such as :name or :vat_id, which are filled from
+ * the shop settings when the page is shown.
  *
  * @property int $id
  * @property string $slug
@@ -31,9 +34,14 @@ class Page extends Model
 
     public function renderedBody(?string $locale = null): string
     {
-        return (string) Str::markdown($this->translate('body', $locale) ?? '', [
+        $locale ??= app()->getLocale();
+
+        // Placeholders such as :name are filled from the shop settings (App\Settings\PageVariables).
+        return (string) Str::markdown(strtr($this->translate('body', $locale) ?? '', PageVariables::for($this, $locale)), [
             'html_input' => 'strip',
             'allow_unsafe_links' => false,
+            // Addresses are written one line per row.
+            'renderer' => ['soft_break' => "<br>\n"],
         ]);
     }
 

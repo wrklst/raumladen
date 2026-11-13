@@ -14,6 +14,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useTrans } from '@/hooks/use-translation';
+import { useLabels } from '@/hooks/use-labels';
 import { index } from '@/routes/admin/products';
 
 type Product = {
@@ -42,6 +44,25 @@ type Props = {
     types: { value: string; fields: Record<string, string> }[];
     tax_classes: string[];
 };
+
+/**
+ * Visible labels for the spec fields the server sends as keys
+ * (ProductType::attributeFields).
+ */
+function useSpecLabel() {
+    const { t } = useTrans();
+    const labels: Record<string, string> = {
+        isbn: 'ISBN',
+        authors: t('Authors'),
+        publisher: t('Publisher'),
+        pages: t('Pages'),
+        binding: t('Binding'),
+        language: t('Language'),
+        published: t('Published'),
+    };
+
+    return (field: string) => labels[field] ?? field;
+}
 
 const textareaClass =
     'border-input bg-background flex min-h-24 w-full rounded-md border px-3 py-2 text-sm shadow-xs';
@@ -73,10 +94,16 @@ export default function ProductForm({
     types,
     tax_classes,
 }: Props) {
+    const { t } = useTrans();
+    const labels = useLabels();
+    const specLabel = useSpecLabel();
     const [type, setType] = useState(product?.type ?? types[0]?.value ?? '');
-    const specFields = types.find((t) => t.value === type)?.fields ?? {};
+    const specFields =
+        types.find((candidate) => candidate.value === type)?.fields ?? {};
     const customGroups = groups.filter((group) => !group.is_default);
-    const title = product ? (product.title[locales[0]] ?? 'Edit product') : 'New product';
+    const title = product
+        ? (product.title[locales[0]] ?? t('Edit product'))
+        : t('New product');
 
     return (
         <>
@@ -93,10 +120,13 @@ export default function ProductForm({
                         <>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Basics</CardTitle>
+                                    <CardTitle>{t('Basics')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="grid gap-4 sm:grid-cols-2">
-                                    <Field label="Type" error={errors.type}>
+                                    <Field
+                                        label={t('Type')}
+                                        error={errors.type}
+                                    >
                                         <Select
                                             name="type"
                                             value={type}
@@ -106,35 +136,14 @@ export default function ProductForm({
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {types.map((t) => (
-                                                    <SelectItem key={t.value} value={t.value}>
-                                                        {t.value}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field label="SKU" htmlFor="sku" error={errors.sku}>
-                                        <Input
-                                            id="sku"
-                                            name="sku"
-                                            defaultValue={product?.sku ?? ''}
-                                        />
-                                    </Field>
-
-                                    <Field label="Tax class" error={errors.tax_class}>
-                                        <Select
-                                            name="tax_class"
-                                            defaultValue={product?.tax_class ?? tax_classes[0]}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {tax_classes.map((taxClass) => (
-                                                    <SelectItem key={taxClass} value={taxClass}>
-                                                        {taxClass}
+                                                {types.map((option) => (
+                                                    <SelectItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                    >
+                                                        {labels.productType(
+                                                            option.value,
+                                                        )}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -142,7 +151,48 @@ export default function ProductForm({
                                     </Field>
 
                                     <Field
-                                        label="Price (gross, EUR)"
+                                        label="SKU"
+                                        htmlFor="sku"
+                                        error={errors.sku}
+                                    >
+                                        <Input
+                                            id="sku"
+                                            name="sku"
+                                            defaultValue={product?.sku ?? ''}
+                                        />
+                                    </Field>
+
+                                    <Field
+                                        label={t('Tax class')}
+                                        error={errors.tax_class}
+                                    >
+                                        <Select
+                                            name="tax_class"
+                                            defaultValue={
+                                                product?.tax_class ??
+                                                tax_classes[0]
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {tax_classes.map((taxClass) => (
+                                                    <SelectItem
+                                                        key={taxClass}
+                                                        value={taxClass}
+                                                    >
+                                                        {labels.taxClass(
+                                                            taxClass,
+                                                        )}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </Field>
+
+                                    <Field
+                                        label={t('Price (gross, EUR)')}
                                         htmlFor="price"
                                         error={errors.price}
                                     >
@@ -157,7 +207,11 @@ export default function ProductForm({
                                         />
                                     </Field>
 
-                                    <Field label="Stock" htmlFor="stock" error={errors.stock}>
+                                    <Field
+                                        label={t('Stock')}
+                                        htmlFor="stock"
+                                        error={errors.stock}
+                                    >
                                         <Input
                                             id="stock"
                                             name="stock"
@@ -169,7 +223,7 @@ export default function ProductForm({
                                     </Field>
 
                                     <Field
-                                        label="Weight (grams)"
+                                        label={t('Weight (grams)')}
                                         htmlFor="weight_grams"
                                         error={errors.weight_grams}
                                     >
@@ -178,12 +232,14 @@ export default function ProductForm({
                                             name="weight_grams"
                                             type="number"
                                             min="0"
-                                            defaultValue={product?.weight_grams ?? ''}
+                                            defaultValue={
+                                                product?.weight_grams ?? ''
+                                            }
                                         />
                                     </Field>
 
                                     <Field
-                                        label="Published at"
+                                        label={t('Published at')}
                                         htmlFor="published_at"
                                         error={errors.published_at}
                                     >
@@ -191,7 +247,9 @@ export default function ProductForm({
                                             id="published_at"
                                             name="published_at"
                                             type="date"
-                                            defaultValue={product?.published_at ?? ''}
+                                            defaultValue={
+                                                product?.published_at ?? ''
+                                            }
                                         />
                                     </Field>
 
@@ -200,17 +258,21 @@ export default function ProductForm({
                                             <Checkbox
                                                 name="track_stock"
                                                 value="1"
-                                                defaultChecked={product?.track_stock ?? true}
+                                                defaultChecked={
+                                                    product?.track_stock ?? true
+                                                }
                                             />
-                                            Track stock
+                                            {t('Track stock')}
                                         </label>
                                         <label className="flex items-center gap-2 text-sm">
                                             <Checkbox
                                                 name="is_active"
                                                 value="1"
-                                                defaultChecked={product?.is_active ?? true}
+                                                defaultChecked={
+                                                    product?.is_active ?? true
+                                                }
                                             />
-                                            Active
+                                            {t('Active')}
                                         </label>
                                     </div>
                                 </CardContent>
@@ -220,12 +282,14 @@ export default function ProductForm({
                                 <Card key={locale}>
                                     <CardHeader>
                                         <CardTitle>
-                                            Translation: {locale.toUpperCase()}
+                                            {t('Translation: :locale', {
+                                                locale: locale.toUpperCase(),
+                                            })}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid gap-4">
                                         <Field
-                                            label="Title"
+                                            label={t('Title')}
                                             htmlFor={`title_${locale}`}
                                             error={errors[`title.${locale}`]}
                                         >
@@ -233,32 +297,42 @@ export default function ProductForm({
                                                 id={`title_${locale}`}
                                                 name={`title[${locale}]`}
                                                 required={i === 0}
-                                                defaultValue={product?.title[locale] ?? ''}
+                                                defaultValue={
+                                                    product?.title[locale] ?? ''
+                                                }
                                             />
                                         </Field>
                                         <Field
-                                            label="Slug"
+                                            label={t('Slug')}
                                             htmlFor={`slug_${locale}`}
                                             error={errors[`slug.${locale}`]}
                                         >
                                             <Input
                                                 id={`slug_${locale}`}
                                                 name={`slug[${locale}]`}
-                                                placeholder="auto from title"
-                                                defaultValue={product?.slug[locale] ?? ''}
+                                                placeholder={t(
+                                                    'auto from title',
+                                                )}
+                                                defaultValue={
+                                                    product?.slug[locale] ?? ''
+                                                }
                                             />
                                         </Field>
                                         <Field
-                                            label="Description"
+                                            label={t('Product description')}
                                             htmlFor={`description_${locale}`}
-                                            error={errors[`description.${locale}`]}
+                                            error={
+                                                errors[`description.${locale}`]
+                                            }
                                         >
                                             <textarea
                                                 id={`description_${locale}`}
                                                 name={`description[${locale}]`}
                                                 className={textareaClass}
                                                 defaultValue={
-                                                    product?.description[locale] ?? ''
+                                                    product?.description[
+                                                        locale
+                                                    ] ?? ''
                                                 }
                                             />
                                         </Field>
@@ -269,23 +343,27 @@ export default function ProductForm({
                             {Object.keys(specFields).length > 0 && (
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Specs</CardTitle>
+                                        <CardTitle>{t('Specs')}</CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid gap-4 sm:grid-cols-2">
                                         {Object.entries(specFields).map(
                                             ([field, inputType]) => (
                                                 <Field
                                                     key={field}
-                                                    label={field}
+                                                    label={specLabel(field)}
                                                     htmlFor={`spec_${field}`}
-                                                    error={errors[`specs.${field}`]}
+                                                    error={
+                                                        errors[`specs.${field}`]
+                                                    }
                                                 >
                                                     <Input
                                                         id={`spec_${field}`}
                                                         name={`specs[${field}]`}
                                                         type={inputType}
                                                         defaultValue={
-                                                            product?.specs[field] ?? ''
+                                                            product?.specs[
+                                                                field
+                                                            ] ?? ''
                                                         }
                                                     />
                                                 </Field>
@@ -298,15 +376,26 @@ export default function ProductForm({
                             {customGroups.length > 0 && (
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Group prices</CardTitle>
+                                        <CardTitle>
+                                            {t('Group prices')}
+                                        </CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid gap-4 sm:grid-cols-2">
                                         {customGroups.map((group) => (
                                             <Field
                                                 key={group.id}
-                                                label={`${group.name} price (gross, EUR)`}
+                                                label={t(
+                                                    ':group price (gross, EUR)',
+                                                    {
+                                                        group: group.name,
+                                                    },
+                                                )}
                                                 htmlFor={`group_price_${group.id}`}
-                                                error={errors[`group_prices.${group.id}`]}
+                                                error={
+                                                    errors[
+                                                        `group_prices.${group.id}`
+                                                    ]
+                                                }
                                             >
                                                 <Input
                                                     id={`group_price_${group.id}`}
@@ -315,7 +404,9 @@ export default function ProductForm({
                                                     step="0.01"
                                                     min="0"
                                                     defaultValue={
-                                                        product?.group_prices[group.id] ?? ''
+                                                        product?.group_prices[
+                                                            group.id
+                                                        ] ?? ''
                                                     }
                                                 />
                                             </Field>
@@ -326,7 +417,7 @@ export default function ProductForm({
 
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Images</CardTitle>
+                                    <CardTitle>{t('Images')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="grid gap-4">
                                     {product && product.images.length > 0 && (
@@ -347,16 +438,18 @@ export default function ProductForm({
                                                             value={image.path}
                                                             defaultChecked
                                                         />
-                                                        Keep
+                                                        {t('Keep')}
                                                     </label>
                                                 </li>
                                             ))}
                                         </ul>
                                     )}
                                     <Field
-                                        label="Add images"
+                                        label={t('Add images')}
                                         htmlFor="images"
-                                        error={errors.images ?? errors['images.0']}
+                                        error={
+                                            errors.images ?? errors['images.0']
+                                        }
                                     >
                                         <Input
                                             id="images"
@@ -369,18 +462,22 @@ export default function ProductForm({
                                 </CardContent>
                             </Card>
 
-                            <Button disabled={processing}>Save</Button>
+                            <Button disabled={processing}>{t('Save')}</Button>
                         </>
                     )}
                 </Form>
 
                 {product && (
                     <Form
-                        {...ProductController.destroy.form({ product: product.id })}
-                        onBefore={() => confirm('Really delete this product?')}
+                        {...ProductController.destroy.form({
+                            product: product.id,
+                        })}
+                        onBefore={() =>
+                            confirm(t('Really delete this product?'))
+                        }
                     >
                         <Button type="submit" variant="destructive">
-                            Delete product
+                            {t('Delete product')}
                         </Button>
                     </Form>
                 )}

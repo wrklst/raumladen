@@ -68,34 +68,42 @@ export default function Profile({ profile, countries }: Props) {
                                 error={errors.phone}
                                 autoComplete="tel"
                             />
-                            <div className="grid gap-1">
-                                <Label htmlFor="vat_id">
-                                    {t('VAT ID (businesses in the EU)')}
-                                    {profile.vat_id_valid && (
-                                        <Badge variant="secondary" className="ml-2">
-                                            {t('verified')}
-                                        </Badge>
-                                    )}
-                                </Label>
-                                <Field
-                                    label=""
-                                    name="vat_id"
-                                    defaultValue={profile.vat_id}
-                                    error={errors.vat_id}
-                                    placeholder="ATU12345678"
-                                />
-                            </div>
+                            <Field
+                                label={
+                                    <>
+                                        {t('VAT ID (businesses in the EU)')}
+                                        {profile.vat_id_valid && (
+                                            <Badge
+                                                variant="secondary"
+                                                className="ml-2"
+                                            >
+                                                {t('verified')}
+                                            </Badge>
+                                        )}
+                                    </>
+                                }
+                                name="vat_id"
+                                defaultValue={profile.vat_id}
+                                error={errors.vat_id}
+                                placeholder="ATU12345678"
+                            />
                             <div className="grid gap-1">
                                 <Label htmlFor="locale">{t('Language')}</Label>
                                 <select
                                     id="locale"
                                     name="locale"
                                     defaultValue={profile.locale ?? ''}
-                                    className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs"
+                                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs"
                                 >
                                     {locales.map((code) => (
-                                        <option key={code} value={code}>
-                                            {code.toUpperCase()}
+                                        <option
+                                            key={code}
+                                            value={code}
+                                            lang={code}
+                                        >
+                                            {new Intl.DisplayNames([code], {
+                                                type: 'language',
+                                            }).of(code) ?? code}
                                         </option>
                                     ))}
                                 </select>
@@ -103,30 +111,39 @@ export default function Profile({ profile, countries }: Props) {
                             </div>
                             {profile.customer_group && (
                                 <p className="text-sm text-muted-foreground sm:col-span-2">
-                                    {t('Customer group')}: {profile.customer_group}
+                                    {t('Customer group')}:{' '}
+                                    {profile.customer_group}
                                 </p>
                             )}
                         </section>
 
-                        <section className="space-y-3">
-                            <h2 className="text-lg font-medium">{t('Billing address')}</h2>
+                        <fieldset className="space-y-3">
+                            <legend>
+                                <h2 className="text-lg font-medium">
+                                    {t('Billing address')}
+                                </h2>
+                            </legend>
                             <AddressFields
                                 prefix="billing_address"
                                 values={profile.billing_address}
                                 countries={countries}
                                 errors={errors}
                             />
-                        </section>
+                        </fieldset>
 
-                        <section className="space-y-3">
-                            <h2 className="text-lg font-medium">{t('Shipping address')}</h2>
+                        <fieldset className="space-y-3">
+                            <legend>
+                                <h2 className="text-lg font-medium">
+                                    {t('Shipping address')}
+                                </h2>
+                            </legend>
                             <AddressFields
                                 prefix="shipping_address"
                                 values={profile.shipping_address}
                                 countries={countries}
                                 errors={errors}
                             />
-                        </section>
+                        </fieldset>
 
                         <Button type="submit" disabled={processing}>
                             {t('Save')}

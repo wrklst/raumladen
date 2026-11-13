@@ -7,7 +7,8 @@ use Illuminate\Support\Str;
 /**
  * Builds the `seo` page prop that the Blade root template renders into <head>
  * (title, description, canonical, hreflang, Open Graph, JSON-LD) so crawlers
- * get it even without SSR.
+ * get it even without SSR. Titles are bare page titles; the root template and
+ * the Inertia title callback append the site name (config app.name).
  */
 class Seo
 {
@@ -41,13 +42,23 @@ class Seo
             'image' => $image,
             'type' => $type,
             'locale' => $locale,
-            'index' => $index,
+            'og_locale' => self::ogLocale($locale),
+            'og_locale_alternates' => array_map(self::ogLocale(...), array_values(array_diff(array_keys($alternates), [$locale, 'x-default']))),
+            'index' => $index && config('shop.seo.indexable'),
             'json_ld' => StructuredData::graph([
                 StructuredData::organization(),
                 StructuredData::website($locale),
                 ...$jsonLd,
             ]),
         ];
+    }
+
+    /**
+     * Open Graph wants language_TERRITORY.
+     */
+    private static function ogLocale(string $locale): string
+    {
+        return ['de' => 'de_DE', 'en' => 'en_US'][$locale] ?? $locale;
     }
 
     /**

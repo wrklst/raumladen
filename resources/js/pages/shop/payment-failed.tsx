@@ -27,10 +27,17 @@ export default function PaymentFailed({
                     {t('Payment not completed')}
                 </h1>
                 <p className="text-muted-foreground">
-                    {t('Your order :number (:total) is reserved. Choose a payment method to try again.', {
-                        number: order.number,
-                        total: formatMoney(order.total_cents, order.currency, locale),
-                    })}
+                    {t(
+                        'Your order :number (:total) is reserved. Choose a payment method to try again.',
+                        {
+                            number: order.number,
+                            total: formatMoney(
+                                order.total_cents,
+                                order.currency,
+                                locale,
+                            ),
+                        },
+                    )}
                 </p>
             </header>
 
@@ -40,21 +47,25 @@ export default function PaymentFailed({
             >
                 {({ processing, errors }) => (
                     <>
-                        {gateways.map((gateway, index) => (
-                            <label
-                                key={gateway}
-                                className="flex items-center gap-3 rounded-md border p-3 text-sm"
-                            >
-                                <input
-                                    type="radio"
-                                    name="gateway"
-                                    value={gateway}
-                                    defaultChecked={index === 0}
-                                    required
-                                />
-                                {t(gatewayLabels[gateway] ?? gateway)}
-                            </label>
-                        ))}
+                        <fieldset className="space-y-3">
+                            <legend className="sr-only">{t('Payment')}</legend>
+                            {gateways.map((gateway, index) => (
+                                <label
+                                    key={gateway}
+                                    className="flex items-center gap-3 border p-3 text-sm"
+                                >
+                                    <input
+                                        type="radio"
+                                        name="gateway"
+                                        value={gateway}
+                                        defaultChecked={index === 0}
+                                        required
+                                        className="size-4 accent-primary"
+                                    />
+                                    {t(gatewayLabels[gateway] ?? gateway)}
+                                </label>
+                            ))}
+                        </fieldset>
                         <InputError message={errors.gateway} />
                         <Button type="submit" size="lg" disabled={processing}>
                             {t('Pay now')}

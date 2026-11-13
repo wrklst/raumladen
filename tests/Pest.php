@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 /*
@@ -16,7 +17,12 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', 'Browser');
+
+// Browser tests run against the built assets, also while `npm run dev` is
+// running: a dev server would serve other code than the one under test.
+pest()->beforeEach(fn () => Vite::useHotFile(storage_path('framework/testing/vite.hot')))
+    ->in('Browser');
 
 /*
 |--------------------------------------------------------------------------

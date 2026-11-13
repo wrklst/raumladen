@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Orders\MarkOrderPaid;
+use BackedEnum;
 use Illuminate\Http\Request;
 use Mollie\Api\MollieApiClient;
 use Mollie\Api\Resources\Payment as MolliePayment;
@@ -73,15 +74,21 @@ class MollieGateway implements PaymentGateway
             'amount' => ['currency' => $payment->currency, 'value' => number_format($amountCents / 100, 2, '.', '')],
         ]);
 
+        $refunded = $payment->refunded_cents + $amountCents;
+
+        // A partial refund leaves the payment Paid so later refunds can still find it.
         $payment->update([
-            'refunded_cents' => $payment->refunded_cents + $amountCents,
-            'status' => PaymentStatus::Refunded,
+            'refunded_cents' => $refunded,
+            'status' => $refunded >= $payment->amount_cents ? PaymentStatus::Refunded : $payment->status,
         ]);
     }
 
     private function apply(Payment $payment, MolliePayment $remote): Payment
     {
-        $status = match ($remote->status) {
+        // mollie-api-php 4 returns the status as an enum; older versions as a string.
+        $remoteStatus = $remote->status instanceof BackedEnum ? $remote->status->value : (string) $remote->status;
+
+        $status = match ($remoteStatus) {
             'paid' => PaymentStatus::Paid,
             'pending', 'authorized' => PaymentStatus::Pending,
             'canceled' => PaymentStatus::Cancelled,
@@ -94,7 +101,7 @@ class MollieGateway implements PaymentGateway
             'status' => $status,
             'method' => $remote->method,
             'paid_at' => $remote->paidAt ? now()->parse($remote->paidAt) : $payment->paid_at,
-            'payload' => ['status' => $remote->status, 'amount' => $remote->amount, 'method' => $remote->method],
+            'payload' => ['status' => $remoteStatus, 'amount' => $remote->amount, 'method' => $remote->method],
         ]);
 
         if ($status === PaymentStatus::Paid) {

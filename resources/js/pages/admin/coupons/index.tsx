@@ -3,6 +3,8 @@ import CouponController from '@/actions/App/Http/Controllers/Admin/CouponControl
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTrans } from '@/hooks/use-translation';
+import { formatDate } from '@/lib/format';
 import { formatMoney } from '@/lib/money';
 import { index } from '@/routes/admin/coupons';
 import type { Paginated } from '@/types';
@@ -20,29 +22,53 @@ type CouponRow = {
     group: string | null;
 };
 
-export default function CouponsIndex({ coupons }: { coupons: Paginated<CouponRow> }) {
+export default function CouponsIndex({
+    coupons,
+}: {
+    coupons: Paginated<CouponRow>;
+}) {
+    const { t, locale } = useTrans();
+
     return (
         <>
-            <Head title="Coupons" />
+            <Head title={t('Coupons')} />
 
             <div className="space-y-6 p-4">
                 <Button asChild>
-                    <Link href={CouponController.create()}>New coupon</Link>
+                    <Link href={CouponController.create()}>
+                        {t('New coupon')}
+                    </Link>
                 </Button>
 
                 {coupons.data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No coupons yet.</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('No coupons yet.')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-muted-foreground">
                             <tr>
-                                <th className="px-3 py-2 font-medium">Code</th>
-                                <th className="px-3 py-2 text-right font-medium">Discount</th>
-                                <th className="px-3 py-2 text-right font-medium">Min. order</th>
-                                <th className="px-3 py-2 text-right font-medium">Uses</th>
-                                <th className="px-3 py-2 font-medium">Group</th>
-                                <th className="px-3 py-2 font-medium">Expires</th>
-                                <th className="px-3 py-2 font-medium">Active</th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Code')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Discount')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Min. order')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Uses')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Group')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Expires')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Active')}
+                                </th>
                                 <th className="px-3 py-2 font-medium" />
                             </tr>
                         </thead>
@@ -55,30 +81,53 @@ export default function CouponsIndex({ coupons }: { coupons: Paginated<CouponRow
                                     <td className="px-3 py-2 text-right">
                                         {coupon.type === 'percent'
                                             ? `${coupon.value} %`
-                                            : formatMoney(coupon.value)}
+                                            : formatMoney(
+                                                  coupon.value,
+                                                  'EUR',
+                                                  locale,
+                                              )}
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         {coupon.min_order_cents > 0
-                                            ? formatMoney(coupon.min_order_cents)
+                                            ? formatMoney(
+                                                  coupon.min_order_cents,
+                                                  'EUR',
+                                                  locale,
+                                              )
                                             : '—'}
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         {coupon.uses}
-                                        {coupon.max_uses !== null && ` / ${coupon.max_uses}`}
+                                        {coupon.max_uses !== null &&
+                                            ` / ${coupon.max_uses}`}
                                     </td>
-                                    <td className="px-3 py-2">{coupon.group ?? 'All'}</td>
-                                    <td className="px-3 py-2">{coupon.expires_at ?? '—'}</td>
                                     <td className="px-3 py-2">
-                                        <Badge variant={coupon.is_active ? 'default' : 'outline'}>
-                                            {coupon.is_active ? 'Active' : 'Inactive'}
+                                        {coupon.group ?? t('All')}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {formatDate(coupon.expires_at, locale)}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        <Badge
+                                            variant={
+                                                coupon.is_active
+                                                    ? 'default'
+                                                    : 'outline'
+                                            }
+                                        >
+                                            {coupon.is_active
+                                                ? t('Active')
+                                                : t('Inactive')}
                                         </Badge>
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         <Link
-                                            href={CouponController.edit(coupon.id)}
+                                            href={CouponController.edit(
+                                                coupon.id,
+                                            )}
                                             className="underline underline-offset-4"
                                         >
-                                            Edit
+                                            {t('Edit')}
                                         </Link>
                                     </td>
                                 </tr>

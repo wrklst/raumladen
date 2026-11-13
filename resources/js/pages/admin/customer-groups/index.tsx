@@ -4,6 +4,7 @@ import { Field } from '@/components/shop/field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTrans } from '@/hooks/use-translation';
 import { index } from '@/routes/admin/customer-groups';
 
 type Group = {
@@ -22,17 +23,19 @@ function GroupFields({
     group?: Group;
     errors: Record<string, string>;
 }) {
+    const { t } = useTrans();
+
     return (
         <>
             <Field
-                label="Code"
+                label={t('Code')}
                 name="code"
                 required
                 defaultValue={group?.code}
                 error={errors.code}
             />
             <Field
-                label="Name"
+                label={t('Name')}
                 name="name"
                 required
                 defaultValue={group?.name}
@@ -44,7 +47,7 @@ function GroupFields({
                     value="1"
                     defaultChecked={group?.prices_include_tax ?? true}
                 />
-                Show prices including VAT (B2C)
+                {t('Show prices including VAT (B2C)')}
             </label>
             <label className="flex items-center gap-2 text-sm">
                 <Checkbox
@@ -53,16 +56,18 @@ function GroupFields({
                     defaultChecked={group?.is_default ?? false}
                     disabled={group?.is_default}
                 />
-                Default group for new customers and guests
+                {t('Default group for new customers and guests')}
             </label>
         </>
     );
 }
 
 export default function CustomerGroupsIndex({ groups }: { groups: Group[] }) {
+    const { t } = useTrans();
+
     return (
         <>
-            <Head title="Customer groups" />
+            <Head title={t('Customer groups')} />
 
             <div className="max-w-3xl space-y-6 p-4">
                 {groups.map((group) => (
@@ -71,32 +76,50 @@ export default function CustomerGroupsIndex({ groups }: { groups: Group[] }) {
                             <CardTitle>
                                 {group.name}{' '}
                                 <span className="text-sm font-normal text-muted-foreground">
-                                    · {group.users_count} customers
+                                    ·{' '}
+                                    {t(':count customers', {
+                                        count: group.users_count,
+                                    })}
                                 </span>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <Form
-                                {...CustomerGroupController.update.form(group.id)}
+                                {...CustomerGroupController.update.form(
+                                    group.id,
+                                )}
                                 options={{ preserveScroll: true }}
                                 className="grid gap-4 sm:grid-cols-2"
                             >
                                 {({ processing, errors }) => (
                                     <>
-                                        <GroupFields group={group} errors={errors} />
+                                        <GroupFields
+                                            group={group}
+                                            errors={errors}
+                                        />
                                         <div className="sm:col-span-2">
-                                            <Button disabled={processing}>Save</Button>
+                                            <Button disabled={processing}>
+                                                {t('Save')}
+                                            </Button>
                                         </div>
                                     </>
                                 )}
                             </Form>
                             {!group.is_default && group.users_count === 0 && (
                                 <Form
-                                    {...CustomerGroupController.destroy.form(group.id)}
-                                    onBefore={() => confirm('Really delete this group?')}
+                                    {...CustomerGroupController.destroy.form(
+                                        group.id,
+                                    )}
+                                    onBefore={() =>
+                                        confirm(t('Really delete this group?'))
+                                    }
                                 >
-                                    <Button type="submit" variant="destructive" size="sm">
-                                        Delete
+                                    <Button
+                                        type="submit"
+                                        variant="destructive"
+                                        size="sm"
+                                    >
+                                        {t('Delete')}
                                     </Button>
                                 </Form>
                             )}
@@ -106,7 +129,7 @@ export default function CustomerGroupsIndex({ groups }: { groups: Group[] }) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>New group</CardTitle>
+                        <CardTitle>{t('New group')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Form
@@ -118,7 +141,9 @@ export default function CustomerGroupsIndex({ groups }: { groups: Group[] }) {
                                 <>
                                     <GroupFields errors={errors} />
                                     <div className="sm:col-span-2">
-                                        <Button disabled={processing}>Create</Button>
+                                        <Button disabled={processing}>
+                                            {t('Create')}
+                                        </Button>
                                     </div>
                                 </>
                             )}

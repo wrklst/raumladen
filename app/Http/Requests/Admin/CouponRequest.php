@@ -16,8 +16,10 @@ class CouponRequest extends FormRequest
      */
     public function rules(): array
     {
+        $coupon = $this->route('coupon');
+
         return [
-            'code' => ['required', 'string', 'max:50', 'regex:/^[A-Za-z0-9_-]+$/', Rule::unique(Coupon::class)->ignore($this->route('coupon')?->id)],
+            'code' => ['required', 'string', 'max:50', 'regex:/^[A-Za-z0-9_-]+$/', Rule::unique(Coupon::class)->ignore($coupon instanceof Coupon ? $coupon->id : null)],
             'type' => ['required', Rule::enum(CouponType::class)],
             'value' => ['required', 'numeric', 'min:0', Rule::when($this->input('type') === CouponType::Percent->value, ['max:100'])],
             'min_order' => ['nullable', 'numeric', 'min:0'],

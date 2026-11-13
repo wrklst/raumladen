@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property string|null $sku
  * @property int $quantity
+ * @property int $refunded_quantity Units already credited by credit notes.
  * @property int $unit_price_cents
  * @property TaxClass $tax_class
  * @property float $tax_rate
@@ -29,11 +30,32 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class OrderItem extends Model
 {
+    public function refundableQuantity(): int
+    {
+        return $this->quantity - $this->refunded_quantity;
+    }
+
+    /**
+     * Put returned units back on the shelf (tracked products only).
+     */
+    public function restock(int $quantity): void
+    {
+        if ($quantity > 0 && $this->product?->track_stock) {
+            $this->product->increment('stock', $quantity);
+        }
+    }
+
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

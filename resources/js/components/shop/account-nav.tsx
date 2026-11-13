@@ -18,8 +18,16 @@ export function AccountShell({
     const { url } = usePage();
 
     const items = [
-        { title: t('Orders'), href: orders(), active: !url.includes('/profile') },
-        { title: t('Profile'), href: profile(), active: url.includes('/profile') },
+        {
+            title: t('Orders'),
+            href: orders(),
+            active: !url.includes('/profile'),
+        },
+        {
+            title: t('Profile'),
+            href: profile(),
+            active: url.includes('/profile'),
+        },
     ];
 
     return (
@@ -30,9 +38,17 @@ export function AccountShell({
                         key={item.title}
                         asChild
                         variant="ghost"
-                        className={cn('justify-start', item.active && 'bg-muted')}
+                        className={cn(
+                            'justify-start',
+                            item.active && 'bg-muted',
+                        )}
                     >
-                        <Link href={item.href}>{item.title}</Link>
+                        <Link
+                            href={item.href}
+                            aria-current={item.active ? 'page' : undefined}
+                        >
+                            {item.title}
+                        </Link>
                     </Button>
                 ))}
                 <Form {...logout.form()} className="md:mt-4">

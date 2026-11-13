@@ -19,17 +19,24 @@ export default function Login({ email }: { email: string | null }) {
                 <p className="text-sm text-muted-foreground">
                     {email
                         ? t('We sent a 6-digit code to :email.', { email })
-                        : t('Enter your email address and we will send you a one-time login code. No password needed.')}
+                        : t(
+                              'Enter your email address and we will send you a one-time login code. No password needed.',
+                          )}
                 </p>
             </header>
 
             {email ? (
                 <>
-                    <Form {...LoginController.verify.form()} className="space-y-4">
+                    <Form
+                        {...LoginController.verify.form()}
+                        className="space-y-4"
+                    >
                         {({ processing, errors }) => (
                             <>
                                 <div className="grid gap-1">
-                                    <Label htmlFor="code">{t('Login code')}</Label>
+                                    <Label htmlFor="code">
+                                        {t('Login code')}
+                                    </Label>
                                     <Input
                                         id="code"
                                         name="code"
@@ -39,21 +46,43 @@ export default function Login({ email }: { email: string | null }) {
                                         autoComplete="one-time-code"
                                         autoFocus
                                         required
+                                        aria-invalid={
+                                            errors.code ? true : undefined
+                                        }
+                                        aria-describedby={
+                                            errors.code
+                                                ? 'code-error'
+                                                : undefined
+                                        }
                                         className="text-center text-2xl tracking-[0.5em]"
                                     />
-                                    <InputError message={errors.code} />
+                                    <InputError
+                                        id="code-error"
+                                        message={errors.code}
+                                    />
                                 </div>
-                                <Button type="submit" className="w-full" disabled={processing}>
+                                <Button
+                                    type="submit"
+                                    className="w-full"
+                                    disabled={processing}
+                                >
                                     {t('Continue')}
                                 </Button>
                             </>
                         )}
                     </Form>
 
-                    <Form {...LoginController.sendCode.form()} className="text-center text-sm">
+                    <Form
+                        {...LoginController.sendCode.form()}
+                        className="text-center text-sm"
+                    >
                         {({ processing }) => (
                             <>
-                                <input type="hidden" name="email" value={email} />
+                                <input
+                                    type="hidden"
+                                    name="email"
+                                    value={email}
+                                />
                                 <button
                                     type="submit"
                                     disabled={processing}
@@ -66,11 +95,16 @@ export default function Login({ email }: { email: string | null }) {
                     </Form>
                 </>
             ) : (
-                <Form {...LoginController.sendCode.form()} className="space-y-4">
+                <Form
+                    {...LoginController.sendCode.form()}
+                    className="space-y-4"
+                >
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-1">
-                                <Label htmlFor="email">{t('Email address')}</Label>
+                                <Label htmlFor="email">
+                                    {t('Email address')}
+                                </Label>
                                 <Input
                                     id="email"
                                     name="email"
@@ -78,10 +112,23 @@ export default function Login({ email }: { email: string | null }) {
                                     autoComplete="email"
                                     autoFocus
                                     required
+                                    aria-invalid={
+                                        errors.email ? true : undefined
+                                    }
+                                    aria-describedby={
+                                        errors.email ? 'email-error' : undefined
+                                    }
                                 />
-                                <InputError message={errors.email} />
+                                <InputError
+                                    id="email-error"
+                                    message={errors.email}
+                                />
                             </div>
-                            <Button type="submit" className="w-full" disabled={processing}>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={processing}
+                            >
                                 {t('Send login code')}
                             </Button>
                         </>

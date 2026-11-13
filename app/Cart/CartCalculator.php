@@ -9,6 +9,7 @@ use App\Models\CustomerGroup;
 use App\Support\Countries;
 use App\Tax\TaxMath;
 use App\Tax\TaxResolver;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -33,7 +34,7 @@ class CartCalculator
     ): CartTotals {
         $home = config('shop.tax.home_country');
         $country = strtoupper($country ?: $home);
-        $pricesIncludeTax = $group?->prices_include_tax ?? true;
+        $pricesIncludeTax = $group->prices_include_tax ?? true;
         $digitalOnly = $cartLines->isNotEmpty() && $cartLines->every(fn (CartLine $line) => $line->product->isDigital());
 
         $estimatedNet = $cartLines->sum(fn (CartLine $line) => (int) round(
@@ -70,7 +71,7 @@ class CartCalculator
 
         $subtotalDisplay = array_sum(array_column($lines, 'line_display_cents'));
 
-        [$coupon, $couponError, $discount] = $this->applyCoupon($coupon, $subtotalDisplay, $group);
+        [$coupon, $couponError, $discount] = $this->applyCoupon($coupon, $subtotalDisplay, $group, $country, $pricesIncludeTax);
 
         $discounts = TaxMath::distribute($discount, array_column($lines, 'line_display_cents'));
 
@@ -108,10 +109,15 @@ class CartCalculator
     /**
      * @return array{0: Coupon|null, 1: string|null, 2: int}
      */
-    private function applyCoupon(?Coupon $coupon, int $subtotalDisplay, ?CustomerGroup $group): array
+    private function applyCoupon(?Coupon $coupon, int $subtotalDisplay, ?CustomerGroup $group, string $country, bool $consumer): array
     {
         if ($coupon === null) {
             return [null, null, 0];
+        }
+
+        // Fixed book prices (BuchPrG): no discount for end customers there.
+        if ($consumer && in_array($country, config('shop.fixed_price_countries'), true)) {
+            return [null, 'fixed_price', 0];
         }
 
         $reason = $coupon->rejectionReason($subtotalDisplay, $group);
@@ -137,7 +143,7 @@ class CartCalculator
             return $none;
         }
 
-        $zone = collect(config('shop.shipping'))->first(fn (array $zone) => match (true) {
+        $zone = Arr::first(config('shop.shipping'), fn (array $zone) => match (true) {
             $zone['countries'] === '*' => true,
             $zone['countries'] === 'eu' => Countries::isEu($country),
             default => in_array($country, $zone['countries'], true),

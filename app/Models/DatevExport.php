@@ -21,11 +21,17 @@ use Illuminate\Support\Carbon;
 #[Fillable(['from_date', 'to_date', 'invoice_count', 'booking_count', 'path', 'sha256', 'user_id'])]
 class DatevExport extends Model
 {
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return HasMany<Invoice, $this>
+     */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);

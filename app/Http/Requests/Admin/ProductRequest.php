@@ -18,7 +18,8 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         $default = config('shop.locales')[0];
-        $productId = $this->route('product')?->id;
+        $product = $this->route('product');
+        $productId = $product instanceof Product ? $product->id : null;
 
         return [
             'type' => ['required', Rule::enum(ProductType::class)],

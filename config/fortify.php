@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // No registration: backend users are invited (Admin\StaffController), customers sign in with a mailed code.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

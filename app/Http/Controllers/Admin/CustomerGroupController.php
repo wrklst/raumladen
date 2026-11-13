@@ -29,7 +29,7 @@ class CustomerGroupController extends Controller
             CustomerGroup::query()->create($data);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Customer group created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer group created.')]);
 
         return back();
     }
@@ -40,21 +40,23 @@ class CustomerGroupController extends Controller
 
         DB::transaction(function () use ($data, $customerGroup): void {
             $this->clearDefaultIf($data['is_default']);
-            $customerGroup->update($data);
+            // forceFill + save on a fresh copy: the loaded model may already say
+            // is_default = true and would then write nothing after the clear.
+            $customerGroup->refresh()->update($data);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Customer group updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer group updated.')]);
 
         return back();
     }
 
     public function destroy(CustomerGroup $customerGroup): RedirectResponse
     {
-        abort_if($customerGroup->is_default || $customerGroup->users()->exists(), 422, 'Group is in use.');
+        abort_if($customerGroup->is_default || $customerGroup->users()->exists(), 422, __('Group is in use.'));
 
         $customerGroup->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Customer group deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer group deleted.')]);
 
         return back();
     }
@@ -75,7 +77,7 @@ class CustomerGroupController extends Controller
             'code' => mb_strtolower($data['code']),
             'name' => $data['name'],
             'prices_include_tax' => $request->boolean('prices_include_tax'),
-            'is_default' => $request->boolean('is_default') || ($group?->is_default ?? false),
+            'is_default' => $request->boolean('is_default') || ($group->is_default ?? false),
         ];
     }
 

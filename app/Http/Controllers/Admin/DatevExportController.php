@@ -34,13 +34,6 @@ class DatevExportController extends Controller
                 'from' => now()->subMonthNoOverflow()->startOfMonth()->toDateString(),
                 'to' => now()->subMonthNoOverflow()->endOfMonth()->toDateString(),
             ],
-            'settings' => [
-                'skr' => config('shop.datev.skr'),
-                'debtor_account' => config('shop.datev.debtor_account'),
-                'accounts' => config('shop.datev.accounts'),
-                'consultant_number' => config('shop.datev.consultant_number'),
-                'client_number' => config('shop.datev.client_number'),
-            ],
         ]);
     }
 
@@ -57,7 +50,7 @@ class DatevExportController extends Controller
             return back()->withErrors(['from' => $e->getMessage()]);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Exported {$export->booking_count} bookings from {$export->invoice_count} documents."]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Exported :bookings bookings from :documents documents.', ['bookings' => $export->booking_count, 'documents' => $export->invoice_count])]);
 
         return to_route('admin.datev.index');
     }

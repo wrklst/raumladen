@@ -36,9 +36,14 @@ class InvoiceIssuer
     }
 
     /**
-     * Full credit note (Gutschrift / Rechnungskorrektur) for a paid order.
+     * Credit note (Gutschrift / Rechnungskorrektur) for a paid order. Without
+     * quantities it credits everything not yet credited and returns the latest
+     * existing credit note when nothing is left (idempotent). Otherwise
+     * $quantities maps order item ids to the units to credit.
+     *
+     * @param  array<int, int>|null  $quantities
      */
-    public function issueCreditNote(Order $order): Invoice
+    public function issueCreditNote(Order $order, ?array $quantities = null, bool $includeShipping = true): Invoice
     {
         $invoice = $order->invoices()->where('type', InvoiceType::Invoice)->first();
 
@@ -46,22 +51,98 @@ class InvoiceIssuer
             throw new LogicException('Cannot credit an order without an invoice.');
         }
 
-        $existing = $order->invoices()->where('type', InvoiceType::CreditNote)->first();
+        return DB::transaction(function () use ($order, $invoice, $quantities, $includeShipping): Invoice {
+            Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $order->unsetRelation('invoices')->load('items', 'invoices');
 
-        if ($existing !== null) {
-            return $existing;
-        }
+            $credit = $this->creditFor($order, $quantities, $includeShipping);
 
-        return DB::transaction(function () use ($order, $invoice): Invoice {
-            $number = NumberSequence::nextFormatted('credit_note');
+            if ($credit === null) {
+                if ($quantities !== null) {
+                    throw new LogicException('Nothing to credit.');
+                }
 
-            return $this->store($order, InvoiceType::CreditNote, $number, $invoice);
+                return $order->invoices->where('type', InvoiceType::CreditNote)->sortByDesc('id')->first()
+                    ?? throw new LogicException('Nothing to credit.');
+            }
+
+            $creditNote = $this->store($order, InvoiceType::CreditNote, NumberSequence::nextFormatted('credit_note'), $invoice, $credit);
+
+            foreach ($credit['lines'] as $line) {
+                $line['item']->increment('refunded_quantity', $line['quantity']);
+            }
+
+            return $creditNote;
         });
     }
 
-    private function store(Order $order, InvoiceType $type, string $number, ?Invoice $references): Invoice
+    /**
+     * Amounts of one credit note. Each amount is the difference of the rounded
+     * cumulative share before and after, so crediting all units in any number of
+     * steps sums exactly to the original line.
+     *
+     * @param  array<int, int>|null  $quantities
+     * @return array{lines: list<array{item: OrderItem, quantity: int, net: int, tax: int, gross: int, discount: int}>, shipping: array{net: int, tax: int, gross: int, rate: float}|null, whole: bool}|null
+     */
+    private function creditFor(Order $order, ?array $quantities, bool $includeShipping): ?array
+    {
+        $hadCredit = $order->invoices->contains(fn (Invoice $invoice) => $invoice->isCreditNote());
+        $lines = [];
+
+        foreach ($order->items as $item) {
+            $quantity = $quantities === null ? $item->refundableQuantity() : ($quantities[$item->id] ?? 0);
+
+            if ($quantity > $item->refundableQuantity()) {
+                throw new LogicException("Cannot credit more than the refundable quantity of item {$item->id}.");
+            }
+
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $share = fn (int $total): int => $this->cumulative($total, $item->quantity, $item->refunded_quantity + $quantity)
+                - $this->cumulative($total, $item->quantity, $item->refunded_quantity);
+            $net = $share($item->line_net_cents);
+            $tax = $share($item->line_tax_cents);
+
+            $lines[] = ['item' => $item, 'quantity' => $quantity, 'net' => $net, 'tax' => $tax, 'gross' => $net + $tax, 'discount' => $share($item->discount_cents)];
+        }
+
+        $shippingGross = $order->shipping_net_cents + $order->shipping_tax_cents;
+        $withShipping = $includeShipping && $shippingGross > 0 && ! $order->shippingCredited();
+
+        if ($lines === [] && ! $withShipping) {
+            return null;
+        }
+
+        $shipping = $withShipping
+            ? ['net' => $order->shipping_net_cents, 'tax' => $order->shipping_tax_cents, 'gross' => $shippingGross, 'rate' => $order->shipping_tax_rate]
+            : null;
+
+        // Crediting the complete untouched order reproduces the original totals as before.
+        $whole = ! $hadCredit
+            && count($lines) === $order->items->count()
+            && collect($lines)->every(fn (array $line) => $line['quantity'] === $line['item']->quantity)
+            && ($shippingGross === 0 || $withShipping);
+
+        return ['lines' => $lines, 'shipping' => $shipping, 'whole' => $whole];
+    }
+
+    private function cumulative(int $total, int $quantity, int $units): int
+    {
+        return intdiv(2 * $total * $units + $quantity, 2 * $quantity);
+    }
+
+    /**
+     * @param  array{lines: list<array{item: OrderItem, quantity: int, net: int, tax: int, gross: int, discount: int}>, shipping: array{net: int, tax: int, gross: int, rate: float}|null, whole: bool}|null  $credit
+     */
+    private function store(Order $order, InvoiceType $type, string $number, ?Invoice $references, ?array $credit = null): Invoice
     {
         $snapshot = $this->snapshot($order, $type, $number, $references);
+
+        if ($credit !== null && ! $credit['whole']) {
+            $snapshot = [...$snapshot, ...$this->partialAmounts($order, $credit)];
+        }
 
         $invoice = Invoice::query()->create([
             'type' => $type,
@@ -81,6 +162,65 @@ class InvoiceIssuer
         $invoice->update(['pdf_path' => $path]);
 
         return $invoice;
+    }
+
+    /**
+     * The snapshot keys that differ for a partial credit note.
+     *
+     * @param  array{lines: list<array{item: OrderItem, quantity: int, net: int, tax: int, gross: int, discount: int}>, shipping: array{net: int, tax: int, gross: int, rate: float}|null, whole: bool}  $credit
+     * @return array<string, mixed>
+     */
+    private function partialAmounts(Order $order, array $credit): array
+    {
+        $groups = [];
+        $totals = ['net' => 0, 'tax' => 0, 'gross' => 0];
+        $discount = 0;
+
+        $add = function (float $rate, int $net, int $tax, int $gross) use (&$groups, &$totals, $order): void {
+            $key = number_format($rate, 2, '.', '');
+            $groups[$key] ??= ['rate' => $rate, 'category' => $order->tax_treatment->category(), 'net' => 0, 'tax' => 0, 'gross' => 0];
+            $groups[$key]['net'] += $net;
+            $groups[$key]['tax'] += $tax;
+            $groups[$key]['gross'] += $gross;
+            $totals['net'] += $net;
+            $totals['tax'] += $tax;
+            $totals['gross'] += $gross;
+        };
+
+        $lines = [];
+
+        foreach ($credit['lines'] as $i => $line) {
+            $item = $line['item'];
+            $discount += $line['discount'];
+            $add($item->tax_rate, $line['net'], $line['tax'], $line['gross']);
+            $lines[] = [
+                'position' => $i + 1,
+                'name' => $item->name,
+                'sku' => $item->sku,
+                'quantity' => $line['quantity'],
+                'unit_price_cents' => $item->unit_price_cents,
+                'discount_cents' => $line['discount'],
+                'tax_rate' => $item->tax_rate,
+                'tax_category' => $item->tax_category,
+                'net' => $line['net'],
+                'tax' => $line['tax'],
+                'gross' => $line['gross'],
+            ];
+        }
+
+        if ($credit['shipping'] !== null) {
+            $add($credit['shipping']['rate'], $credit['shipping']['net'], $credit['shipping']['tax'], $credit['shipping']['gross']);
+        }
+
+        krsort($groups, SORT_NUMERIC);
+
+        return [
+            'lines' => $lines,
+            'shipping' => $credit['shipping'],
+            'coupon' => $order->coupon_code === null || $discount === 0 ? null : ['code' => $order->coupon_code, 'discount_cents' => $discount],
+            'tax_groups' => array_values($groups),
+            'totals' => $totals,
+        ];
     }
 
     /**

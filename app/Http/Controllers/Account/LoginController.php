@@ -40,7 +40,8 @@ class LoginController extends Controller
         $data = $request->validate(['email' => ['required', 'email', 'max:255']]);
         $email = mb_strtolower($data['email']);
 
-        if (User::query()->where('email', $email)->where('role', UserRole::Admin)->exists()) {
+        // Backend users sign in with their password (and second factor), never with a mailed code.
+        if (User::query()->where('email', $email)->where('role', '!=', UserRole::Customer)->exists()) {
             return back()->withErrors(['email' => __('Administrators sign in with their password.')]);
         }
 

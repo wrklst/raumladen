@@ -91,13 +91,13 @@ class CustomerController extends Controller
         $user->update([
             'name' => $data['name'],
             'email' => $data['email'],
-            'company' => $data['company'],
+            'company' => $data['company'] ?? null,
             'vat_id' => $vatId,
             'vat_id_validated_at' => $validatedAt,
             'customer_group_id' => $data['customer_group_id'],
         ]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Customer updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Customer updated.')]);
 
         return back();
     }

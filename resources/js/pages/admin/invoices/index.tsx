@@ -5,6 +5,8 @@ import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useLabels } from '@/hooks/use-labels';
+import { useTrans } from '@/hooks/use-translation';
 import { formatMoney } from '@/lib/money';
 import { index } from '@/routes/admin/invoices';
 import type { Paginated } from '@/types';
@@ -32,37 +34,58 @@ export default function InvoicesIndex({
     invoices: Paginated<InvoiceRow>;
     filters: { q: string };
 }) {
+    const { t, locale } = useTrans();
+    const { invoiceType, taxTreatment } = useLabels();
+
     return (
         <>
-            <Head title="Invoices" />
+            <Head title={t('Invoices')} />
 
             <div className="space-y-6 p-4">
                 <form method="get" action={index.url()} className="flex gap-2">
                     <Input
                         name="q"
                         defaultValue={filters.q}
-                        placeholder="Search invoice number"
+                        placeholder={t('Search invoice number')}
                         className="w-72"
                     />
                     <Button type="submit" variant="outline">
-                        Search
+                        {t('Search')}
                     </Button>
                 </form>
 
                 {invoices.data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No invoices found.</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('No invoices found.')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-muted-foreground">
                             <tr>
-                                <th className="px-3 py-2 font-medium">Number</th>
-                                <th className="px-3 py-2 font-medium">Date</th>
-                                <th className="px-3 py-2 font-medium">Order</th>
-                                <th className="px-3 py-2 font-medium">Buyer</th>
-                                <th className="px-3 py-2 font-medium">Tax</th>
-                                <th className="px-3 py-2 text-right font-medium">Net</th>
-                                <th className="px-3 py-2 text-right font-medium">VAT</th>
-                                <th className="px-3 py-2 text-right font-medium">Gross</th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Number')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Date')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Order')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Buyer')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Tax')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Net')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('VAT')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Gross')}
+                                </th>
                                 <th className="px-3 py-2 font-medium">DATEV</th>
                                 <th className="px-3 py-2 font-medium" />
                             </tr>
@@ -73,15 +96,22 @@ export default function InvoicesIndex({
                                     <td className="px-3 py-2 font-medium">
                                         {invoice.number}
                                         {invoice.type === 'credit_note' && (
-                                            <Badge variant="outline" className="ml-2">
-                                                Credit note
+                                            <Badge
+                                                variant="outline"
+                                                className="ml-2"
+                                            >
+                                                {invoiceType(invoice.type)}
                                             </Badge>
                                         )}
                                     </td>
-                                    <td className="px-3 py-2">{invoice.issued_at}</td>
+                                    <td className="px-3 py-2">
+                                        {invoice.issued_at}
+                                    </td>
                                     <td className="px-3 py-2">
                                         <Link
-                                            href={OrderController.show(invoice.order_uuid)}
+                                            href={OrderController.show(
+                                                invoice.order_uuid,
+                                            )}
                                             className="underline underline-offset-4"
                                         >
                                             {invoice.order_number}
@@ -90,22 +120,38 @@ export default function InvoicesIndex({
                                     <td className="px-3 py-2">
                                         {invoice.buyer} ({invoice.country})
                                     </td>
-                                    <td className="px-3 py-2">{invoice.tax_treatment}</td>
-                                    <td className="px-3 py-2 text-right">
-                                        {formatMoney(invoice.total_net_cents)}
+                                    <td className="px-3 py-2">
+                                        {taxTreatment(invoice.tax_treatment)}
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                        {formatMoney(invoice.total_tax_cents)}
+                                        {formatMoney(
+                                            invoice.total_net_cents,
+                                            'EUR',
+                                            locale,
+                                        )}
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                        {formatMoney(invoice.total_gross_cents)}
+                                        {formatMoney(
+                                            invoice.total_tax_cents,
+                                            'EUR',
+                                            locale,
+                                        )}
+                                    </td>
+                                    <td className="px-3 py-2 text-right">
+                                        {formatMoney(
+                                            invoice.total_gross_cents,
+                                            'EUR',
+                                            locale,
+                                        )}
                                     </td>
                                     <td className="px-3 py-2">
-                                        {invoice.exported ? 'exported' : '—'}
+                                        {invoice.exported ? t('exported') : '—'}
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         <a
-                                            href={InvoiceController.download.url(invoice.id)}
+                                            href={InvoiceController.download.url(
+                                                invoice.id,
+                                            )}
                                             className="underline underline-offset-4"
                                         >
                                             PDF

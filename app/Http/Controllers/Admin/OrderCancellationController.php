@@ -7,6 +7,8 @@ use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Invoicing\InvoiceIssuer;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Orders\CancelOrder;
 use App\Payments\PaymentManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -15,50 +17,45 @@ use Throwable;
 
 /**
  * Cancels an order. Paid orders get a credit note and a refund through the
- * gateway (bank transfers are refunded manually); stock is returned.
+ * gateway (bank transfers are refunded manually); stock is returned. Units
+ * already credited by partial refunds are not credited or restocked again.
  */
 class OrderCancellationController extends Controller
 {
-    public function store(Order $order, InvoiceIssuer $issuer, PaymentManager $payments): RedirectResponse
+    public function store(Order $order, InvoiceIssuer $issuer, PaymentManager $payments, CancelOrder $cancelOrder): RedirectResponse
     {
-        abort_if(in_array($order->status, [OrderStatus::Cancelled, OrderStatus::Refunded], true), 422, 'Order is already cancelled.');
+        abort_if(in_array($order->status, [OrderStatus::Cancelled, OrderStatus::Refunded], true), 422, __('Order is already cancelled.'));
 
-        $wasPaid = $order->isPaid();
+        if (! $order->isPaid()) {
+            $cancelOrder->handle($order);
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Order cancelled.')]);
 
-        DB::transaction(function () use ($order, $issuer, $wasPaid): void {
+            return back();
+        }
+
+        DB::transaction(function () use ($order, $issuer): void {
             $order->load('items.product');
 
-            foreach ($order->items as $item) {
-                if ($item->product?->track_stock) {
-                    $item->product->increment('stock', $item->quantity);
-                }
-            }
+            // Restock before the credit note raises refunded_quantity.
+            $order->items->each(fn (OrderItem $item) => $item->restock($item->refundableQuantity()));
 
-            if ($wasPaid) {
-                $issuer->issueCreditNote($order);
-            }
+            $issuer->issueCreditNote($order);
 
-            $order->update([
-                'status' => $wasPaid ? OrderStatus::Refunded : OrderStatus::Cancelled,
-                'cancelled_at' => now(),
-            ]);
+            $order->update(['status' => OrderStatus::Refunded, 'cancelled_at' => now()]);
         });
 
-        $message = $wasPaid ? 'Order refunded and credit note issued.' : 'Order cancelled.';
+        $message = __('Order refunded and credit note issued.');
+        $payment = $order->payments()->where('status', PaymentStatus::Paid)->latest('id')->first();
 
-        if ($wasPaid) {
-            $payment = $order->payments()->where('status', PaymentStatus::Paid)->latest('id')->first();
-
-            try {
-                if ($payment !== null && $payment->gateway !== 'bank_transfer') {
-                    $payments->gateway($payment->gateway)->refund($payment, $payment->amount_cents - $payment->refunded_cents);
-                } else {
-                    $message = 'Order cancelled and credit note issued. Refund the bank transfer manually.';
-                }
-            } catch (Throwable $e) {
-                report($e);
-                $message = 'Credit note issued, but the gateway refund failed: '.$e->getMessage();
+        try {
+            if ($payment !== null && $payment->gateway !== 'bank_transfer') {
+                $payments->gateway($payment->gateway)->refund($payment, $payment->amount_cents - $payment->refunded_cents);
+            } else {
+                $message = __('Order cancelled and credit note issued. Refund the bank transfer manually.');
             }
+        } catch (Throwable $e) {
+            report($e);
+            $message = __('Credit note issued, but the gateway refund failed: :error', ['error' => $e->getMessage()]);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => $message]);

@@ -52,6 +52,7 @@ export type ProductCard = {
 
 export type ProductDetail = ProductCard & {
     sku: string | null;
+    author_list: string[];
     description: string | null;
     images: string[];
     specs: Record<string, string>;
@@ -111,6 +112,7 @@ export type OrderItem = {
     name: string;
     sku: string | null;
     quantity: number;
+    refunded_quantity: number;
     unit_price_cents: number;
     tax_rate: number;
     discount_cents: number;
@@ -170,6 +172,7 @@ export type Order = {
     paid_at: string | null;
     shipped_at: string | null;
     cancelled_at: string | null;
+    shipping_refunded?: boolean;
     items?: OrderItem[];
     invoices?: InvoiceSummary[];
     payments?: PaymentSummary[];
@@ -199,5 +202,12 @@ export type ShopSharedProps = {
     cart_count: number;
     footer_pages: FooterPage[];
     seo?: Seo;
-    auth: { user: { id: number; name: string; email: string; is_admin: boolean } | null };
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+            is_staff: boolean;
+        } | null;
+    };
 };

@@ -1,7 +1,7 @@
 import { Form, Link } from '@inertiajs/react';
 import CartController from '@/actions/App/Http/Controllers/Shop/CartController';
 import InputError from '@/components/input-error';
-import { Badge } from '@/components/ui/badge';
+import { TextCover } from '@/components/shop/text-cover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,41 +21,68 @@ const specLabels: Record<string, string> = {
     published: 'Published',
 };
 
-export default function Product({ product }: { product: ProductDetail }) {
+export default function Product({
+    product,
+    delivery_days,
+    manufacturer,
+}: {
+    product: ProductDetail;
+    delivery_days: [number, number] | null;
+    manufacturer?: string;
+}) {
     const { t, locale } = useTrans();
 
     return (
         <article className="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-            <nav className="text-sm text-muted-foreground lg:col-span-2">
-                <Link href={home()} className="hover:text-foreground">
-                    {t('Books')}
-                </Link>
-                <span className="mx-2">/</span>
-                <span>{product.title}</span>
+            <nav
+                className="text-sm text-muted-foreground lg:col-span-2"
+                aria-label={t('Breadcrumb')}
+            >
+                <ol className="flex flex-wrap items-center gap-2">
+                    <li>
+                        <Link
+                            href={home()}
+                            className="underline underline-offset-4 hover:text-foreground"
+                        >
+                            {t('Issues')}
+                        </Link>
+                    </li>
+                    <li aria-hidden="true">/</li>
+                    <li aria-current="page">{product.title}</li>
+                </ol>
             </nav>
 
             <div className="space-y-3">
-                <div className="aspect-[3/4] overflow-hidden rounded-lg border bg-muted">
-                    {product.images[0] ? (
-                        <img
-                            src={product.images[0]}
-                            alt={product.title}
-                            className="size-full object-cover"
-                        />
-                    ) : (
-                        <div className="flex size-full items-center justify-center p-6 text-center text-muted-foreground">
-                            {product.title}
-                        </div>
-                    )}
-                </div>
+                {product.images[0] ? (
+                    <img
+                        src={product.images[0]}
+                        alt={t('Cover of :title', { title: product.title })}
+                        width={600}
+                        height={800}
+                        fetchPriority="high"
+                        className="aspect-[3/4] w-full border border-foreground object-cover"
+                    />
+                ) : (
+                    <TextCover
+                        title={product.title}
+                        authors={product.authors}
+                        aria-hidden
+                    />
+                )}
                 {product.images.length > 1 && (
                     <div className="grid grid-cols-4 gap-2">
-                        {product.images.slice(1).map((image) => (
+                        {product.images.slice(1).map((image, index) => (
                             <img
                                 key={image}
                                 src={image}
-                                alt=""
-                                className="aspect-square rounded border object-cover"
+                                alt={t(':title, image :number', {
+                                    title: product.title,
+                                    number: index + 2,
+                                })}
+                                width={150}
+                                height={150}
+                                loading="lazy"
+                                className="aspect-square border border-foreground object-cover"
                             />
                         ))}
                     </div>
@@ -64,19 +91,35 @@ export default function Product({ product }: { product: ProductDetail }) {
 
             <div className="space-y-6">
                 <header className="space-y-2">
-                    <h1 className="text-3xl font-semibold tracking-tight">
+                    <h1 className="text-3xl leading-[1.1] sm:text-4xl">
                         {product.title}
                     </h1>
-                    {product.authors && (
-                        <p className="text-lg text-muted-foreground">
-                            {product.authors}
+                    {product.author_list.length > 0 && (
+                        <p className="text-lg">
+                            {product.author_list.map((author, index) => (
+                                <span key={author}>
+                                    {index > 0 && ', '}
+                                    <Link
+                                        href={home(undefined, {
+                                            query: { author },
+                                        })}
+                                        className="underline underline-offset-4"
+                                    >
+                                        {author}
+                                    </Link>
+                                </span>
+                            ))}
                         </p>
                     )}
                 </header>
 
                 <div className="space-y-1">
                     <p className="text-2xl font-semibold">
-                        {formatMoney(product.price_cents, product.currency, locale)}
+                        {formatMoney(
+                            product.price_cents,
+                            product.currency,
+                            locale,
+                        )}
                     </p>
                     <p className="text-sm text-muted-foreground">
                         {product.prices_include_tax
@@ -92,6 +135,17 @@ export default function Product({ product }: { product: ProductDetail }) {
                             {t('Shipping & payment')}
                         </Link>
                     </p>
+                    {delivery_days && product.in_stock && (
+                        <p className="text-sm text-muted-foreground">
+                            {t(
+                                'Delivery within Germany: :min–:max working days',
+                                {
+                                    min: delivery_days[0],
+                                    max: delivery_days[1],
+                                },
+                            )}
+                        </p>
+                    )}
                 </div>
 
                 {product.in_stock ? (
@@ -117,7 +171,15 @@ export default function Product({ product }: { product: ProductDetail }) {
                                         min={1}
                                         max={product.stock ?? 99}
                                         defaultValue={1}
-                                        className="w-24"
+                                        className="h-10 w-24"
+                                        aria-invalid={
+                                            errors.quantity ? true : undefined
+                                        }
+                                        aria-describedby={
+                                            errors.quantity
+                                                ? 'quantity-error'
+                                                : undefined
+                                        }
                                     />
                                 </div>
                                 <Button
@@ -128,6 +190,7 @@ export default function Product({ product }: { product: ProductDetail }) {
                                     {t('Add to cart')}
                                 </Button>
                                 <InputError
+                                    id="quantity-error"
                                     className="basis-full"
                                     message={errors.quantity}
                                 />
@@ -135,11 +198,11 @@ export default function Product({ product }: { product: ProductDetail }) {
                         )}
                     </Form>
                 ) : (
-                    <Badge variant="outline">{t('Sold out')}</Badge>
+                    <p>{t('Sold out')}</p>
                 )}
 
                 {product.description && (
-                    <div className="prose prose-neutral max-w-none dark:prose-invert">
+                    <div className="prose">
                         {product.description.split(/\n{2,}/).map((para, i) => (
                             <p key={i}>{para}</p>
                         ))}
@@ -157,6 +220,14 @@ export default function Product({ product }: { product: ProductDetail }) {
                                 <dd>{product.specs[field]}</dd>
                             </div>
                         ))}
+                    {manufacturer && (
+                        <div className="contents">
+                            <dt className="text-muted-foreground">
+                                {t('Manufacturer')}
+                            </dt>
+                            <dd>{manufacturer}</dd>
+                        </div>
+                    )}
                     {product.sku && (
                         <div className="contents">
                             <dt className="text-muted-foreground">

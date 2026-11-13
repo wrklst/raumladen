@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Settings\ShopSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
@@ -25,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Settings made in the backend replace the config file values.
+        ShopSettings::apply();
     }
 
     /**

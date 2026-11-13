@@ -6,7 +6,9 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import LanguageSwitcher from '@/components/language-switcher';
 import { UserInfo } from '@/components/user-info';
+import { useTrans } from '@/hooks/use-translation';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
@@ -18,6 +20,7 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const { t } = useTrans();
 
     const handleLogout = () => {
         cleanup();
@@ -41,10 +44,12 @@ export function UserMenuContent({ user }: Props) {
                         onClick={cleanup}
                     >
                         <Settings className="mr-2" />
-                        Settings
+                        {t('Settings')}
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <LanguageSwitcher className="px-2 py-1.5" />
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link
@@ -55,7 +60,7 @@ export function UserMenuContent({ user }: Props) {
                     data-test="logout-button"
                 >
                     <LogOut className="mr-2" />
-                    Log out
+                    {t('Log out')}
                 </Link>
             </DropdownMenuItem>
         </>

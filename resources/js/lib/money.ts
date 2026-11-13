@@ -3,9 +3,10 @@ export function formatMoney(
     currency = 'EUR',
     locale = 'de',
 ): string {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(
-        cents / 100,
-    );
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency,
+    }).format(cents / 100);
 }
 
 export function formatRate(rate: number): string {

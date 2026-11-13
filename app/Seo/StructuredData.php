@@ -4,6 +4,7 @@ namespace App\Seo;
 
 use App\Models\Product;
 use App\Support\Money;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -23,6 +24,8 @@ class StructuredData
             '@id' => url('/').'#organization',
             'name' => $seller['name'],
             'url' => url('/'),
+            'logo' => asset('apple-touch-icon.png'),
+            'sameAs' => config('shop.site.same_as') ?: null,
             'email' => $seller['email'],
             'telephone' => $seller['phone'] ?: null,
             'vatID' => $seller['vat_id'] ?: null,
@@ -32,6 +35,14 @@ class StructuredData
                 'postalCode' => $seller['zip'],
                 'addressLocality' => $seller['city'],
                 'addressCountry' => $seller['country'],
+            ],
+            'hasMerchantReturnPolicy' => [
+                '@type' => 'MerchantReturnPolicy',
+                'applicableCountry' => $seller['country'],
+                'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                'merchantReturnDays' => config('shop.returns.days'),
+                'returnMethod' => 'https://schema.org/ReturnByMail',
+                'returnFees' => 'https://schema.org/ReturnFeesCustomerResponsibility',
             ],
         ]);
     }
@@ -44,9 +55,15 @@ class StructuredData
         return [
             '@type' => 'WebSite',
             'url' => route('shop.home', ['locale' => $locale]),
-            'name' => config('shop.seller.name'),
+            'name' => config('app.name'),
+            'description' => __('Space Issues is a series of books published at the Sandberg Instituut, Amsterdam, initiated by Something Fantastic and Ludwig Engel. Order online, shipped from Germany.', [], $locale),
             'inLanguage' => $locale,
             'publisher' => ['@id' => url('/').'#organization'],
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => route('shop.home', ['locale' => $locale]).'?q={search_term_string}',
+                'query-input' => 'required name=search_term_string',
+            ],
         ];
     }
 
@@ -90,8 +107,35 @@ class StructuredData
                 'availability' => $product->hasStockFor(1) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                 'itemCondition' => 'https://schema.org/NewCondition',
                 'seller' => ['@id' => url('/').'#organization'],
+                'shippingDetails' => self::shippingDetails($product->currency),
             ],
         ], fn ($value) => $value !== null && $value !== '');
+    }
+
+    /**
+     * Shipping to the home country, the only zone with a promised delivery time.
+     *
+     * @return array<string, mixed>|null
+     */
+    private static function shippingDetails(string $currency): ?array
+    {
+        $home = config('shop.tax.home_country');
+        $zone = Arr::first(config('shop.shipping'), fn (array $zone) => $zone['code'] === $home);
+
+        if ($zone === null) {
+            return null;
+        }
+
+        return array_filter([
+            '@type' => 'OfferShippingDetails',
+            'shippingRate' => ['@type' => 'MonetaryAmount', 'value' => Money::decimal($zone['price_cents']), 'currency' => $currency],
+            'shippingDestination' => ['@type' => 'DefinedRegion', 'addressCountry' => $home],
+            'deliveryTime' => isset($zone['delivery_days']) ? [
+                '@type' => 'ShippingDeliveryTime',
+                'handlingTime' => ['@type' => 'QuantitativeValue', 'minValue' => 0, 'maxValue' => 1, 'unitCode' => 'DAY'],
+                'transitTime' => ['@type' => 'QuantitativeValue', 'minValue' => $zone['delivery_days'][0], 'maxValue' => $zone['delivery_days'][1], 'unitCode' => 'DAY'],
+            ] : null,
+        ]);
     }
 
     /**

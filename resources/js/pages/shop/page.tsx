@@ -10,7 +10,7 @@ export default function Page({
             </h1>
             {/* Markdown is rendered server-side with HTML input stripped. */}
             <div
-                className="prose prose-neutral max-w-none dark:prose-invert"
+                className="prose"
                 dangerouslySetInnerHTML={{ __html: page.html }}
             />
         </article>

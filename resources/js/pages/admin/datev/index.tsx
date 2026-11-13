@@ -1,9 +1,11 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import DatevExportController from '@/actions/App/Http/Controllers/Admin/DatevExportController';
 import { Field } from '@/components/shop/field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTrans } from '@/hooks/use-translation';
 import { index } from '@/routes/admin/datev';
+import { edit as shopSettings } from '@/routes/admin/settings';
 
 type Props = {
     exports: {
@@ -18,34 +20,33 @@ type Props = {
     }[];
     unexported_count: number;
     defaults: { from: string; to: string };
-    settings: {
-        skr: string;
-        debtor_account: string | number;
-        accounts: unknown;
-        consultant_number: string | number | null;
-        client_number: string | number | null;
-    };
 };
 
 export default function DatevIndex({
     exports,
     unexported_count,
     defaults,
-    settings,
 }: Props) {
+    const { t } = useTrans();
+    const canEditSettings = usePage<{
+        auth: { user: { areas: string[] } };
+    }>().props.auth.user.areas.includes('settings');
+
     return (
         <>
-            <Head title="DATEV export" />
+            <Head title={t('DATEV export')} />
 
             <div className="max-w-4xl space-y-6 p-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>New export</CardTitle>
+                        <CardTitle>{t('New export')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                            {unexported_count} documents not exported yet. Each invoice and
-                            credit note is exported exactly once (EXTF Buchungsstapel).
+                            {t(
+                                ':count documents not exported yet. Each invoice and credit note is exported exactly once (EXTF Buchungsstapel).',
+                                { count: unexported_count },
+                            )}
                         </p>
                         <Form
                             {...DatevExportController.store.form()}
@@ -54,7 +55,7 @@ export default function DatevIndex({
                             {({ processing, errors }) => (
                                 <>
                                     <Field
-                                        label="From"
+                                        label={t('From')}
                                         name="from"
                                         type="date"
                                         required
@@ -62,15 +63,18 @@ export default function DatevIndex({
                                         error={errors.from}
                                     />
                                     <Field
-                                        label="To"
+                                        label={t('To')}
                                         name="to"
                                         type="date"
                                         required
                                         defaultValue={defaults.to}
                                         error={errors.to}
                                     />
-                                    <Button disabled={processing} className="mt-5">
-                                        Export
+                                    <Button
+                                        disabled={processing}
+                                        className="mt-5"
+                                    >
+                                        {t('Export')}
                                     </Button>
                                 </>
                             )}
@@ -80,24 +84,32 @@ export default function DatevIndex({
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Exports</CardTitle>
+                        <CardTitle>{t('Exports')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {exports.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No exports yet.</p>
+                            <p className="text-sm text-muted-foreground">
+                                {t('No exports yet.')}
+                            </p>
                         ) : (
                             <table className="w-full text-sm">
                                 <thead className="text-left text-muted-foreground">
                                     <tr>
-                                        <th className="px-3 py-2 font-medium">Period</th>
-                                        <th className="px-3 py-2 text-right font-medium">
-                                            Documents
+                                        <th className="px-3 py-2 font-medium">
+                                            {t('Period')}
                                         </th>
                                         <th className="px-3 py-2 text-right font-medium">
-                                            Bookings
+                                            {t('Documents')}
                                         </th>
-                                        <th className="px-3 py-2 font-medium">Created</th>
-                                        <th className="px-3 py-2 font-medium">SHA-256</th>
+                                        <th className="px-3 py-2 text-right font-medium">
+                                            {t('Bookings')}
+                                        </th>
+                                        <th className="px-3 py-2 font-medium">
+                                            {t('Created')}
+                                        </th>
+                                        <th className="px-3 py-2 font-medium">
+                                            SHA-256
+                                        </th>
                                         <th className="px-3 py-2 font-medium" />
                                     </tr>
                                 </thead>
@@ -141,16 +153,19 @@ export default function DatevIndex({
                     </CardContent>
                 </Card>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Settings (config/shop.php)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <pre className="overflow-x-auto text-xs">
-                            {JSON.stringify(settings, null, 2)}
-                        </pre>
-                    </CardContent>
-                </Card>
+                <p className="text-sm text-muted-foreground">
+                    {t(
+                        'Consultant number, client number and accounts are set under Shop settings, DATEV export.',
+                    )}{' '}
+                    {canEditSettings && (
+                        <Link
+                            href={shopSettings()}
+                            className="underline underline-offset-4"
+                        >
+                            {t('Shop settings')}
+                        </Link>
+                    )}
+                </p>
             </div>
         </>
     );

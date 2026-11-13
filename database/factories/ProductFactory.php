@@ -18,7 +18,8 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $title = Str::title(fake()->unique()->words(3, true));
+        $words = fake()->unique()->words(3);
+        $title = Str::title(is_array($words) ? implode(' ', $words) : $words);
 
         return [
             'type' => ProductType::Book,

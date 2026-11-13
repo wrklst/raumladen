@@ -11,8 +11,7 @@ type TranslationProps = {
  * Keys are the English source strings, like Laravel's __().
  */
 export function useTrans() {
-    const { translations, locale, locales } =
-        usePage<TranslationProps>().props;
+    const { translations, locale, locales } = usePage<TranslationProps>().props;
 
     const t = (
         key: string,

@@ -4,6 +4,8 @@ import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTrans } from '@/hooks/use-translation';
+import { formatDate } from '@/lib/format';
 import { index } from '@/routes/admin/customers';
 import type { Paginated } from '@/types';
 
@@ -26,35 +28,51 @@ export default function CustomersIndex({
     customers: Paginated<CustomerRow>;
     filters: { q: string };
 }) {
+    const { t, locale } = useTrans();
+
     return (
         <>
-            <Head title="Customers" />
+            <Head title={t('Customers')} />
 
             <div className="space-y-6 p-4">
                 <form method="get" action={index.url()} className="flex gap-2">
                     <Input
                         name="q"
                         defaultValue={filters.q}
-                        placeholder="Search name, email or company"
+                        placeholder={t('Search name, email or company')}
                         className="w-72"
                     />
                     <Button type="submit" variant="outline">
-                        Search
+                        {t('Search')}
                     </Button>
                 </form>
 
                 {customers.data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No customers found.</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('No customers found.')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-muted-foreground">
                             <tr>
-                                <th className="px-3 py-2 font-medium">Name</th>
-                                <th className="px-3 py-2 font-medium">Email</th>
-                                <th className="px-3 py-2 font-medium">Group</th>
-                                <th className="px-3 py-2 font-medium">VAT ID</th>
-                                <th className="px-3 py-2 text-right font-medium">Orders</th>
-                                <th className="px-3 py-2 font-medium">Since</th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Name')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Email')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Group')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('VAT ID')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Orders')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Since')}
+                                </th>
                                 <th className="px-3 py-2 font-medium" />
                             </tr>
                         </thead>
@@ -62,37 +80,46 @@ export default function CustomersIndex({
                             {customers.data.map((customer) => (
                                 <tr key={customer.id} className="border-t">
                                     <td className="px-3 py-2">
-                                        <div className="font-medium">{customer.name}</div>
+                                        <div className="font-medium">
+                                            {customer.name}
+                                        </div>
                                         {customer.company && (
                                             <div className="text-xs text-muted-foreground">
                                                 {customer.company}
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-3 py-2">{customer.email}</td>
-                                    <td className="px-3 py-2">{customer.group ?? '—'}</td>
+                                    <td className="px-3 py-2">
+                                        {customer.email}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                        {customer.group ?? '—'}
+                                    </td>
                                     <td className="px-3 py-2">
                                         <span className="flex items-center gap-2">
                                             {customer.vat_id ?? '—'}
-                                            {customer.vat_id_valid && <Badge>verified</Badge>}
+                                            {customer.vat_id_valid && (
+                                                <Badge>{t('verified')}</Badge>
+                                            )}
                                         </span>
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         {customer.orders_count}
                                     </td>
                                     <td className="px-3 py-2">
-                                        {customer.created_at
-                                            ? new Date(customer.created_at).toLocaleDateString(
-                                                  'de-DE',
-                                              )
-                                            : '—'}
+                                        {formatDate(
+                                            customer.created_at,
+                                            locale,
+                                        )}
                                     </td>
                                     <td className="px-3 py-2 text-right">
                                         <Link
-                                            href={CustomerController.edit({ user: customer.id })}
+                                            href={CustomerController.edit({
+                                                user: customer.id,
+                                            })}
                                             className="underline underline-offset-4"
                                         >
-                                            Edit
+                                            {t('Edit')}
                                         </Link>
                                     </td>
                                 </tr>

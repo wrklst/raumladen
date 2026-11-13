@@ -7,25 +7,36 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTrans } from '@/hooks/use-translation';
 import type { NavItem } from '@/types';
 
-export function NavMain({ items }: { items: NavItem[] }) {
+/**
+ * One topic of the backend navigation: an optional heading and its entries.
+ */
+export function NavMain({
+    label,
+    items,
+}: {
+    label?: string;
+    items: NavItem[];
+}) {
     const { isCurrentUrl } = useCurrentUrl();
+    const { t } = useTrans();
 
     return (
         <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+            {label && <SidebarGroupLabel>{t(label)}</SidebarGroupLabel>}
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
                             asChild
                             isActive={isCurrentUrl(item.href)}
-                            tooltip={{ children: item.title }}
+                            tooltip={{ children: t(item.title) }}
                         >
                             <Link href={item.href} prefetch>
                                 {item.icon && <item.icon />}
-                                <span>{item.title}</span>
+                                <span>{t(item.title)}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

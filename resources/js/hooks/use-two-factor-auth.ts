@@ -1,5 +1,6 @@
 import { useHttp } from '@inertiajs/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useTrans } from '@/hooks/use-translation';
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
 
 export type UseTwoFactorAuthReturn = {
@@ -21,6 +22,9 @@ export const OTP_MAX_LENGTH = 6;
 
 export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
     const { submit } = useHttp();
+    const { t } = useTrans();
+    const tRef = useRef(t);
+    tRef.current = t;
 
     const [qrCodeSvg, setQrCodeSvg] = useState<string | null>(null);
     const [manualSetupKey, setManualSetupKey] = useState<string | null>(null);
@@ -55,7 +59,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setQrCodeSvg(svg);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch QR code']);
+            setErrors((prev) => [
+                ...prev,
+                tRef.current('Failed to fetch QR code'),
+            ]);
             setQrCodeSvg(null);
         }
     }, [submit]);
@@ -68,7 +75,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setManualSetupKey(key);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch a setup key']);
+            setErrors((prev) => [
+                ...prev,
+                tRef.current('Failed to fetch a setup key'),
+            ]);
             setManualSetupKey(null);
         }
     }, [submit]);
@@ -79,7 +89,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
             const codes = (await submit(recoveryCodes())) as string[];
             setRecoveryCodesList(codes);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch recovery codes']);
+            setErrors((prev) => [
+                ...prev,
+                tRef.current('Failed to fetch recovery codes'),
+            ]);
             setRecoveryCodesList([]);
         }
     }, [submit]);

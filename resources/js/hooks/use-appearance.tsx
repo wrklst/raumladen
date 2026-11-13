@@ -75,11 +75,6 @@ export function initializeTheme(): void {
         return;
     }
 
-    if (!localStorage.getItem('appearance')) {
-        localStorage.setItem('appearance', 'system');
-        setCookie('appearance', 'system');
-    }
-
     currentAppearance = getStoredAppearance();
     applyTheme(currentAppearance);
 

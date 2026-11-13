@@ -32,10 +32,10 @@ class DatevExporter
                 ->get();
 
             if ($invoices->isEmpty()) {
-                throw new RuntimeException('No unexported documents in this period.');
+                throw new RuntimeException(__('No unexported documents in this period.'));
             }
 
-            $bookings = $invoices->flatMap(fn (Invoice $invoice) => $this->bookingsFor($invoice))->all();
+            $bookings = array_values($invoices->flatMap(fn (Invoice $invoice) => $this->bookingsFor($invoice))->all());
 
             $export = DatevExport::query()->create([
                 'from_date' => $from->toDateString(),
@@ -117,7 +117,7 @@ class DatevExporter
                 19.0 => 'domestic_19',
                 7.0 => 'domestic_7',
                 0.0 => 'domestic_0',
-                default => throw new RuntimeException("No DATEV account mapped for domestic rate {$rate}%."),
+                default => throw new RuntimeException(__('No DATEV account mapped for domestic rate :rate%.', ['rate' => $rate])),
             },
         };
 

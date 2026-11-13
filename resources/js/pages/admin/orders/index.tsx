@@ -4,6 +4,9 @@ import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useLabels } from '@/hooks/use-labels';
+import { useTrans } from '@/hooks/use-translation';
+import { formatDate } from '@/lib/format';
 import { formatMoney } from '@/lib/money';
 import { index } from '@/routes/admin/orders';
 import type { Order, ResourcePaginated } from '@/types';
@@ -25,9 +28,12 @@ export default function OrdersIndex({
     filters: { status: string; q: string };
     statuses: string[];
 }) {
+    const { t, locale } = useTrans();
+    const { orderStatus, taxTreatment } = useLabels();
+
     return (
         <>
-            <Head title="Orders" />
+            <Head title={t('Orders')} />
 
             <div className="space-y-6 p-4">
                 <form
@@ -38,39 +44,55 @@ export default function OrdersIndex({
                     <select
                         name="status"
                         defaultValue={filters.status}
-                        className="border-input h-9 rounded-md border bg-transparent px-3 text-sm shadow-xs"
+                        className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs"
                     >
-                        <option value="">All</option>
+                        <option value="">{t('All')}</option>
                         {statuses.map((status) => (
                             <option key={status} value={status}>
-                                {status}
+                                {orderStatus(status)}
                             </option>
                         ))}
                     </select>
                     <Input
                         name="q"
                         defaultValue={filters.q}
-                        placeholder="Number, name or email"
+                        placeholder={t('Number, name or email')}
                         className="w-64"
                     />
                     <Button type="submit" variant="outline">
-                        Filter
+                        {t('Filter')}
                     </Button>
                 </form>
 
                 {orders.data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No orders found.</p>
+                    <p className="text-sm text-muted-foreground">
+                        {t('No orders found.')}
+                    </p>
                 ) : (
                     <table className="w-full text-sm">
                         <thead className="text-left text-muted-foreground">
                             <tr>
-                                <th className="px-3 py-2 font-medium">Number</th>
-                                <th className="px-3 py-2 font-medium">Date</th>
-                                <th className="px-3 py-2 font-medium">Customer</th>
-                                <th className="px-3 py-2 font-medium">Country</th>
-                                <th className="px-3 py-2 font-medium">Tax</th>
-                                <th className="px-3 py-2 font-medium">Status</th>
-                                <th className="px-3 py-2 text-right font-medium">Total</th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Number')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Date')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Customer')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Country')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Tax')}
+                                </th>
+                                <th className="px-3 py-2 font-medium">
+                                    {t('Status')}
+                                </th>
+                                <th className="px-3 py-2 text-right font-medium">
+                                    {t('Total')}
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,18 +100,16 @@ export default function OrdersIndex({
                                 <tr key={order.id} className="border-t">
                                     <td className="px-3 py-2">
                                         <Link
-                                            href={OrderController.show({ order: order.uuid })}
+                                            href={OrderController.show({
+                                                order: order.uuid,
+                                            })}
                                             className="font-medium underline-offset-4 hover:underline"
                                         >
                                             {order.number}
                                         </Link>
                                     </td>
                                     <td className="px-3 py-2">
-                                        {order.created_at
-                                            ? new Date(order.created_at).toLocaleDateString(
-                                                  'de-DE',
-                                              )
-                                            : '—'}
+                                        {formatDate(order.created_at, locale)}
                                     </td>
                                     <td className="px-3 py-2">
                                         <div>{order.customer_name}</div>
@@ -97,17 +117,27 @@ export default function OrdersIndex({
                                             {order.email}
                                         </div>
                                     </td>
-                                    <td className="px-3 py-2">{order.country_name}</td>
+                                    <td className="px-3 py-2">
+                                        {order.country_name}
+                                    </td>
                                     <td className="px-3 py-2 text-muted-foreground">
-                                        {order.tax_treatment}
+                                        {taxTreatment(order.tax_treatment)}
                                     </td>
                                     <td className="px-3 py-2">
-                                        <Badge variant={statusVariant[order.status]}>
-                                            {order.status}
+                                        <Badge
+                                            variant={
+                                                statusVariant[order.status]
+                                            }
+                                        >
+                                            {orderStatus(order.status)}
                                         </Badge>
                                     </td>
                                     <td className="px-3 py-2 text-right">
-                                        {formatMoney(order.total_cents, order.currency, 'de')}
+                                        {formatMoney(
+                                            order.total_cents,
+                                            order.currency,
+                                            locale,
+                                        )}
                                     </td>
                                 </tr>
                             ))}

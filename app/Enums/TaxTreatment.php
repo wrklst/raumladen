@@ -72,6 +72,12 @@ enum TaxTreatment: string
             default => null,
         };
 
-        return $key === null ? null : __($key, [], $locale);
+        if ($key === null) {
+            return null;
+        }
+
+        $note = __($key, [], $locale);
+
+        return is_string($note) ? $note : null;
     }
 }

@@ -34,5 +34,15 @@ jobs:
       - name: Setup Application
         run: composer setup
 
+      - name: Install the browser for browser tests
+        run: npx playwright install --with-deps chromium
+
+      # Browser and SSR tests need both bundles; `composer setup` only built the client.
+      - name: Build SSR bundle
+        run: npm run build:ssr
+
       - name: Run CI Checks
         run: composer ci:check
+
+      - name: Lighthouse
+        run: npx lhci autorun

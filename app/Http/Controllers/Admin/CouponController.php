@@ -40,7 +40,7 @@ class CouponController extends Controller
     {
         Coupon::query()->create($request->couponAttributes());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Coupon created.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Coupon created.')]);
 
         return to_route('admin.coupons.index');
     }
@@ -54,7 +54,7 @@ class CouponController extends Controller
     {
         $coupon->update($request->couponAttributes());
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Coupon updated.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Coupon updated.')]);
 
         return to_route('admin.coupons.index');
     }
@@ -63,7 +63,7 @@ class CouponController extends Controller
     {
         $coupon->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Coupon deleted.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Coupon deleted.')]);
 
         return to_route('admin.coupons.index');
     }

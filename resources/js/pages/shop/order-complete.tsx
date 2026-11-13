@@ -31,10 +31,13 @@ export default function OrderComplete({ order, bank }: Props) {
                     {t('Thank you for your order')}
                 </h1>
                 <p className="text-muted-foreground">
-                    {t('Order :number. A confirmation has been sent to :email.', {
-                        number: order.number,
-                        email: order.email,
-                    })}
+                    {t(
+                        'Order :number. A confirmation has been sent to :email.',
+                        {
+                            number: order.number,
+                            email: order.email,
+                        },
+                    )}
                 </p>
             </header>
 
@@ -45,7 +48,11 @@ export default function OrderComplete({ order, bank }: Props) {
                         <dl className="mt-2 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
                             <dt>{t('Amount')}</dt>
                             <dd className="font-medium">
-                                {formatMoney(order.total_cents, order.currency, locale)}
+                                {formatMoney(
+                                    order.total_cents,
+                                    order.currency,
+                                    locale,
+                                )}
                             </dd>
                             <dt>{t('Recipient')}</dt>
                             <dd>{bank.name}</dd>
@@ -59,7 +66,9 @@ export default function OrderComplete({ order, bank }: Props) {
                             <dd className="font-medium">{bank.reference}</dd>
                         </dl>
                         <p className="mt-2">
-                            {t('We ship as soon as the payment arrives; your invoice follows by email.')}
+                            {t(
+                                'We ship as soon as the payment arrives; your invoice follows by email.',
+                            )}
                         </p>
                     </AlertDescription>
                 </Alert>

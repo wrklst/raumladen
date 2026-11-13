@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { useTrans } from '@/hooks/use-translation';
 import { index } from '@/routes/admin/pages';
 
 type Props = {
@@ -20,9 +21,11 @@ type Props = {
 };
 
 export default function PageForm({ page, locales }: Props) {
+    const { t } = useTrans();
+
     return (
         <>
-            <Head title={page?.title[locales[0]] ?? 'New page'} />
+            <Head title={page?.title[locales[0]] ?? t('New page')} />
 
             <div className="max-w-3xl space-y-6 p-4">
                 <Form
@@ -35,11 +38,11 @@ export default function PageForm({ page, locales }: Props) {
                         <>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Page</CardTitle>
+                                    <CardTitle>{t('Page')}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="grid gap-4">
                                     <Field
-                                        label="Slug"
+                                        label={t('Slug')}
                                         name="slug"
                                         required
                                         defaultValue={page?.slug}
@@ -49,9 +52,11 @@ export default function PageForm({ page, locales }: Props) {
                                         <Checkbox
                                             name="is_published"
                                             value="1"
-                                            defaultChecked={page?.is_published ?? true}
+                                            defaultChecked={
+                                                page?.is_published ?? true
+                                            }
                                         />
-                                        Published
+                                        {t('Published (visible in the shop)')}
                                     </label>
                                 </CardContent>
                             </Card>
@@ -59,11 +64,13 @@ export default function PageForm({ page, locales }: Props) {
                             {locales.map((locale) => (
                                 <Card key={locale}>
                                     <CardHeader>
-                                        <CardTitle>{locale.toUpperCase()}</CardTitle>
+                                        <CardTitle>
+                                            {locale.toUpperCase()}
+                                        </CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid gap-4">
                                         <Field
-                                            label="Title"
+                                            label={t('Title')}
                                             name={`title[${locale}]`}
                                             required={locale === locales[0]}
                                             defaultValue={page?.title[locale]}
@@ -71,22 +78,28 @@ export default function PageForm({ page, locales }: Props) {
                                         />
                                         <div className="grid gap-1">
                                             <Label htmlFor={`body-${locale}`}>
-                                                Body (Markdown)
+                                                {t('Body (Markdown)')}
                                             </Label>
                                             <textarea
                                                 id={`body-${locale}`}
                                                 name={`body[${locale}]`}
                                                 rows={16}
-                                                defaultValue={page?.body[locale] ?? ''}
-                                                className="border-input bg-background w-full rounded-md border px-3 py-2 font-mono text-sm shadow-xs"
+                                                defaultValue={
+                                                    page?.body[locale] ?? ''
+                                                }
+                                                className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-xs"
                                             />
-                                            <InputError message={errors[`body.${locale}`]} />
+                                            <InputError
+                                                message={
+                                                    errors[`body.${locale}`]
+                                                }
+                                            />
                                         </div>
                                     </CardContent>
                                 </Card>
                             ))}
 
-                            <Button disabled={processing}>Save</Button>
+                            <Button disabled={processing}>{t('Save')}</Button>
                         </>
                     )}
                 </Form>
@@ -94,10 +107,10 @@ export default function PageForm({ page, locales }: Props) {
                 {page && (
                     <Form
                         {...PageController.destroy.form(page.slug)}
-                        onBefore={() => confirm('Really delete this page?')}
+                        onBefore={() => confirm(t('Really delete this page?'))}
                     >
                         <Button type="submit" variant="destructive">
-                            Delete page
+                            {t('Delete page')}
                         </Button>
                     </Form>
                 )}

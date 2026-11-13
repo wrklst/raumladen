@@ -16,6 +16,11 @@ class SeoTextController extends Controller
 {
     public function robots(): Response
     {
+        // Not ready for the public yet: keep every crawler out.
+        if (! config('shop.seo.indexable')) {
+            return response("User-agent: *\nDisallow: /\n")->header('Content-Type', 'text/plain; charset=UTF-8');
+        }
+
         $lines = [
             'User-agent: *',
             'Allow: /',
@@ -24,9 +29,10 @@ class SeoTextController extends Controller
             'Disallow: /*/checkout',
             'Disallow: /*/account',
             'Disallow: /*/orders/',
+            'Disallow: /*/address-suggestions',
+            'Disallow: /*/search-index',
             '',
             'Sitemap: '.route('seo.sitemap.index'),
-            'Sitemap: '.route('seo.llms'),
         ];
 
         return response(implode("\n", $lines)."\n")->header('Content-Type', 'text/plain; charset=UTF-8');
@@ -34,20 +40,23 @@ class SeoTextController extends Controller
 
     public function llms(): Response
     {
+        abort_unless(config('shop.seo.indexable') && config('shop.seo.llms_txt'), 404);
+
         $default = config('shop.locales')[0];
         app()->setLocale($default);
         $seller = config('shop.seller');
 
         $out = [
-            '# '.$seller['name'],
+            '# '.config('app.name'),
             '',
-            '> '.__('Books from :name. Order online, shipped from Germany.', ['name' => $seller['name']]),
+            '> '.__('Space Issues is a series of books published at the Sandberg Instituut, Amsterdam, initiated by Something Fantastic and Ludwig Engel. Order online, shipped from Germany.'),
             '',
-            '- '.__('Website').': '.route('shop.home', ['locale' => $default]),
-            '- '.__('Languages').': '.implode(', ', config('shop.locales')),
+            ...array_map(fn (string $locale) => '- '.__('Website').' ('.$locale.'): '.route('shop.home', ['locale' => $locale]), config('shop.locales')),
+            '- '.__('Series editors').': '.config('shop.site.editors'),
+            '- '.__('Publisher').': '.$seller['name'],
             '- '.__('Contact').': '.$seller['email'],
             '- Sitemap: '.route('seo.sitemap.index'),
-            '- Product feed: '.route('seo.feed.google', $default),
+            ...(config('shop.channels.google_feed') ? ['- Product feed: '.route('seo.feed', ['channel' => 'google', 'locale' => $default])] : []),
             '',
             '## '.__('Books'),
             '',
@@ -66,6 +75,17 @@ class SeoTextController extends Controller
                 .' ('.implode(', ', $meta).')';
         });
 
+        $out[] = '';
+        $out[] = '## '.__('Shipping');
+        $out[] = '';
+
+        foreach (config('shop.shipping') as $zone) {
+            $out[] = '- '.$zone['code'].': '.Money::format($zone['price_cents'], config('shop.currency'), $default)
+                .($zone['free_from_cents'] === null ? '' : ', '.__('free from :amount', ['amount' => Money::format($zone['free_from_cents'], config('shop.currency'), $default)]))
+                .(isset($zone['delivery_days']) ? ', '.__(':min–:max working days', ['min' => $zone['delivery_days'][0], 'max' => $zone['delivery_days'][1]]) : '');
+        }
+
+        $out[] = '- '.__('Right of withdrawal: :days days', ['days' => config('shop.returns.days')]);
         $out[] = '';
         $out[] = '## '.__('Information');
         $out[] = '';

@@ -30,7 +30,6 @@ function checkoutPayload(string $country = 'DE', array $extra = []): array
             'zip' => '10115', 'city' => 'Berlin', 'country' => $country,
         ],
         'gateway' => 'bank_transfer',
-        'terms' => '1',
         ...$extra,
     ];
 }

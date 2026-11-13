@@ -15,9 +15,21 @@ class CurrentCustomer
         return auth()->user();
     }
 
+    /**
+     * Remembered on the request, not for the process: a long-lived worker
+     * (Octane, a test) serves many customers one after the other.
+     */
     public static function group(): CustomerGroup
     {
-        return once(fn (): CustomerGroup => self::user()?->customerGroup ?? CustomerGroup::default());
+        $attributes = request()->attributes;
+        $user = self::user();
+        $key = 'customer_group:'.($user->id ?? 'guest');
+
+        if (! $attributes->has($key)) {
+            $attributes->set($key, $user->customerGroup ?? CustomerGroup::default());
+        }
+
+        return $attributes->get($key);
     }
 
     public static function country(): string
