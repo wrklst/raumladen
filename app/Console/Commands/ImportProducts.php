@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -64,9 +65,7 @@ class ImportProducts extends Command
 
         DB::transaction(function () use ($entries, &$created): void {
             foreach ($entries as $entry) {
-                $attributes = collect($entry)
-                    ->only(['title', 'slug', 'description', 'tax_class', 'stock', 'track_stock', 'weight_grams', 'specs', 'is_active', 'published_at'])
-                    ->all();
+                $attributes = Arr::only($entry, ['title', 'slug', 'description', 'tax_class', 'stock', 'track_stock', 'weight_grams', 'specs', 'is_active', 'published_at']);
                 $attributes['price_cents'] = (int) round((float) $entry['price'] * 100);
                 $attributes['slug'] = [...array_map(Str::slug(...), $entry['title']), ...$entry['slug'] ?? []];
 
