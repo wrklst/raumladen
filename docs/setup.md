@@ -29,6 +29,42 @@ Seeding twice does not duplicate anything. Change the administrator's
 password under **Settings → Security** before the shop is reachable by
 others; there you can also add a second factor or a passkey.
 
+## Loading a catalogue
+
+Books are entered in the backend, or loaded from a JSON file:
+
+```
+php artisan shop:import-products catalogue.json
+```
+
+```json
+[
+    {
+        "sku": "BK-0001",
+        "title": {
+            "de": "Die Kunst des langsamen Lesens",
+            "en": "The Art of Slow Reading"
+        },
+        "description": { "de": "…", "en": "…" },
+        "price": 24,
+        "stock": 20,
+        "specs": {
+            "isbn": "978-3-00-000001-1",
+            "authors": "Lena Hartmann",
+            "pages": "192"
+        }
+    }
+]
+```
+
+`sku`, `title` and `price` (gross, in euros) are required. A new book is
+active, tracks its stock and carries the reduced tax class unless the entry
+says otherwise (`is_active`, `track_stock`, `tax_class`); further keys are
+`slug`, `weight_grams` and `published_at`. A book whose `sku` exists is
+updated with the keys its entry carries and keeps the rest, so a file without
+`stock` does not overwrite the stock of a running shop. Nothing is written
+unless every entry is valid.
+
 ## Environment
 
 The environment holds only what the server needs to start. Everything a shop
