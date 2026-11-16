@@ -18,6 +18,8 @@ const card: ProductCard = {
     image: null,
     in_stock: true,
     authors: 'Anna Beispiel',
+    series: null,
+    description: null,
 };
 
 const list = (data: ProductCard[]) =>

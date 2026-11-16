@@ -37,7 +37,7 @@ class ProductRequest extends FormRequest
             'track_stock' => ['boolean'],
             'weight_grams' => ['nullable', 'integer', 'min:0'],
             'specs' => ['nullable', 'array'],
-            'specs.*' => ['nullable', 'string', 'max:500'],
+            'specs.*' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['boolean'],
             'published_at' => ['nullable', 'date'],
             'images' => ['nullable', 'array', 'max:10'],

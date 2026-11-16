@@ -135,6 +135,7 @@ class ShopSettings
                 'label' => __('Appearance'),
                 'description' => __('What every theme uses. The design itself (colours, type, layout of shop, invoice and emails) comes from the theme, which is installed with the shop.'),
                 'fields' => [
+                    ...array_map(fn (string $locale): array => ['name' => 'language_'.$locale, 'path' => 'shop.languages.'.$locale, 'type' => 'bool', 'label' => __('Storefront in :language', ['language' => strtoupper($locale)]), 'rules' => ['boolean'], 'help' => __('Addresses of a language that is switched off lead to the first remaining one. With none selected, all stay on.')], config('shop.supported_locales')),
                     ['name' => 'logo', 'path' => 'shop.appearance.logo', 'type' => 'image', 'label' => __('Logo'), 'rules' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'], 'help' => __('PNG, JPG or WebP, up to 1 MB. Shown on invoices and in emails; whether the shop shows it is up to the theme.')],
                     ['name' => 'icon', 'path' => 'shop.appearance.icon', 'type' => 'image', 'label' => __('Icon'), 'rules' => ['nullable', 'image', 'mimes:png', 'dimensions:ratio=1/1,min_width=180', 'max:512'], 'help' => __('Square PNG, at least 180 pixels wide. Shown in the browser tab and on home screens.')],
                     ['name' => 'invoice_note', 'path' => 'shop.appearance.invoice_note', 'type' => 'textarea', 'label' => __('Note on every invoice'), 'rules' => ['nullable', 'string', 'max:1000']],
@@ -305,5 +306,10 @@ class ShopSettings
 
             return $zone;
         }, config('shop.shipping'))]);
+
+        $supported = config('shop.supported_locales');
+        $chosen = array_values(array_filter($supported, fn (string $locale): bool => config('shop.languages.'.$locale, true) !== false));
+
+        config(['shop.locales' => $chosen ?: $supported]);
     }
 }

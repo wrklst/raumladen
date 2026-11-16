@@ -694,5 +694,10 @@
     "or you can": "oder Sie können sich",
     "or, enter the code manually": "oder geben Sie den Code manuell ein",
     "shipping price": "Versandpreis",
-    "verified": "geprüft"
+    "verified": "geprüft",
+    "Storefront in :language": "Shop auf :language",
+    "Addresses of a language that is switched off lead to the first remaining one. With none selected, all stay on.": "Adressen einer abgeschalteten Sprache führen zur ersten verbleibenden. Ist keine gewählt, bleiben alle an.",
+    "Series": "Reihe",
+    "Credits": "Mitwirkende",
+    "About the authors": "Über die Autor:innen"
 }

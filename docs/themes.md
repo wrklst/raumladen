@@ -94,6 +94,9 @@ path:
 Inside a theme file, import shop code with `@/...` and other theme files
 with `@theme/...` (which points at the theme's `resources` directory).
 
+A catalogue card carries the book's `series` and `description` besides
+title, authors and price, so a theme can set a whole cover in type.
+
 A replacement takes the place of the original entirely. It cannot import the
 original and wrap it: an import of the shop's path resolves to the theme's
 file again. Copy the shop's file as a starting point.

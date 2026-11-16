@@ -26,6 +26,9 @@ enum ProductType: string
                 'binding' => 'text',
                 'language' => 'text',
                 'published' => 'date',
+                'series' => 'text',
+                'credits' => 'textarea',
+                'about_authors' => 'textarea',
             ],
         };
     }

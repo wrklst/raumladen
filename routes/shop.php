@@ -18,7 +18,7 @@ use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('{locale}')
-    ->where(['locale' => implode('|', config('shop.locales'))])
+    ->where(['locale' => implode('|', config('shop.supported_locales'))])
     ->middleware(SetLocale::class)
     ->name('shop.')
     ->group(function () {

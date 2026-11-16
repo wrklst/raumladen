@@ -56,7 +56,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
-            'locales' => config('shop.locales'),
+            // The storefront offers its own languages, the backend every language the software speaks.
+            'locales' => config($request->routeIs('shop.*') ? 'shop.locales' : 'shop.supported_locales'),
             'translations' => fn () => $this->translations(app()->getLocale()),
             'shop' => [
                 'name' => config('app.name'),

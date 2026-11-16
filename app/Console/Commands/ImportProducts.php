@@ -48,7 +48,7 @@ class ImportProducts extends Command
             'products.*.stock' => ['integer', 'min:0'],
             'products.*.track_stock' => ['boolean'],
             'products.*.weight_grams' => ['nullable', 'integer', 'min:0'],
-            'products.*.specs.*' => ['nullable', 'string', 'max:500'],
+            'products.*.specs.*' => ['nullable', 'string', 'max:5000'],
             'products.*.is_active' => ['boolean'],
             'products.*.published_at' => ['nullable', 'date'],
         ]);

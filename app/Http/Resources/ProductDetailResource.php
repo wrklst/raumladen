@@ -20,7 +20,6 @@ class ProductDetailResource extends ProductCardResource
             ...parent::toArray($request),
             'sku' => $this->sku,
             'author_list' => ProductSearch::authors($this->resource),
-            'description' => $this->translate('description'),
             'images' => array_map(fn (string $path) => asset('storage/'.$path), $this->images ?? []),
             'specs' => $this->specs ?? [],
             'spec_fields' => array_keys($this->type->attributeFields()),

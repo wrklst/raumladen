@@ -32,10 +32,43 @@ if (!themeDir) {
 function themeOverrides() {
     const shopJs = `${path.resolve('resources/js')}/`;
     const themeJs = path.join(themeDir, 'resources/js');
+    // Where the theme really is, when its package is a link.
+    const themeJsReal = fs.existsSync(themeJs)
+        ? fs.realpathSync(themeJs)
+        : themeJs;
 
     return {
         name: 'raumladen-theme',
         enforce: 'pre' as const,
+        // A theme outside the shop's directory (a path, or a linked package)
+        // has no node_modules above it: its packages are the shop's.
+        async resolveId(
+            this: {
+                resolve: (
+                    source: string,
+                    importer: string,
+                    options: { skipSelf: boolean },
+                ) => Promise<unknown>;
+            },
+            source: string,
+            importer: string | undefined,
+        ) {
+            if (
+                !importer ||
+                !(
+                    importer.startsWith(themeJs) ||
+                    importer.startsWith(themeJsReal)
+                ) ||
+                /^[./@]\/|^\.|^\//.test(source) ||
+                source.startsWith('@theme')
+            ) {
+                return null;
+            }
+
+            return this.resolve(source, path.join(shopJs, 'app.tsx'), {
+                skipSelf: true,
+            });
+        },
         // The shop's module keeps its id (the Blade template and the build
         // manifest know pages by it) and hands over to the theme's file.
         load(this: { addWatchFile: (file: string) => void }, id: string) {

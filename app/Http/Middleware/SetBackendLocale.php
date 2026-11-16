@@ -15,7 +15,7 @@ class SetBackendLocale
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->route('locale') === null) {
-            $locales = config('shop.locales');
+            $locales = config('shop.supported_locales');
 
             $candidates = [
                 $request->user()?->locale,

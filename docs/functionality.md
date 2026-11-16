@@ -7,9 +7,13 @@ which; none of it is legal or tax advice.
 
 - **Languages.** German and English, each under its own address prefix
   (`/de`, `/en`). `/` sends a visitor to the language of their last visit,
-  then to the browser's preferred language, then to German. Languages are
-  listed in `config/shop.php` (`locales`); UI texts live in `lang/<code>.json`
-  with the English text as the key.
+  then to the browser's preferred language, then to the first one. Which
+  languages the storefront offers is chosen under **Shop settings →
+  Appearance**; a shop can run in one language only, and addresses of a
+  language that is switched off lead to the same page in the remaining one.
+  The backend stays available in every language the software speaks
+  (`supported_locales` in `config/shop.php`); UI texts live in
+  `lang/<code>.json` with the English text as the key.
 - **Catalogue.** All active, published books, newest first, 24 per page. A
   book without a cover image is shown with its title set in type.
 - **Search.** Every word of the query has to match in the title (any
@@ -22,8 +26,9 @@ which; none of it is legal or tax advice.
 - **Authors.** Each author on a book's page links to all books by that
   author.
 - **Product page.** Price with the VAT note, delivery time, stock, book
-  details, the manufacturer (product safety), and structured data for search
-  engines.
+  details (ISBN, publisher, pages, binding, language, year, series), the
+  credits, a text about the authors, the manufacturer (product safety), and
+  structured data for search engines.
 - **Cart** in the session, with stock checks and one coupon.
 - **Display settings.** Light, dark or system colour scheme, text size,
   underlined links, and higher contrast and reduced motion unless the theme

@@ -48,12 +48,13 @@ export type ProductCard = {
     image: string | null;
     in_stock: boolean;
     authors: string | null;
+    series: string | null;
+    description: string | null;
 };
 
 export type ProductDetail = ProductCard & {
     sku: string | null;
     author_list: string[];
-    description: string | null;
     images: string[];
     specs: Record<string, string>;
     spec_fields: string[];

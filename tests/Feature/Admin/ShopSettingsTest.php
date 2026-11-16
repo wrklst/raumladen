@@ -292,3 +292,33 @@ test('the shop can bring its own icon for the browser tab and home screens', fun
     expect($html)->toContain('<link rel="apple-touch-icon" href="'.Appearance::iconUrl().'">')
         ->not->toContain('href="/favicon.svg"');
 });
+
+test('a storefront language switched off in the backend sends its addresses to the remaining one, while the backend keeps both', function () {
+    $product = Product::factory()->create(['title' => ['de' => 'Über Räume', 'en' => 'On Rooms'], 'slug' => ['de' => 'ueber-raeume', 'en' => 'on-rooms']]);
+
+    $this->actingAs($this->admin)
+        ->put(route('admin.settings.update', 'appearance'), ['language_de' => false, 'language_en' => true])
+        ->assertSessionHasNoErrors();
+
+    expect(config('shop.locales'))->toBe(['en']);
+
+    $this->get('/de/cart?coupon=1')->assertRedirect('/en/cart?coupon=1');
+    $this->get('/de')->assertRedirect('/en');
+    $this->get('/fr')->assertNotFound();
+    $this->get('/en/products/'.$product->slug['en'])
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('locales', ['en']));
+
+    $this->actingAs($this->admin)->get(route('admin.settings.edit'))
+        ->assertInertia(fn (Assert $page) => $page->where('locales', ['de', 'en']));
+
+    $this->actingAs($this->admin)->post(route('locale.update'), ['locale' => 'de'])->assertSessionHasNoErrors();
+});
+
+test('with no storefront language selected all stay on', function () {
+    $this->actingAs($this->admin)
+        ->put(route('admin.settings.update', 'appearance'), ['language_de' => false, 'language_en' => false])
+        ->assertSessionHasNoErrors();
+
+    expect(config('shop.locales'))->toBe(['de', 'en']);
+});

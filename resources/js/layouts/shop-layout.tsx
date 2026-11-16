@@ -210,6 +210,7 @@ export default function ShopLayout({ children }: PropsWithChildren) {
                         <ul
                             className="mr-2 flex items-center gap-1 text-sm"
                             aria-label={t('Language')}
+                            hidden={locales.length < 2}
                         >
                             {locales.map((code) => (
                                 <li key={code}>

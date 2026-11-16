@@ -35,6 +35,9 @@ class ProductCardResource extends JsonResource
             'image' => $this->imageUrl(),
             'in_stock' => $this->hasStockFor(1),
             'authors' => $this->specs['authors'] ?? null,
+            'series' => $this->specs['series'] ?? null,
+            // For themes that set the cover in type from the book's own text.
+            'description' => $this->translate('description'),
         ];
     }
 }

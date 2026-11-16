@@ -17,7 +17,10 @@ to the sign-in page of their language and books are looked up by the slug of
 the language in the address.
 
 `/` redirects to a language: last visited, then the browser's preference,
-then the first entry of `shop.locales`.
+then the first entry of `shop.locales`, the storefront's languages as chosen
+in the backend. An address in a language the software speaks but the
+storefront has switched off redirects to the same page in the first
+remaining language.
 
 Backend and sign-in addresses have no prefix. `SetBackendLocale` picks their
 language from the user's saved choice, then the session, then the browser.

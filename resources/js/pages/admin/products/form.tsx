@@ -59,6 +59,9 @@ function useSpecLabel() {
         binding: t('Binding'),
         language: t('Language'),
         published: t('Published'),
+        series: t('Series'),
+        credits: t('Credits'),
+        about_authors: t('About the authors'),
     };
 
     return (field: string) => labels[field] ?? field;
@@ -356,16 +359,32 @@ export default function ProductForm({
                                                         errors[`specs.${field}`]
                                                     }
                                                 >
-                                                    <Input
-                                                        id={`spec_${field}`}
-                                                        name={`specs[${field}]`}
-                                                        type={inputType}
-                                                        defaultValue={
-                                                            product?.specs[
-                                                                field
-                                                            ] ?? ''
-                                                        }
-                                                    />
+                                                    {inputType ===
+                                                    'textarea' ? (
+                                                        <textarea
+                                                            id={`spec_${field}`}
+                                                            name={`specs[${field}]`}
+                                                            className={
+                                                                textareaClass
+                                                            }
+                                                            defaultValue={
+                                                                product?.specs[
+                                                                    field
+                                                                ] ?? ''
+                                                            }
+                                                        />
+                                                    ) : (
+                                                        <Input
+                                                            id={`spec_${field}`}
+                                                            name={`specs[${field}]`}
+                                                            type={inputType}
+                                                            defaultValue={
+                                                                product?.specs[
+                                                                    field
+                                                                ] ?? ''
+                                                            }
+                                                        />
+                                                    )}
                                                 </Field>
                                             ),
                                         )}

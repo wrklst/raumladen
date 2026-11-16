@@ -19,6 +19,13 @@ const specLabels: Record<string, string> = {
     binding: 'Binding',
     language: 'Language',
     published: 'Published',
+    series: 'Series',
+};
+
+/** Running text, shown as paragraphs instead of in the list of details. */
+const textFields: Record<string, string> = {
+    credits: 'Credits',
+    about_authors: 'About the authors',
 };
 
 export default function Product({
@@ -213,7 +220,10 @@ export default function Product({
 
                 <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-1 text-sm">
                     {product.spec_fields
-                        .filter((field) => product.specs[field])
+                        .filter(
+                            (field) =>
+                                product.specs[field] && !textFields[field],
+                        )
                         .map((field) => (
                             <div key={field} className="contents">
                                 <dt className="text-muted-foreground">
@@ -239,6 +249,19 @@ export default function Product({
                         </div>
                     )}
                 </dl>
+
+                {Object.entries(textFields)
+                    .filter(([field]) => product.specs[field])
+                    .map(([field, label]) => (
+                        <section key={field} className="space-y-1 text-sm">
+                            <h2 className="text-muted-foreground">
+                                {t(label)}
+                            </h2>
+                            <p className="whitespace-pre-line">
+                                {product.specs[field]}
+                            </p>
+                        </section>
+                    ))}
             </div>
         </article>
     );

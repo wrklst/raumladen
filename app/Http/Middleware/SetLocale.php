@@ -14,7 +14,13 @@ class SetLocale
         $locale = $request->route('locale');
 
         if (! in_array($locale, config('shop.locales'), true)) {
-            abort(404);
+            // A language the shop speaks but this storefront has switched off:
+            // old links and bookmarks land on the same page in the default language.
+            abort_unless(in_array($locale, config('shop.supported_locales'), true), 404);
+
+            $default = '/'.config('shop.locales')[0];
+
+            return redirect()->to(preg_replace('#^/?'.$locale.'(?=/|$)#', $default, $request->getRequestUri(), 1) ?? $default);
         }
 
         app()->setLocale($locale);

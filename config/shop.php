@@ -25,10 +25,18 @@ return [
     | Locales
     |--------------------------------------------------------------------------
     |
-    | To add a language: append its code here and create lang/{code}.json.
-    | The first entry is the default storefront locale.
+    | "supported_locales" are the languages the software speaks: the backend
+    | is offered in all of them. To add one, append its code and create
+    | lang/{code}.json.
+    |
+    | "locales" are the languages of the storefront, in this order; the first
+    | is its default. Which of the supported languages the storefront uses is
+    | chosen in the backend (Shop settings, Appearance) and written over this
+    | value on boot.
     |
     */
+
+    'supported_locales' => ['de', 'en'],
 
     'locales' => ['de', 'en'],
 
