@@ -32,6 +32,13 @@ class CartController extends Controller
 
         return Inertia::render('shop/cart', [
             'cart' => $totals->toArray(),
+            // What a theme needs to set a cover in type, by product id.
+            'covers' => $this->cart->lines()->mapWithKeys(fn ($line): array => [$line->product->id => [
+                'authors' => $line->product->specs['authors'] ?? null,
+                'description' => $line->product->translate('description'),
+                'isbn' => $line->product->specs['isbn'] ?? null,
+                'imprint' => $line->product->specs['publisher'] ?? null,
+            ]]),
             'seo' => Seo::make(__('Cart'), null, route('shop.cart.index'), Seo::alternates('shop.cart.index'), index: false),
         ]);
     }

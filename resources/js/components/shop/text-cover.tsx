@@ -12,6 +12,9 @@ export function TextCover({
     series,
     small = false,
     className,
+    description: _description,
+    isbn: _isbn,
+    imprint: _imprint,
     ...props
 }: {
     title: string;
@@ -22,6 +25,10 @@ export function TextCover({
     small?: boolean;
     className?: string;
     'aria-hidden'?: boolean;
+    /** For themes that set a whole cover in type; not shown here. */
+    description?: string | null;
+    isbn?: string | null;
+    imprint?: string | null;
 }) {
     return (
         <div

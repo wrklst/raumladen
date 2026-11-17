@@ -25,7 +25,22 @@ const couponErrors: Record<string, string> = {
         'Your order does not reach the minimum amount for this coupon.',
 };
 
-export default function Cart({ cart }: { cart: CartTotals }) {
+export default function Cart({
+    cart,
+    covers,
+}: {
+    cart: CartTotals;
+    /** By product id: what a theme needs to set a cover in type. */
+    covers?: Record<
+        number,
+        {
+            authors: string | null;
+            description: string | null;
+            isbn: string | null;
+            imprint: string | null;
+        }
+    >;
+}) {
     const { t, locale } = useTrans();
     const { errors } = usePage<{ errors: Record<string, string> }>().props;
     const money = (cents: number) => formatMoney(cents, 'EUR', locale);
@@ -66,6 +81,7 @@ export default function Cart({ cart }: { cart: CartTotals }) {
                                 // The name is right next to it: the cover is decoration here.
                                 <TextCover
                                     title={line.name}
+                                    {...covers?.[line.product_id]}
                                     small
                                     aria-hidden
                                     className="w-15 shrink-0"

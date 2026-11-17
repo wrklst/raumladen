@@ -31,6 +31,20 @@ test('a product is reached by the slug of the request locale only', function () 
     $this->get('/en/products/raum')->assertNotFound();
 });
 
+test('a product page names its neighbours in the catalogue and what else can be ordered', function () {
+    [$old, $middle, $new] = collect([3, 2, 1])
+        ->map(fn (int $days) => Product::factory()->create(['published_at' => now()->subDays($days), 'track_stock' => false]))
+        ->all();
+    Product::factory()->create(['published_at' => now()->subDays(4), 'track_stock' => true, 'stock' => 0]);
+
+    $this->get($middle->urlFor('de'))->assertInertia(fn (Assert $page) => $page
+        ->where('next.id', $new->id)
+        ->where('previous.id', $old->id)
+        ->where('available', fn ($cards) => collect($cards)->pluck('id')->all() === [$new->id, $old->id]));
+
+    $this->get($new->urlFor('de'))->assertInertia(fn (Assert $page) => $page->where('next', null));
+});
+
 test('inactive and unpublished products are not reachable', function () {
     $inactive = Product::factory()->inactive()->create();
     $future = Product::factory()->create(['published_at' => now()->addDay()]);

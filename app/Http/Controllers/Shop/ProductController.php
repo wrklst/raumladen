@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductCardResource;
 use App\Http\Resources\ProductDetailResource;
 use App\Models\Product;
 use App\Seo\Seo;
 use App\Seo\StructuredData;
+use App\Shop\ProductSearch;
 use App\Theme\Theme;
 use Illuminate\Support\Arr;
 use Inertia\Inertia;
@@ -27,8 +29,23 @@ class ProductController extends Controller
             }
         }
 
+        // The catalogue's order, newest first: the neighbours of this product, and what else can be ordered.
+        // ponytail: looks at the 60 products nearest in the catalogue for the twelve others; widen when a catalogue outgrows that.
+        $ids = ProductSearch::ids('', '', $locale);
+        $at = (int) array_search($product->id, $ids, true);
+        $nearby = array_slice($ids, max(0, $at - 30), 61);
+        $others = Product::query()->with('prices')->findMany($nearby)->keyBy('id');
+        $card = fn (?int $id): ?array => isset($others[$id]) ? ProductCardResource::make($others[$id])->resolve() : null;
+
         return Inertia::render('shop/product', [
             'product' => new ProductDetailResource($product),
+            'next' => $card($ids[$at - 1] ?? null),
+            'previous' => $card($ids[$at + 1] ?? null),
+            'available' => ProductCardResource::collection(
+                collect($nearby)->map(fn (int $id) => $others[$id] ?? null)->filter()
+                    ->reject(fn (Product $other): bool => $other->is($product) || ! $other->hasStockFor(1))
+                    ->take(12)->values(),
+            )->resolve(),
             'manufacturer' => implode(', ', array_filter([
                 config('shop.seller.name'),
                 config('shop.seller.address1'),
