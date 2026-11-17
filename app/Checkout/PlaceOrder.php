@@ -78,7 +78,8 @@ class PlaceOrder
 
             $order->items()->createMany(array_map(fn (array $line) => [
                 'product_id' => $line['product_id'],
-                'name' => $line['name'],
+                // The series belongs to the name wherever the order is read later: mails, invoice, account.
+                'name' => ($line['series'] ? $line['series'].': ' : '').$line['name'],
                 'sku' => $line['sku'],
                 'quantity' => $line['quantity'],
                 'unit_price_cents' => $line['unit_price_cents'],

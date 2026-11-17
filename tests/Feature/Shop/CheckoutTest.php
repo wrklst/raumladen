@@ -35,7 +35,7 @@ function checkoutPayload(string $country = 'DE', array $extra = []): array
 }
 
 test('a domestic order is placed, paid, invoiced and exported to DATEV', function () {
-    $product = Product::factory()->create(['price_cents' => 2000, 'stock' => 5]);
+    $product = Product::factory()->create(['price_cents' => 2000, 'stock' => 5, 'title' => ['de' => 'Raum', 'en' => 'Space'], 'specs' => ['series' => 'Reihe 7']]);
 
     $this->withSession(['cart.items' => [$product->id => 1]])
         ->post(route('shop.checkout.store', ['locale' => 'de']), checkoutPayload())
@@ -43,7 +43,9 @@ test('a domestic order is placed, paid, invoiced and exported to DATEV', functio
 
     $order = Order::query()->sole();
 
-    expect($order->tax_treatment)->toBe(TaxTreatment::Domestic)
+    // Mails, invoice and account read the item's name: the series is part of it.
+    expect($order->items->sole()->name)->toBe('Reihe 7: Raum')
+        ->and($order->tax_treatment)->toBe(TaxTreatment::Domestic)
         ->and($order->total_cents)->toBe(2390)
         ->and($order->tax_cents)->toBe(157)
         ->and($order->status)->toBe(OrderStatus::Pending)

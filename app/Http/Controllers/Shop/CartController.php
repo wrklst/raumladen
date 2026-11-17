@@ -32,9 +32,8 @@ class CartController extends Controller
 
         return Inertia::render('shop/cart', [
             'cart' => $totals->toArray(),
-            // By product id: the series, shown with the title, and what a theme needs to set a cover in type.
+            // What a theme needs to set a cover in type, by product id.
             'covers' => $this->cart->lines()->mapWithKeys(fn ($line): array => [$line->product->id => [
-                'series' => $line->product->specs['series'] ?? null,
                 'authors' => $line->product->specs['authors'] ?? null,
                 'description' => $line->product->translate('description'),
                 'isbn' => $line->product->specs['isbn'] ?? null,

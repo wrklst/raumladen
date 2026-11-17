@@ -240,7 +240,9 @@ export default function Checkout({
                                     className="flex justify-between gap-4 py-2"
                                 >
                                     <span>
-                                        {line.quantity} × {line.name}
+                                        {line.quantity} ×{' '}
+                                        {line.series && `${line.series}: `}
+                                        {line.name}
                                     </span>
                                     <span>
                                         {money(line.line_display_cents)}

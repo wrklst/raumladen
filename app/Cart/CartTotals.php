@@ -9,7 +9,7 @@ use App\Models\Coupon;
  * Result of CartCalculator. "Display" amounts are in the customer's price
  * basis: gross for consumer groups, net for business groups.
  *
- * @phpstan-type Line array{product_id: int, name: string, sku: string|null, quantity: int, unit_price_cents: int, tax_class: string, tax_rate: float, tax_category: string, discount_cents: int, line_net_cents: int, line_tax_cents: int, line_gross_cents: int, line_display_cents: int, image: string|null, slug: string|null, url: string, digital: bool}
+ * @phpstan-type Line array{product_id: int, name: string, series: string|null, sku: string|null, quantity: int, unit_price_cents: int, tax_class: string, tax_rate: float, tax_category: string, discount_cents: int, line_net_cents: int, line_tax_cents: int, line_gross_cents: int, line_display_cents: int, image: string|null, slug: string|null, url: string, digital: bool}
  * @phpstan-type TaxGroup array{rate: float, category: string, net: int, tax: int, gross: int}
  */
 final readonly class CartTotals

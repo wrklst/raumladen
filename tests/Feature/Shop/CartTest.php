@@ -124,7 +124,7 @@ test('the cart page carries the series and the cover texts of its books', functi
     $this->withSession(['cart.items' => [$book->id => 1]])
         ->get(cartUrl('shop.cart.index'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where("covers.{$book->id}.series", 'Reihe 7')
+            ->where('cart.lines.0.series', 'Reihe 7')
             ->where("covers.{$book->id}.isbn", '978-3-00-000001-1')
             ->where("covers.{$book->id}.imprint", 'Verlag'));
 });

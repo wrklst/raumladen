@@ -67,6 +67,7 @@ export type ProductDetail = ProductCard & {
 export type CartLine = {
     product_id: number;
     name: string;
+    series: string | null;
     sku: string | null;
     quantity: number;
     unit_price_cents: number;

@@ -55,6 +55,7 @@ class CartCalculator
             $lines[] = [
                 'product_id' => $product->id,
                 'name' => $product->translate('title'),
+                'series' => $product->specs['series'] ?? null,
                 'sku' => $product->sku,
                 'quantity' => $cartLine->quantity,
                 'unit_price_cents' => $unitDisplay,
