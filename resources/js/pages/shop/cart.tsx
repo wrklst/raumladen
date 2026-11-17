@@ -34,6 +34,7 @@ export default function Cart({
     covers?: Record<
         number,
         {
+            series: string | null;
             authors: string | null;
             description: string | null;
             isbn: string | null;
@@ -82,6 +83,7 @@ export default function Cart({
                                 <TextCover
                                     title={line.name}
                                     {...covers?.[line.product_id]}
+                                    series={undefined}
                                     small
                                     aria-hidden
                                     className="w-15 shrink-0"
@@ -93,6 +95,11 @@ export default function Cart({
                                         href={line.url}
                                         className="font-medium hover:underline"
                                     >
+                                        {covers?.[line.product_id]?.series && (
+                                            <span className="block text-sm font-normal">
+                                                {covers[line.product_id].series}
+                                            </span>
+                                        )}
                                         {line.name}
                                     </Link>
                                     <span className="font-medium">

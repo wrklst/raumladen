@@ -118,6 +118,17 @@ test('the cart page drops inactive and vanished products', function () {
     $this->assertSame([$active->id => 1], session('cart.items'));
 });
 
+test('the cart page carries the series and the cover texts of its books', function () {
+    $book = Product::factory()->create(['specs' => ['series' => 'Reihe 7', 'isbn' => '978-3-00-000001-1', 'publisher' => 'Verlag']]);
+
+    $this->withSession(['cart.items' => [$book->id => 1]])
+        ->get(cartUrl('shop.cart.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where("covers.{$book->id}.series", 'Reihe 7')
+            ->where("covers.{$book->id}.isbn", '978-3-00-000001-1')
+            ->where("covers.{$book->id}.imprint", 'Verlag'));
+});
+
 test('an empty cart renders with zero totals', function () {
     $this->get(cartUrl('shop.cart.index'))
         ->assertOk()
