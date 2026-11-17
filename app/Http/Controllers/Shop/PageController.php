@@ -14,11 +14,14 @@ class PageController extends Controller
     {
         abort_unless($page->is_published, 404);
 
+        $title = (string) $page->translate('title');
+
         return Inertia::render('shop/page', [
             'page' => [
                 'slug' => $page->slug,
-                'title' => $page->translate('title'),
-                'html' => $page->renderedBody(),
+                'title' => $title,
+                // The page shows its title as the heading: a text that opens with the same heading would say it twice.
+                'html' => preg_replace('/^\s*<h[1-6]>\s*'.preg_quote(e($title), '/').'\s*<\/h[1-6]>\s*/u', '', $page->renderedBody()),
             ],
             'seo' => Seo::make(
                 title: $page->translate('title'),

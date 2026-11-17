@@ -65,6 +65,16 @@ test('a content page renders its markdown without raw html', function () {
         ->where('page.title', 'Impressum')
         ->where('page.html', fn (string $html) => str_contains($html, '<h2>Angaben</h2>') && ! str_contains($html, '<script')));
 
+    Page::factory()->create([
+        'slug' => 'terms',
+        'title' => ['de' => 'AGB & Kundeninformationen', 'en' => 'Terms'],
+        'body' => ['de' => "## AGB & Kundeninformationen\n\n## Geltung\n\nText", 'en' => 'Text'],
+    ]);
+
+    // The page's own heading is the title: a body that opens with it does not repeat it.
+    $this->get('/de/pages/terms')->assertInertia(fn (Assert $page) => $page
+        ->where('page.html', fn (string $html) => str_starts_with($html, '<h2>Geltung</h2>')));
+
     Page::factory()->create(['slug' => 'draft', 'is_published' => false]);
 
     $this->get('/de/pages/draft')->assertNotFound();
