@@ -13,6 +13,7 @@ use App\Http\Controllers\Shop\PageController;
 use App\Http\Controllers\Shop\PaymentController;
 use App\Http\Controllers\Shop\ProductController;
 use App\Http\Controllers\Shop\SearchIndexController;
+use App\Http\Controllers\Shop\SocialImageController;
 use App\Http\Controllers\Shop\WithdrawalController;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,7 @@ Route::prefix('{locale}')
     ->group(function () {
         Route::get('/', HomeController::class)->name('home');
         Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+        Route::get('products/{product}/social.png', SocialImageController::class)->name('products.social-image');
         Route::get('pages/{page}', [PageController::class, 'show'])->name('pages.show');
 
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');

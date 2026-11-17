@@ -4,6 +4,7 @@ use App\Invoicing\InvoiceIssuer;
 use App\Mail\OrderShipped;
 use App\Models\CustomerGroup;
 use App\Models\Order;
+use App\Models\Product;
 use App\Theme\Theme;
 use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Storage;
@@ -113,4 +114,22 @@ test('a theme restyles the emails and leaves templates it does not bring untouch
 
     // The theme's mail CSS is inlined; the mail's own text still comes from the shop's template.
     expect($html)->toContain('#000000')->toContain($order->number);
+});
+
+test('a theme draws the picture for link previews, without one the product has no drawn picture', function () {
+    Storage::fake('local');
+    CustomerGroup::factory()->consumer()->create();
+    $product = Product::factory()->create();
+    $picture = route('shop.products.social-image', ['locale' => 'de', 'product' => $product->slug['de']]);
+
+    $this->get($picture)->assertNotFound();
+
+    useFixtureTheme();
+
+    $this->get($product->urlFor('de'))
+        ->assertInertia(fn (Assert $page) => $page->where('seo.image', fn (string $url) => str_starts_with($url, $picture.'?v=')));
+
+    $response = $this->get($picture)->assertOk()->assertHeader('Content-Type', 'image/png');
+
+    expect(getimagesizefromstring($response->getContent()))->toMatchArray([1200, 630]);
 });

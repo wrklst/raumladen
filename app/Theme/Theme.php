@@ -2,6 +2,9 @@
 
 namespace App\Theme;
 
+use App\Models\Product;
+use Closure;
+use GdImage;
 use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
@@ -25,6 +28,8 @@ use RuntimeException;
  *   resources/views/...               Blade views that replace the shop's, e.g.
  *                                     invoices/pdf.blade.php or mail/*.blade.php
  *   resources/views/vendor/mail/...   the look of emails (Laravel's mail components)
+ *   resources/social-image.php        returns a closure that draws a product's
+ *                                     picture for link previews (og:image)
  *
  * The front end is compiled, so changing the theme means a build and a
  * deploy; vite.config.ts reads the same SHOP_THEME. Views are picked up at
@@ -111,6 +116,22 @@ class Theme
     public function provides(string $feature): bool
     {
         return in_array($feature, $this->meta['provides'], true);
+    }
+
+    public function socialImagePath(): string
+    {
+        return $this->path.'/resources/social-image.php';
+    }
+
+    /**
+     * Draws a product's picture for link previews, 1200 × 630, where the
+     * theme brings one; without it a product's first image is used.
+     *
+     * @return (Closure(Product): GdImage)|null
+     */
+    public function socialImage(): ?Closure
+    {
+        return is_file($this->socialImagePath()) ? require $this->socialImagePath() : null;
     }
 
     /**

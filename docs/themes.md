@@ -12,13 +12,14 @@ and uses it until `SHOP_THEME` names another.
 
 Every part is optional.
 
-| Path                                   | What it does                                                                 |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| `theme.json`                           | `name`, and `provides`: what the theme already guarantees for every visitor. |
-| `resources/css/theme.css`              | Colours, type and fonts of the storefront.                                   |
-| `resources/js/...`                     | Replacements for the shop's pages, layout and components.                    |
-| `resources/views/...`                  | Replacements for the shop's Blade views: invoice and emails.                 |
-| `resources/views/vendor/mail/html/...` | The frame and the look of all emails.                                        |
+| Path                                   | What it does                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------ |
+| `theme.json`                           | `name`, and `provides`: what the theme already guarantees for every visitor.         |
+| `resources/css/theme.css`              | Colours, type and fonts of the storefront.                                           |
+| `resources/js/...`                     | Replacements for the shop's pages, layout and components.                            |
+| `resources/views/...`                  | Replacements for the shop's Blade views: invoice and emails.                         |
+| `resources/views/vendor/mail/html/...` | The frame and the look of all emails.                                                |
+| `resources/social-image.php`           | Returns a closure that draws a product's picture for link previews (GD, 1200 × 630). |
 
 ### theme.json
 

@@ -7,6 +7,7 @@ use App\Http\Resources\ProductDetailResource;
 use App\Models\Product;
 use App\Seo\Seo;
 use App\Seo\StructuredData;
+use App\Theme\Theme;
 use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -47,7 +48,9 @@ class ProductController extends Controller
                         ['name' => $product->translate('title'), 'url' => $product->urlFor($locale)],
                     ]),
                 ],
-                image: $product->imageUrl(),
+                image: is_file(Theme::current()->socialImagePath())
+                    ? route('shop.products.social-image', ['product' => $product->translate('slug'), 'v' => $product->updated_at->timestamp])
+                    : $product->imageUrl(),
                 type: 'product',
             ),
         ]);
