@@ -50,6 +50,8 @@ export type ProductCard = {
     authors: string | null;
     series: string | null;
     description: string | null;
+    isbn: string | null;
+    publisher: string | null;
 };
 
 export type ProductDetail = ProductCard & {

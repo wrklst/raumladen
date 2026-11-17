@@ -38,6 +38,8 @@ class ProductCardResource extends JsonResource
             'series' => $this->specs['series'] ?? null,
             // For themes that set the cover in type from the book's own text.
             'description' => $this->translate('description'),
+            'isbn' => $this->specs['isbn'] ?? null,
+            'publisher' => $this->specs['publisher'] ?? null,
         ];
     }
 }

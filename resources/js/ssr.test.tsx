@@ -22,6 +22,8 @@ const card: ProductCard = {
     authors: 'Lena Hartmann',
     series: null,
     description: null,
+    isbn: null,
+    publisher: null,
 };
 
 // The storefront must render on the server, where window, document and

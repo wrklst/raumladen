@@ -20,6 +20,8 @@ const card: ProductCard = {
     authors: 'Anna Beispiel',
     series: null,
     description: null,
+    isbn: null,
+    publisher: null,
 };
 
 const list = (data: ProductCard[]) =>
