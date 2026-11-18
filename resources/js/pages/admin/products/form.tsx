@@ -31,6 +31,7 @@ type Product = {
     track_stock: boolean;
     weight_grams: number | null;
     images: { path: string; url: string }[];
+    back_cover: string | null;
     specs: Record<string, string>;
     is_active: boolean;
     published_at: string | null;
@@ -475,6 +476,35 @@ export default function ProductForm({
                                             name="images[]"
                                             type="file"
                                             multiple
+                                            accept="image/*"
+                                        />
+                                    </Field>
+                                    {product?.back_cover && (
+                                        <div className="flex flex-col items-start gap-2">
+                                            <img
+                                                src={product.back_cover}
+                                                alt=""
+                                                className="h-24 rounded border"
+                                            />
+                                            <label className="flex items-center gap-2 text-xs">
+                                                <Checkbox
+                                                    name="keep_back_cover"
+                                                    value="1"
+                                                    defaultChecked
+                                                />
+                                                {t('Keep')}
+                                            </label>
+                                        </div>
+                                    )}
+                                    <Field
+                                        label={t('Back cover')}
+                                        htmlFor="back_cover"
+                                        error={errors.back_cover}
+                                    >
+                                        <Input
+                                            id="back_cover"
+                                            name="back_cover"
+                                            type="file"
                                             accept="image/*"
                                         />
                                     </Field>

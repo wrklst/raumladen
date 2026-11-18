@@ -15,6 +15,7 @@ export function TextCover({
     description: _description,
     isbn: _isbn,
     imprint: _imprint,
+    back: _back,
     ...props
 }: {
     title: string;
@@ -29,6 +30,7 @@ export function TextCover({
     description?: string | null;
     isbn?: string | null;
     imprint?: string | null;
+    back?: string | null;
 }) {
     return (
         <div

@@ -30,13 +30,14 @@ use Illuminate\Support\Carbon;
  * @property bool $track_stock
  * @property int|null $weight_grams
  * @property array<int, string>|null $images
+ * @property string|null $back_cover
  * @property array<string, mixed>|null $specs
  * @property bool $is_active
  * @property Carbon|null $published_at
  */
 #[Fillable([
     'type', 'sku', 'slug', 'title', 'description', 'tax_class', 'price_cents', 'currency',
-    'stock', 'track_stock', 'weight_grams', 'images', 'specs', 'is_active', 'published_at',
+    'stock', 'track_stock', 'weight_grams', 'images', 'back_cover', 'specs', 'is_active', 'published_at',
 ])]
 class Product extends Model
 {
@@ -129,6 +130,11 @@ class Product extends Model
             'locale' => $locale,
             'product' => $this->translate('slug', $locale),
         ]);
+    }
+
+    public function backCoverUrl(): ?string
+    {
+        return $this->back_cover === null ? null : asset('storage/'.$this->back_cover);
     }
 
     public function imageUrl(): ?string

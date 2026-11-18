@@ -96,7 +96,14 @@ class ProductController extends Controller
             Storage::disk('public')->delete($removed);
         }
 
-        $product->update(['images' => array_values($images)]);
+        $back = $request->file('back_cover')?->store('products', 'public')
+            ?? ($request->boolean('keep_back_cover') ? $product->back_cover : null);
+
+        if ($product->back_cover !== null && $product->back_cover !== $back) {
+            Storage::disk('public')->delete($product->back_cover);
+        }
+
+        $product->update(['images' => array_values($images), 'back_cover' => $back]);
 
         foreach ($request->input('group_prices', []) as $groupId => $price) {
             if ($price === null || $price === '') {
@@ -133,6 +140,7 @@ class ProductController extends Controller
                 'track_stock' => $product->track_stock,
                 'weight_grams' => $product->weight_grams,
                 'images' => array_map(fn (string $path) => ['path' => $path, 'url' => asset('storage/'.$path)], $product->images ?? []),
+                'back_cover' => $product->backCoverUrl(),
                 'specs' => $product->specs ?? [],
                 'is_active' => $product->is_active,
                 'published_at' => $product->published_at?->format('Y-m-d'),

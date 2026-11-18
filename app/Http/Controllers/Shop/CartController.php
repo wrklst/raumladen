@@ -38,6 +38,7 @@ class CartController extends Controller
                 'description' => $line->product->translate('description'),
                 'isbn' => $line->product->specs['isbn'] ?? null,
                 'imprint' => $line->product->specs['publisher'] ?? null,
+                'back' => $line->product->backCoverUrl(),
             ]]),
             'seo' => Seo::make(__('Cart'), null, route('shop.cart.index'), Seo::alternates('shop.cart.index'), index: false),
         ]);

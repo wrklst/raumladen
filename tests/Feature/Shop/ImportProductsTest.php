@@ -2,6 +2,7 @@
 
 use App\Enums\TaxClass;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 function catalogueFile(array $entries): string
 {
@@ -52,4 +53,26 @@ test('one invalid entry stops the whole import', function () {
 
 test('a file that is missing or not JSON is reported', function () {
     $this->artisan('shop:import-products', ['file' => '/nowhere/catalogue.json'])->assertFailed();
+});
+
+test('a catalogue entry brings the picture of its back cover along', function () {
+    Storage::fake('public');
+    $file = catalogueFile([]);
+    imagepng(imagecreatetruecolor(4, 6), dirname($file).'/back.png');
+    $entry = ['sku' => 'SI-1', 'title' => ['de' => 'Raum', 'en' => 'Space'], 'price' => 10];
+
+    file_put_contents($file, json_encode([[...$entry, 'back_cover' => 'back.png']]));
+    $this->artisan('shop:import-products', ['file' => $file])->assertSuccessful();
+
+    $path = Product::query()->sole()->back_cover;
+    Storage::disk('public')->assertExists($path);
+
+    file_put_contents($file, json_encode([[...$entry, 'back_cover' => 'missing.png']]));
+    $this->artisan('shop:import-products', ['file' => $file])->assertFailed();
+
+    file_put_contents($file, json_encode([[...$entry, 'back_cover' => null]]));
+    $this->artisan('shop:import-products', ['file' => $file])->assertSuccessful();
+
+    Storage::disk('public')->assertMissing($path);
+    expect(Product::query()->sole()->back_cover)->toBeNull();
 });

@@ -133,6 +133,23 @@ test('uploaded images are stored and removed images are deleted from disk', func
     expect($product->refresh()->images)->toBe([]);
 })->skip(! extension_loaded('gd'), 'GD is required for fake images');
 
+test('a back cover is stored, kept while its box stays ticked, and deleted when it is not', function () {
+    Storage::fake('public');
+    $product = Product::factory()->create();
+
+    $this->post(route('admin.products.update', $product), productPayload(['_method' => 'PUT', 'back_cover' => UploadedFile::fake()->image('back.jpg')]));
+
+    $path = $product->refresh()->back_cover;
+    Storage::disk('public')->assertExists($path);
+
+    $this->put(route('admin.products.update', $product), productPayload(['keep_back_cover' => '1']));
+    expect($product->refresh()->back_cover)->toBe($path);
+
+    $this->put(route('admin.products.update', $product), productPayload());
+    Storage::disk('public')->assertMissing($path);
+    expect($product->refresh()->back_cover)->toBeNull();
+})->skip(! extension_loaded('gd'), 'GD is required for fake images');
+
 test('only images are accepted as product images', function () {
     Storage::fake('public');
 

@@ -52,6 +52,7 @@ export type ProductCard = {
     description: string | null;
     isbn: string | null;
     publisher: string | null;
+    back_cover: string | null;
 };
 
 export type ProductDetail = ProductCard & {

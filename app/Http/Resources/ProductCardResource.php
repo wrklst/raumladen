@@ -40,6 +40,7 @@ class ProductCardResource extends JsonResource
             'description' => $this->translate('description'),
             'isbn' => $this->specs['isbn'] ?? null,
             'publisher' => $this->specs['publisher'] ?? null,
+            'back_cover' => $this->backCoverUrl(),
         ];
     }
 }

@@ -42,6 +42,8 @@ class ProductRequest extends FormRequest
             'published_at' => ['nullable', 'date'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'back_cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'keep_back_cover' => ['boolean'],
             'existing_images' => ['nullable', 'array'],
             'existing_images.*' => ['string'],
             'group_prices' => ['nullable', 'array'],

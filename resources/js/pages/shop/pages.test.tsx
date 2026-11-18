@@ -22,6 +22,7 @@ const card: ProductCard = {
     description: null,
     isbn: null,
     publisher: null,
+    back_cover: null,
 };
 
 const list = (data: ProductCard[]) =>

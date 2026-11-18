@@ -24,6 +24,7 @@ const card: ProductCard = {
     description: null,
     isbn: null,
     publisher: null,
+    back_cover: null,
 };
 
 // The storefront must render on the server, where window, document and

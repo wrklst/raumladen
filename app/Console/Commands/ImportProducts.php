@@ -5,11 +5,13 @@ namespace App\Console\Commands;
 use App\Enums\ProductType;
 use App\Enums\TaxClass;
 use App\Models\Product;
+use Closure;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -36,6 +38,8 @@ class ImportProducts extends Command
             return self::FAILURE;
         }
 
+        $folder = dirname((string) realpath($this->argument('file')));
+
         $validator = Validator::make(['products' => $entries], [
             'products' => ['required', 'array', 'list'],
             'products.*.sku' => ['required', 'string', 'max:64', 'distinct'],
@@ -51,6 +55,11 @@ class ImportProducts extends Command
             'products.*.specs.*' => ['nullable', 'string', 'max:5000'],
             'products.*.is_active' => ['boolean'],
             'products.*.published_at' => ['nullable', 'date'],
+            'products.*.back_cover' => ['nullable', 'string', function (string $attribute, mixed $value, Closure $fail) use ($folder): void {
+                if (! in_array(strtolower(pathinfo((string) $value, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'webp'], true) || @getimagesize($folder.'/'.$value) === false) {
+                    $fail("{$value} is not a picture next to the catalogue file.");
+                }
+            }],
         ]);
 
         if ($validator->fails()) {
@@ -63,7 +72,7 @@ class ImportProducts extends Command
 
         $created = 0;
 
-        DB::transaction(function () use ($entries, &$created): void {
+        DB::transaction(function () use ($entries, $folder, &$created): void {
             foreach ($entries as $entry) {
                 $attributes = Arr::only($entry, ['title', 'slug', 'description', 'tax_class', 'stock', 'track_stock', 'weight_grams', 'specs', 'is_active', 'published_at']);
                 $attributes['price_cents'] = (int) round((float) $entry['price'] * 100);
@@ -76,6 +85,10 @@ class ImportProducts extends Command
                     $product->fill(['type' => ProductType::Book, 'tax_class' => TaxClass::Reduced, 'stock' => 0, 'track_stock' => true, 'is_active' => true]);
                 }
 
+                if (array_key_exists('back_cover', $entry)) {
+                    $attributes['back_cover'] = $this->storeBackCover($entry['back_cover'] === null ? null : $folder.'/'.$entry['back_cover'], $product->back_cover);
+                }
+
                 $product->fill($attributes)->save();
             }
         });
@@ -84,5 +97,25 @@ class ImportProducts extends Command
         $this->info("Created {$created} and updated {$updated} product(s).");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Copies the picture into the public disk, named after its content, so a
+     * changed picture gets a new address and an unchanged one is not copied again.
+     */
+    private function storeBackCover(?string $file, ?string $current): ?string
+    {
+        $disk = Storage::disk('public');
+        $path = $file === null ? null : 'products/back-'.md5_file($file).'.'.strtolower(pathinfo($file, PATHINFO_EXTENSION));
+
+        if ($path !== null && ! $disk->exists($path)) {
+            $disk->put($path, (string) file_get_contents($file));
+        }
+
+        if ($current !== null && $current !== $path) {
+            $disk->delete($current);
+        }
+
+        return $path;
     }
 }

@@ -38,6 +38,7 @@ export default function Cart({
             description: string | null;
             isbn: string | null;
             imprint: string | null;
+            back: string | null;
         }
     >;
 }) {
