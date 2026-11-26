@@ -657,13 +657,13 @@ export default function Checkout({
                         </Button>
 
                         {payment && (
-                            <div
-                                role="dialog"
-                                aria-modal="true"
-                                aria-labelledby="payment-notice"
-                                className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
-                            >
-                                <div className="w-full max-w-md space-y-4 border bg-background p-6">
+                            <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
+                                <div
+                                    role="dialog"
+                                    aria-modal="true"
+                                    aria-labelledby="payment-notice"
+                                    className="w-full max-w-md space-y-4 border bg-background p-6"
+                                >
                                     <h2
                                         id="payment-notice"
                                         className="text-lg font-semibold"
