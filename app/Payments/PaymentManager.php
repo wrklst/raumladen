@@ -31,9 +31,10 @@ class PaymentManager
     /**
      * What the customer chooses from at checkout: every payment method of
      * every available gateway. A gateway that cannot name its methods is one
-     * entry, and the choice is made on the provider's page.
+     * entry, and the choice is made on the provider's page. Each says whether
+     * the order waits for the money (a bank transfer) or ships once ordered.
      *
-     * @return list<array{gateway: string, method: string|null, label: string|null, image: string|null}>
+     * @return list<array{gateway: string, method: string|null, label: string|null, image: string|null, pays_later: bool}>
      */
     public function choices(string $locale): array
     {
@@ -44,11 +45,11 @@ class PaymentManager
             $methods = $gateway instanceof MollieGateway ? $gateway->methods($locale) : [];
 
             foreach ($methods as $method) {
-                $choices[] = ['gateway' => $key, 'method' => $method['id'], 'label' => $method['label'], 'image' => $method['image']];
+                $choices[] = ['gateway' => $key, 'method' => $method['id'], 'label' => $method['label'], 'image' => $method['image'], 'pays_later' => $gateway->paysLater()];
             }
 
             if ($methods === []) {
-                $choices[] = ['gateway' => $key, 'method' => null, 'label' => null, 'image' => null];
+                $choices[] = ['gateway' => $key, 'method' => null, 'label' => null, 'image' => null, 'pays_later' => $gateway->paysLater()];
             }
         }
 

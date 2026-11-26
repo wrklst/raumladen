@@ -23,6 +23,8 @@ type Props = {
         method: string | null;
         label: string | null;
         image: string | null;
+        /** The order waits for the money (bank transfer) instead of shipping once ordered. */
+        pays_later: boolean;
     }[];
     /** For card fields in the page (Mollie Components). */
     card_fields: { profile_id: string; testmode: boolean } | null;
@@ -595,12 +597,32 @@ export default function Checkout({
                                             className="size-4 accent-primary"
                                         />
                                         <span className="flex-1">
-                                            {option.label ??
-                                                t(
-                                                    gatewayLabels[
-                                                        option.gateway
-                                                    ] ?? option.gateway,
-                                                )}
+                                            <span className="block font-medium">
+                                                {option.label ??
+                                                    t(
+                                                        gatewayLabels[
+                                                            option.gateway
+                                                        ] ?? option.gateway,
+                                                    )}
+                                                {option.method === 'wero' &&
+                                                    ` · ${t('Recommended')}`}
+                                            </span>
+                                            {option.method === 'wero' && (
+                                                <span className="block">
+                                                    {t(
+                                                        'The new, secure European way to pay: straight from your bank account, without a detour through third parties.',
+                                                    )}
+                                                </span>
+                                            )}
+                                            <span className="block">
+                                                {option.pays_later
+                                                    ? t(
+                                                          'Ships once your transfer has arrived, usually after 2–3 working days.',
+                                                      )
+                                                    : t(
+                                                          'Paid at once: your order ships right away.',
+                                                      )}
+                                            </span>
                                         </span>
                                         {option.image && (
                                             <img

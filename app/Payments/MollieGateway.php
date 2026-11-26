@@ -17,9 +17,12 @@ use Throwable;
 class MollieGateway implements PaymentGateway
 {
     /**
-     * The methods listed first at the checkout, in this order.
+     * The order of the methods at the checkout: these first, in this order,
+     * then whatever else the account offers, and PayPal last.
      */
-    private const array FIRST = ['wero', 'applepay', 'googlepay', 'creditcard', 'paypal'];
+    private const array FIRST = ['wero', 'applepay', 'googlepay', 'creditcard'];
+
+    private const array LAST = ['paypal'];
 
     private ?MollieApiClient $client = null;
 
@@ -101,8 +104,12 @@ class MollieGateway implements PaymentGateway
                         $methods[] = ['id' => (string) $method->id, 'label' => (string) $method->description, 'image' => $method->image->svg ?? null];
                     }
 
-                    // What most customers reach for comes first; the rest keeps Mollie's order.
-                    $rank = fn (array $method): int => ($at = array_search($method['id'], self::FIRST, true)) === false ? count(self::FIRST) : $at;
+                    // The shop's order of preference; the rest keeps Mollie's order (usort is stable).
+                    $rank = fn (array $method): int => match (true) {
+                        in_array($method['id'], self::LAST, true) => 100,
+                        ($at = array_search($method['id'], self::FIRST, true)) !== false => $at,
+                        default => 50,
+                    };
                     usort($methods, fn (array $a, array $b): int => $rank($a) <=> $rank($b));
 
                     return $methods;

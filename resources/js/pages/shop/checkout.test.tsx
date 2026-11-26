@@ -31,8 +31,20 @@ const props = {
     countries: { DE: 'Deutschland', AT: 'Österreich' },
     gateways: ['mollie', 'bank_transfer'],
     payment_choices: [
-        { gateway: 'mollie', method: null, label: null, image: null },
-        { gateway: 'bank_transfer', method: null, label: null, image: null },
+        {
+            gateway: 'mollie',
+            method: null,
+            label: null,
+            image: null,
+            pays_later: false,
+        },
+        {
+            gateway: 'bank_transfer',
+            method: null,
+            label: null,
+            image: null,
+            pays_later: true,
+        },
     ],
     card_fields: null,
     wallet: { country: 'DE', label: 'Shop' },
