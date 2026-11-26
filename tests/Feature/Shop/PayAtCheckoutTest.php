@@ -153,3 +153,19 @@ test('abandoned attempts are given up by the scheduled command, which asks the p
     expect($abandoned->refresh()->status)->toBe(OrderStatus::Cancelled)
         ->and($this->product->refresh()->stock)->toBe(5);
 });
+
+test('an Apple Pay token confirmed at the checkout is handed to the provider', function () {
+    payOnline($this, ['method' => 'applepay', 'apple_pay_token' => '{"paymentData":{"version":"EC_v1"}}']);
+
+    expect(OnlineGateway::$started[0]['method'])->toBe('applepay')
+        ->and(OnlineGateway::$started[0]['apple_pay_token'])->toBe('{"paymentData":{"version":"EC_v1"}}');
+});
+
+test('the shop vouches for itself to Apple only, and only when Mollie is set up', function (string $url, int $status) {
+    $this->postJson(route('shop.checkout.apple-pay-session', ['locale' => 'de']), ['validation_url' => $url])->assertStatus($status);
+})->with([
+    'another host' => ['https://evil.example/paymentservices/startSession', 422],
+    'a look-alike host' => ['https://apple.com.evil.example/startSession', 422],
+    'not https' => ['http://apple-pay-gateway.apple.com/paymentservices/startSession', 422],
+    'Apple, without a Mollie key' => ['https://apple-pay-gateway.apple.com/paymentservices/startSession', 404],
+]);

@@ -26,7 +26,7 @@ interface PaymentGateway
      * to. When the provider needs nothing more from the customer, that is the
      * return URL.
      *
-     * @param  array{method?: string|null, card_token?: string|null}  $options  what the customer chose at checkout
+     * @param  array{method?: string|null, card_token?: string|null, apple_pay_token?: string|null}  $options  what the customer chose at checkout
      */
     public function start(Order $order, string $returnUrl, string $webhookUrl, array $options = []): string;
 

@@ -36,6 +36,7 @@ class CheckoutRequest extends FormRequest
             // The provider checks both: an unknown method or a spent token fails the payment, not the order.
             'method' => ['nullable', 'string', 'max:40', 'regex:/^[a-z0-9_]+$/'],
             'card_token' => ['nullable', 'string', 'max:255'],
+            'apple_pay_token' => ['nullable', 'json', 'max:20000'],
         ];
     }
 

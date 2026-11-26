@@ -16,6 +16,11 @@ use Throwable;
 
 class MollieGateway implements PaymentGateway
 {
+    /**
+     * The methods listed first at the checkout, in this order.
+     */
+    private const array FIRST = ['wero', 'applepay', 'googlepay', 'creditcard', 'paypal'];
+
     private ?MollieApiClient $client = null;
 
     public function __construct(private MarkOrderPaid $markOrderPaid) {}
@@ -44,6 +49,8 @@ class MollieGateway implements PaymentGateway
             'currency' => $order->currency,
         ]);
 
+        $applePay = ($options['method'] ?? null) === 'applepay' && ! empty($options['apple_pay_token']);
+
         $remote = $this->client()->payments->create(array_filter([
             'amount' => ['currency' => $order->currency, 'value' => number_format($order->total_cents / 100, 2, '.', '')],
             'description' => config('shop.seller.name').' '.$order->number,
@@ -52,8 +59,10 @@ class MollieGateway implements PaymentGateway
             'locale' => $order->locale === 'de' ? 'de_DE' : 'en_US',
             // Chosen at checkout: the provider's own page then starts at that method,
             // and a card entered at checkout is charged without a second form.
-            'method' => $options['method'] ?? null,
+            // Apple Pay confirmed at the checkout arrives as a token and is charged as a card.
+            'method' => $applePay ? 'creditcard' : ($options['method'] ?? null),
             'cardToken' => ($options['method'] ?? null) === 'creditcard' ? ($options['card_token'] ?? null) : null,
+            'applePayPaymentToken' => $applePay ? $options['apple_pay_token'] : null,
             'metadata' => ['order_id' => $order->id, 'order_number' => $order->number, 'payment_id' => $payment->id],
         ], fn (mixed $value): bool => $value !== null));
 
@@ -76,20 +85,42 @@ class MollieGateway implements PaymentGateway
     {
         // ponytail: every method is offered for every amount; pass the amount when a method's limits matter.
         return Cache::remember('mollie:methods:'.$locale.':'.md5($this->apiKey()), now()->addMinutes(10), function () use ($locale): array {
-            try {
-                $methods = [];
+            $query = ['locale' => $locale === 'de' ? 'de_DE' : 'en_US'];
 
-                foreach ($this->client()->methods->allEnabled(['locale' => $locale === 'de' ? 'de_DE' : 'en_US']) as $method) {
-                    $methods[] = ['id' => (string) $method->id, 'label' => (string) $method->description, 'image' => $method->image->svg ?? null];
+            // Wallets are only listed when asked for; an account that knows none of them is asked without.
+            foreach ([['includeWallets' => 'applepay,googlepay'], ['includeWallets' => 'applepay'], []] as $wallets) {
+                try {
+                    $methods = [];
+
+                    foreach ($this->client()->methods->allEnabled([...$query, ...$wallets]) as $method) {
+                        $methods[] = ['id' => (string) $method->id, 'label' => (string) $method->description, 'image' => $method->image->svg ?? null];
+                    }
+
+                    // What most customers reach for comes first; the rest keeps Mollie's order.
+                    $rank = fn (array $method): int => ($at = array_search($method['id'], self::FIRST, true)) === false ? count(self::FIRST) : $at;
+                    usort($methods, fn (array $a, array $b): int => $rank($a) <=> $rank($b));
+
+                    return $methods;
+                } catch (Throwable $e) {
+                    $failure = $e;
                 }
-
-                return $methods;
-            } catch (Throwable $e) {
-                report($e);
-
-                return [];
             }
+
+            report($failure);
+
+            return [];
         });
+    }
+
+    /**
+     * Apple Pay at the checkout: Apple asks the shop to prove who it is, and
+     * Mollie answers for it. The answer is handed to Apple's sheet as it is.
+     *
+     * @return array<string, mixed>
+     */
+    public function applePaySession(string $validationUrl): array
+    {
+        return $this->client()->wallets->requestApplePayPaymentSession((string) parse_url((string) config('app.url'), PHP_URL_HOST), $validationUrl)->toArray();
     }
 
     /**

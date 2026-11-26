@@ -710,5 +710,7 @@
     "Complete your payment": "Zahlung abschließen",
     "Your payment of :total is waiting in a separate window. This page continues by itself as soon as it is confirmed.": "Ihre Zahlung über :total wartet in einem eigenen Fenster. Diese Seite geht von selbst weiter, sobald sie bestätigt ist.",
     "Open the payment window": "Zahlungsfenster öffnen",
-    "Choose another payment method": "Andere Zahlungsart wählen"
+    "Choose another payment method": "Andere Zahlungsart wählen",
+    "Apple Pay is not available right now.": "Apple Pay ist gerade nicht verfügbar.",
+    "Apple Pay is not available right now. Please choose another payment method.": "Apple Pay ist gerade nicht verfügbar. Bitte wählen Sie eine andere Zahlungsart."
 }

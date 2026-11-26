@@ -40,6 +40,7 @@ Route::prefix('{locale}')
 
         Route::get('checkout', [CheckoutController::class, 'show'])->name('checkout.show');
         Route::post('checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        Route::post('checkout/apple-pay-session', [CheckoutController::class, 'applePaySession'])->middleware('throttle:30,1')->name('checkout.apple-pay-session');
 
         Route::get('orders/{order}/payment', [PaymentController::class, 'return'])->name('payments.return');
         Route::post('orders/{order}/payment', [PaymentController::class, 'retry'])->name('payments.retry');

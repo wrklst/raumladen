@@ -21,6 +21,7 @@ use App\Seo\Seo;
 use App\Shop\CurrentCustomer;
 use App\Support\Countries;
 use App\Tax\VatIdValidator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -64,6 +65,8 @@ class CheckoutController extends Controller
             'payment_choices' => $this->payments->choices(app()->getLocale()),
             // For card fields in the page (Mollie Components); null without Mollie.
             'card_fields' => in_array('mollie', $this->payments->availableKeys(), true) ? app(MollieGateway::class)->components() : null,
+            // What Apple Pay's sheet names: the seller's country and the shop.
+            'wallet' => ['country' => config('shop.tax.home_country'), 'label' => config('app.name')],
             'defaults' => [
                 'email' => $user?->email,
                 'billing_address' => $user?->billing_address,
@@ -152,6 +155,25 @@ class CheckoutController extends Controller
     }
 
     /**
+     * Apple Pay at the checkout asks the shop to prove who it is before it shows its sheet.
+     */
+    public function applePaySession(Request $request, MollieGateway $mollie): JsonResponse
+    {
+        // Only Apple's own servers are ever named here.
+        $url = $request->validate(['validation_url' => ['required', 'url:https', 'regex:/^https:\/\/[a-z0-9.-]+\.apple\.com\//i']])['validation_url'];
+
+        abort_unless($mollie->available(), 404);
+
+        try {
+            return response()->json($mollie->applePaySession($url));
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => __('Apple Pay is not available right now.')], 503);
+        }
+    }
+
+    /**
      * Bank transfer: the order stands, the customer is told where to send the money.
      */
     private function placeAndPayLater(CheckoutRequest $request, Order $order, PaymentGateway $gateway): SymfonyResponse
@@ -191,7 +213,7 @@ class CheckoutController extends Controller
                 $order,
                 route('shop.payments.return', ['order' => $order, 'window' => 1]),
                 route('webhooks.payments', $gateway->key()),
-                ['method' => $request->validated('method'), 'card_token' => $request->validated('card_token')],
+                ['method' => $request->validated('method'), 'card_token' => $request->validated('card_token'), 'apple_pay_token' => $request->validated('apple_pay_token')],
             );
         } catch (Throwable $e) {
             report($e);

@@ -26,6 +26,8 @@ type Props = {
     }[];
     /** For card fields in the page (Mollie Components). */
     card_fields: { profile_id: string; testmode: boolean } | null;
+    /** What Apple Pay's sheet names. */
+    wallet: { country: string; label: string };
     defaults: {
         email: string | null;
         billing_address: Address | null;
@@ -51,8 +53,25 @@ type MollieClient = {
     }>;
 };
 
+/** The parts of Apple Pay on the Web this page uses (Safari only). */
+type ApplePaySheet = {
+    onvalidatemerchant: (event: { validationURL: string }) => void;
+    onpaymentauthorized: (event: { payment: { token: unknown } }) => void;
+    oncancel: () => void;
+    completeMerchantValidation: (session: unknown) => void;
+    completePayment: (status: number) => void;
+    begin: () => void;
+    abort: () => void;
+};
+
 declare global {
     interface Window {
+        ApplePaySession?: {
+            new (version: number, request: object): ApplePaySheet;
+            canMakePayments: () => boolean;
+            STATUS_SUCCESS: number;
+            STATUS_FAILURE: number;
+        };
         Mollie?: (
             profileId: string,
             options: { locale: string; testmode: boolean },
@@ -77,6 +96,7 @@ export default function Checkout({
     countries,
     payment_choices,
     card_fields,
+    wallet,
     defaults,
     legal_pages,
 }: Props) {
@@ -111,8 +131,24 @@ export default function Checkout({
     // page; whatever a provider or a bank needs to show opens in a window
     // over it. The server answers a submitted order with where that window
     // goes (flash data), and the page asks until the payment is settled.
+    // Apple Pay is offered where the browser can show its sheet; known only after the page has loaded.
+    const [applePay, setApplePay] = useState(false);
+
+    useEffect(() => {
+        try {
+            setApplePay(window.ApplePaySession?.canMakePayments() ?? false);
+        } catch {
+            setApplePay(false);
+        }
+    }, []);
+
+    const choices = payment_choices.filter(
+        (option) => option.method !== 'applepay' || applePay,
+    );
     const [chosen, setChosen] = useState(0);
-    const choice = payment_choices[chosen] ?? payment_choices[0];
+    const choice = choices[chosen] ?? choices[0];
+    const sheet = useRef<ApplePaySheet | null>(null);
+    const applePayToken = useRef<HTMLInputElement>(null);
     const paysByCard = choice?.method === 'creditcard' && card_fields !== null;
     const [payment, setPayment] = useState<Payment | null>(null);
     const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -283,6 +319,75 @@ export default function Checkout({
 
         setPaymentError(null);
 
+        // Apple Pay: its sheet opens over the checkout; the order is sent when the customer confirms there.
+        if (choice.method === 'applepay' && window.ApplePaySession) {
+            if (applePayToken.current?.value) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const ApplePay = window.ApplePaySession;
+            const session = new ApplePay(3, {
+                countryCode: wallet.country,
+                currencyCode: 'EUR',
+                supportedNetworks: [
+                    'amex',
+                    'maestro',
+                    'masterCard',
+                    'visa',
+                    'vPay',
+                ],
+                merchantCapabilities: ['supports3DS'],
+                total: {
+                    label: wallet.label,
+                    amount: (cart.total_cents / 100).toFixed(2),
+                },
+            });
+
+            session.onvalidatemerchant = ({ validationURL }) => {
+                void fetch(CheckoutController.applePaySession().url, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-XSRF-TOKEN': xsrfToken(),
+                    },
+                    body: JSON.stringify({ validation_url: validationURL }),
+                })
+                    .then((response) =>
+                        response.ok ? response.json() : Promise.reject(),
+                    )
+                    .then((answer) =>
+                        session.completeMerchantValidation(answer),
+                    )
+                    .catch(() => {
+                        session.abort();
+                        setPaymentError(
+                            t(
+                                'Apple Pay is not available right now. Please choose another payment method.',
+                            ),
+                        );
+                    });
+            };
+            session.onpaymentauthorized = ({ payment: authorized }) => {
+                if (!applePayToken.current) {
+                    return;
+                }
+
+                sheet.current = session;
+                applePayToken.current.value = JSON.stringify(authorized.token);
+                form.requestSubmit(button);
+                applePayToken.current.value = '';
+            };
+            session.oncancel = () => {
+                sheet.current = null;
+            };
+            session.begin();
+
+            return;
+        }
+
         if (!paysByCard) {
             popup.current = window.open('', 'raumladen-payment', paymentWindow);
             popup.current?.document.write(
@@ -327,7 +432,19 @@ export default function Checkout({
             {...CheckoutController.store.form()}
             // The answer comes back to this page: what was typed stays.
             options={{ preserveState: true, preserveScroll: true }}
-            onError={closeWindow}
+            onError={() => {
+                closeWindow();
+                sheet.current?.completePayment(
+                    window.ApplePaySession?.STATUS_FAILURE ?? 1,
+                );
+                sheet.current = null;
+            }}
+            onSuccess={() => {
+                sheet.current?.completePayment(
+                    window.ApplePaySession?.STATUS_SUCCESS ?? 0,
+                );
+                sheet.current = null;
+            }}
             className="grid gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"
         >
             {({ processing }) => (
@@ -453,7 +570,12 @@ export default function Checkout({
                                 type="hidden"
                                 name="card_token"
                             />
-                            {payment_choices.map((option, index) => (
+                            <input
+                                ref={applePayToken}
+                                type="hidden"
+                                name="apple_pay_token"
+                            />
+                            {choices.map((option, index) => (
                                 <div
                                     key={`${option.gateway}:${option.method}`}
                                     className="border text-sm"

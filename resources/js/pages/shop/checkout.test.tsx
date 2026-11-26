@@ -35,6 +35,7 @@ const props = {
         { gateway: 'bank_transfer', method: null, label: null, image: null },
     ],
     card_fields: null,
+    wallet: { country: 'DE', label: 'Shop' },
     defaults: {
         email: null,
         billing_address: null,
