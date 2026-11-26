@@ -53,8 +53,10 @@ One page, no account needed.
 - No terms checkbox: the terms and the withdrawal and privacy information
   are linked directly above the order button.
 - Stock is checked and reserved inside the order transaction.
-- A **confirmation of receipt** is sent at once (§ 312i BGB) with the order,
-  the bank details for prepayment, the terms and the withdrawal information.
+- An order paid by bank transfer is placed at once, and a **confirmation of
+  receipt** is sent (§ 312i BGB) with the bank details, the terms and the
+  withdrawal information. An order paid online is placed when the payment is
+  confirmed, and that is when its one mail goes out, with the invoice.
 - A guest order under an existing customer's email is attached to that
   account, but does not change the account's stored address.
 
@@ -95,9 +97,17 @@ net price is derived from that and the rate of the destination applied.
 
 ## Payment
 
-- **Mollie** for cards, PayPal, direct debit and more. The customer is sent
-  to Mollie and back; a webhook and the return page both update the order,
-  and either may come first.
+- **Mollie** for cards, PayPal, direct debit and more. The customer chooses
+  the method at the checkout and stays there: a card is entered in the page
+  (Mollie Components, the number never reaches the shop), and whatever a
+  provider or a bank has to show opens in a window over the checkout. The
+  page goes on by itself when the payment is confirmed; if it fails, the
+  customer is still at the checkout with everything they typed. A webhook
+  confirms payments whose window was closed too early.
+- Until its payment is confirmed, an online order is a draft: it holds its
+  stock, but is in no list and sends no mail. A failed or abandoned attempt
+  returns its stock (abandoned ones after two hours); money that arrives
+  for an attempt already given up is refunded automatically.
 - **Bank transfer in advance.** Offered as soon as an IBAN is set. The order
   waits until someone with the payments role confirms the transfer.
 - An unpaid order can be paid again with another method.

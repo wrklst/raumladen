@@ -29,6 +29,7 @@ class MarkOrderPaid
 
             $locked->update([
                 'status' => OrderStatus::Paid,
+                'placed_at' => $locked->placed_at ?? now(),
                 'paid_at' => now(),
                 'payment_gateway' => $gateway,
             ]);

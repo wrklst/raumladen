@@ -34,6 +34,7 @@ class OrderFactory extends Factory
             'number' => 'B-'.Str::padLeft((string) fake()->unique()->numberBetween(1, 99999), 5, '0'),
             'user_id' => User::factory(),
             'status' => OrderStatus::Pending,
+            'placed_at' => now(),
             'locale' => 'de',
             'currency' => 'EUR',
             'email' => fake()->safeEmail(),

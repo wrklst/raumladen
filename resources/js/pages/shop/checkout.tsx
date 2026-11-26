@@ -1,5 +1,5 @@
 import { Form, Link, router, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CheckoutController from '@/actions/App/Http/Controllers/Shop/CheckoutController';
 import InputError from '@/components/input-error';
 import { AddressFields } from '@/components/shop/address-fields';
@@ -17,6 +17,15 @@ type Props = {
     cart: CartTotals;
     countries: Record<string, string>;
     gateways: string[];
+    /** What to pay with: a gateway, and the method within it where the gateway names its methods. */
+    payment_choices: {
+        gateway: string;
+        method: string | null;
+        label: string | null;
+        image: string | null;
+    }[];
+    /** For card fields in the page (Mollie Components). */
+    card_fields: { profile_id: string; testmode: boolean } | null;
     defaults: {
         email: string | null;
         billing_address: Address | null;
@@ -27,6 +36,34 @@ type Props = {
     legal_pages: { slug: string; title: string }[];
 };
 
+/** A payment the customer is making in a window over the checkout. */
+type Payment = { url: string; status: string; cancel: string };
+
+type MollieComponent = { mount: (target: HTMLElement) => void };
+type MollieClient = {
+    createComponent: (type: 'card') => MollieComponent;
+    createToken: () => Promise<{
+        token?: string;
+        error?: { message: string };
+    }>;
+};
+
+declare global {
+    interface Window {
+        Mollie?: (
+            profileId: string,
+            options: { locale: string; testmode: boolean },
+        ) => MollieClient;
+    }
+}
+
+const paymentWindow = 'popup,width=480,height=760';
+
+const xsrfToken = (): string =>
+    decodeURIComponent(
+        document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)?.[1] ?? '',
+    );
+
 const gatewayLabels: Record<string, string> = {
     mollie: 'Card, PayPal, SEPA and more (Mollie)',
     bank_transfer: 'Prepayment by bank transfer',
@@ -35,7 +72,8 @@ const gatewayLabels: Record<string, string> = {
 export default function Checkout({
     cart,
     countries,
-    gateways,
+    payment_choices,
+    card_fields,
     defaults,
     legal_pages,
 }: Props) {
@@ -66,6 +104,206 @@ export default function Checkout({
         return () => clearTimeout(handle);
     }, [effectiveCountry, vatId]);
 
+    // Paying online happens here, at the checkout. A card is entered in the
+    // page; whatever a provider or a bank needs to show opens in a window
+    // over it. The server answers a submitted order with where that window
+    // goes (flash data), and the page asks until the payment is settled.
+    const [chosen, setChosen] = useState(0);
+    const choice = payment_choices[chosen] ?? payment_choices[0];
+    const paysByCard = choice?.method === 'creditcard' && card_fields !== null;
+    const [payment, setPayment] = useState<Payment | null>(null);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
+    const [preparing, setPreparing] = useState(false);
+    const popup = useRef<Window | null>(null);
+    const mollie = useRef<MollieClient | null>(null);
+    const cardFields = useRef<HTMLDivElement>(null);
+    const cardToken = useRef<HTMLInputElement>(null);
+
+    const openWindow = (url: string): void => {
+        if (popup.current && !popup.current.closed) {
+            popup.current.location.href = url;
+            popup.current.focus();
+
+            return;
+        }
+
+        // Blocked when not opened by a click: the notice over the checkout has a button for it.
+        popup.current = window.open(url, 'raumladen-payment', paymentWindow);
+    };
+
+    const closeWindow = (): void => {
+        popup.current?.close();
+        popup.current = null;
+    };
+
+    const settle = (answer: { state: string; url?: string }): void => {
+        if (answer.state === 'done' && answer.url) {
+            closeWindow();
+            router.visit(answer.url);
+        }
+
+        if (answer.state === 'failed') {
+            closeWindow();
+            setPayment(null);
+            setPaymentError(
+                t(
+                    'The payment was not completed. Please try again or choose another payment method.',
+                ),
+            );
+        }
+    };
+
+    // Card fields: loaded when a card is first chosen, then kept.
+    useEffect(() => {
+        if (!paysByCard || !card_fields || mollie.current) {
+            return;
+        }
+
+        const mount = (): void => {
+            if (!window.Mollie || !cardFields.current || mollie.current) {
+                return;
+            }
+
+            mollie.current = window.Mollie(card_fields.profile_id, {
+                locale: locale === 'de' ? 'de_DE' : 'en_US',
+                testmode: card_fields.testmode,
+            });
+            mollie.current.createComponent('card').mount(cardFields.current);
+        };
+
+        if (window.Mollie) {
+            mount();
+
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://js.mollie.com/v1/mollie.js';
+        script.addEventListener('load', mount);
+        document.body.appendChild(script);
+    }, [paysByCard, card_fields, locale]);
+
+    // The server's answer to a submitted order: where the payment window goes.
+    useEffect(
+        () =>
+            router.on('flash', (event) => {
+                const next = (event as CustomEvent).detail?.flash?.payment as
+                    | Payment
+                    | undefined;
+
+                if (next) {
+                    setPaymentError(null);
+                    setPayment(next);
+                    openWindow(next.url);
+                }
+            }),
+        [],
+    );
+
+    // While the customer pays: ask how it stands, and at once when the window says it is done.
+    useEffect(() => {
+        if (!payment) {
+            return;
+        }
+
+        const ask = (): void => {
+            void fetch(payment.status, {
+                headers: { Accept: 'application/json' },
+            })
+                .then((response) => (response.ok ? response.json() : null))
+                .then((answer) => answer && settle(answer))
+                .catch(() => undefined);
+        };
+        const onMessage = (event: MessageEvent): void => {
+            if (
+                event.origin === window.location.origin &&
+                event.data?.type === 'raumladen-payment'
+            ) {
+                ask();
+            }
+        };
+
+        // ponytail: asks every 2.5 s, each time asking the provider; fine for the minutes a payment takes.
+        const timer = setInterval(ask, 2500);
+        window.addEventListener('message', onMessage);
+
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('message', onMessage);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [payment]);
+
+    const giveUp = (): void => {
+        if (!payment) {
+            return;
+        }
+
+        void fetch(payment.cancel, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': xsrfToken(),
+            },
+        })
+            .then((response) => (response.ok ? response.json() : null))
+            .then((answer) => answer && settle(answer))
+            .catch(() => undefined);
+    };
+
+    /**
+     * Before the order is sent. A card is turned into a token first (its
+     * number never reaches the shop); for every other online method the
+     * window is opened now, while the click still allows it.
+     */
+    const beforeOrder = (event: React.MouseEvent<HTMLButtonElement>): void => {
+        if (!choice || choice.gateway === 'bank_transfer') {
+            return;
+        }
+
+        const button = event.currentTarget;
+        const form = button.form;
+
+        if (!form?.reportValidity()) {
+            return;
+        }
+
+        setPaymentError(null);
+
+        if (!paysByCard) {
+            popup.current = window.open('', 'raumladen-payment', paymentWindow);
+            popup.current?.document.write(
+                `<p style="font-family: sans-serif; padding: 2rem">${t('Connecting to the payment provider …')}</p>`,
+            );
+
+            return;
+        }
+
+        if (cardToken.current?.value || !mollie.current) {
+            return;
+        }
+
+        event.preventDefault();
+        setPreparing(true);
+
+        void mollie.current.createToken().then(({ token, error }) => {
+            setPreparing(false);
+
+            if (error || !token || !cardToken.current) {
+                setPaymentError(
+                    error?.message ?? t('Please check your card details.'),
+                );
+
+                return;
+            }
+
+            cardToken.current.value = token;
+            form.requestSubmit(button);
+            // A token pays once: the next try asks for a new one.
+            cardToken.current.value = '';
+        });
+    };
+
     const billingDefaults: Address = {
         ...defaults.billing_address,
         company: defaults.billing_address?.company ?? defaults.company,
@@ -74,6 +312,9 @@ export default function Checkout({
     return (
         <Form
             {...CheckoutController.store.form()}
+            // The answer comes back to this page: what was typed stays.
+            options={{ preserveState: true, preserveScroll: true }}
+            onError={closeWindow}
             className="grid gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"
         >
             {({ processing }) => (
@@ -184,22 +425,71 @@ export default function Checkout({
                                     {t('Payment')}
                                 </h2>
                             </legend>
-                            {gateways.map((gateway, index) => (
-                                <label
-                                    key={gateway}
-                                    className="flex items-center gap-3 border p-3 text-sm"
+                            <input
+                                type="hidden"
+                                name="gateway"
+                                value={choice?.gateway ?? ''}
+                            />
+                            <input
+                                type="hidden"
+                                name="method"
+                                value={choice?.method ?? ''}
+                            />
+                            <input
+                                ref={cardToken}
+                                type="hidden"
+                                name="card_token"
+                            />
+                            {payment_choices.map((option, index) => (
+                                <div
+                                    key={`${option.gateway}:${option.method}`}
+                                    className="border text-sm"
                                 >
-                                    <input
-                                        type="radio"
-                                        name="gateway"
-                                        value={gateway}
-                                        defaultChecked={index === 0}
-                                        required
-                                        className="size-4 accent-primary"
-                                    />
-                                    {t(gatewayLabels[gateway] ?? gateway)}
-                                </label>
+                                    <label className="flex items-center gap-3 p-3">
+                                        <input
+                                            type="radio"
+                                            name="payment_choice"
+                                            value={[
+                                                option.gateway,
+                                                option.method,
+                                            ]
+                                                .filter(Boolean)
+                                                .join(':')}
+                                            checked={index === chosen}
+                                            onChange={() => setChosen(index)}
+                                            className="size-4 accent-primary"
+                                        />
+                                        <span className="flex-1">
+                                            {option.label ??
+                                                t(
+                                                    gatewayLabels[
+                                                        option.gateway
+                                                    ] ?? option.gateway,
+                                                )}
+                                        </span>
+                                        {option.image && (
+                                            <img
+                                                src={option.image}
+                                                alt=""
+                                                className="h-6"
+                                            />
+                                        )}
+                                    </label>
+                                    {option.method === 'creditcard' &&
+                                        card_fields && (
+                                            <div
+                                                ref={cardFields}
+                                                hidden={index !== chosen}
+                                                className="border-t bg-white p-3"
+                                            />
+                                        )}
+                                </div>
                             ))}
+                            {paymentError && (
+                                <p role="alert" className="text-sm font-medium">
+                                    {paymentError}
+                                </p>
+                            )}
                             <InputError message={errors.gateway} />
                         </fieldset>
 
@@ -347,10 +637,53 @@ export default function Checkout({
                             type="submit"
                             size="lg"
                             className="w-full"
-                            disabled={processing}
+                            disabled={processing || preparing}
+                            onClick={beforeOrder}
                         >
                             {t('Place binding order')}
                         </Button>
+
+                        {payment && (
+                            <div
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="payment-notice"
+                                className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
+                            >
+                                <div className="w-full max-w-md space-y-4 border bg-background p-6">
+                                    <h2
+                                        id="payment-notice"
+                                        className="text-lg font-semibold"
+                                    >
+                                        {t('Complete your payment')}
+                                    </h2>
+                                    <p className="text-sm">
+                                        {t(
+                                            'Your payment of :total is waiting in a separate window. This page continues by itself as soon as it is confirmed.',
+                                            {
+                                                total: money(cart.total_cents),
+                                            },
+                                        )}
+                                    </p>
+                                    <Button
+                                        type="button"
+                                        size="lg"
+                                        className="w-full"
+                                        onClick={() => openWindow(payment.url)}
+                                    >
+                                        {t('Open the payment window')}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={giveUp}
+                                    >
+                                        {t('Choose another payment method')}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
 
                         <p className="text-center text-xs text-muted-foreground">
                             <Link href={cartIndex()} className="underline">

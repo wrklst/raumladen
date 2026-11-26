@@ -700,5 +700,15 @@
     "Addresses of a language that is switched off lead to the first remaining one. With none selected, all stay on.": "Adressen einer abgeschalteten Sprache führen zur ersten verbleibenden. Ist keine gewählt, bleiben alle an.",
     "Series": "Reihe",
     "Credits": "Mitwirkende",
-    "About the authors": "Über die Autor:innen"
+    "About the authors": "Über die Autor:innen",
+    "The payment could not be started. Please try again or choose another payment method.": "Die Zahlung konnte nicht gestartet werden. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.",
+    "The payment was declined. Please check your details or choose another payment method.": "Die Zahlung wurde abgelehnt. Bitte prüfen Sie Ihre Angaben oder wählen Sie eine andere Zahlungsart.",
+    "The payment was not completed. Please try again or choose another payment method.": "Die Zahlung wurde nicht abgeschlossen. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart.",
+    "One moment, please …": "Einen Moment bitte …",
+    "Connecting to the payment provider …": "Verbindung zum Zahlungsanbieter …",
+    "Please check your card details.": "Bitte prüfen Sie Ihre Kartendaten.",
+    "Complete your payment": "Zahlung abschließen",
+    "Your payment of :total is waiting in a separate window. This page continues by itself as soon as it is confirmed.": "Ihre Zahlung über :total wartet in einem eigenen Fenster. Diese Seite geht von selbst weiter, sobald sie bestätigt ist.",
+    "Open the payment window": "Zahlungsfenster öffnen",
+    "Choose another payment method": "Andere Zahlungsart wählen"
 }

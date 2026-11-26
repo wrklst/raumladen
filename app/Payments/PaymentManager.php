@@ -29,6 +29,33 @@ class PaymentManager
     }
 
     /**
+     * What the customer chooses from at checkout: every payment method of
+     * every available gateway. A gateway that cannot name its methods is one
+     * entry, and the choice is made on the provider's page.
+     *
+     * @return list<array{gateway: string, method: string|null, label: string|null, image: string|null}>
+     */
+    public function choices(string $locale): array
+    {
+        $choices = [];
+
+        foreach ($this->availableKeys() as $key) {
+            $gateway = $this->gateway($key);
+            $methods = $gateway instanceof MollieGateway ? $gateway->methods($locale) : [];
+
+            foreach ($methods as $method) {
+                $choices[] = ['gateway' => $key, 'method' => $method['id'], 'label' => $method['label'], 'image' => $method['image']];
+            }
+
+            if ($methods === []) {
+                $choices[] = ['gateway' => $key, 'method' => null, 'label' => null, 'image' => null];
+            }
+        }
+
+        return $choices;
+    }
+
+    /**
      * Gateways that may be offered at checkout.
      *
      * @return list<string>

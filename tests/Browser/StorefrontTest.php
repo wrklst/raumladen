@@ -1,7 +1,9 @@
 <?php
 
 use App\Address\AddressSuggester;
+use App\Enums\PaymentStatus;
 use App\Enums\TaxTreatment;
+use App\Mail\OrderConfirmation;
 use App\Mail\WithdrawalReceived;
 use App\Models\Order;
 use App\Models\Withdrawal;
@@ -10,6 +12,7 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Tests\Fixtures\OnlineGateway;
 
 /*
  * Real-browser tests of the storefront (Playwright through Pest). They need
@@ -119,7 +122,7 @@ test('a visitor orders a book with a suggested address in as few steps as possib
         ->click('[role="option"]')
         ->assertValue('[name="billing_address[zip]"]', '51465')
         ->assertValue('[name="billing_address[city]"]', 'Bergisch Gladbach')
-        ->radio('gateway', 'bank_transfer')
+        ->radio('payment_choice', 'bank_transfer')
         ->press('Zahlungspflichtig bestellen')
         ->assertSee('Vielen Dank für Ihre Bestellung')
         ->assertSee('DE02120300000000202051')
@@ -131,6 +134,38 @@ test('a visitor orders a book with a suggested address in as few steps as possib
         ->and($order->shipping_address)->toMatchArray(['address1' => 'Hauptstraße 157', 'zip' => '51465', 'city' => 'Bergisch Gladbach', 'country' => 'DE'])
         ->and($order->tax_treatment)->toBe(TaxTreatment::Domestic)
         ->and($order->total_cents)->toBe(2400 + 390);
+});
+
+test('paying online stays at the checkout: the provider opens in a window and the page goes on when the money is there', function () {
+    config(['shop.payments.gateways.online' => OnlineGateway::class]);
+    OnlineGateway::$outcome = PaymentStatus::Open;
+    Mail::fake();
+
+    $page = visit(ISSUE)
+        ->press('In den Warenkorb')
+        ->click('Kasse')
+        ->type('email', 'kundin@example.com')
+        ->type('[name="billing_address[first_name]"]', 'Erika')
+        ->type('[name="billing_address[last_name]"]', 'Mustermann')
+        ->type('[name="billing_address[address1]"]', 'Weg 1')
+        ->type('[name="billing_address[zip]"]', '10115')
+        ->type('[name="billing_address[city]"]', 'Berlin')
+        ->radio('payment_choice', 'online')
+        ->press('Zahlungspflichtig bestellen')
+        ->assertSee('Zahlung abschließen')
+        ->assertPathIs('/de/checkout')
+        // What was typed is still there, should the payment fail.
+        ->assertValue('[name="billing_address[city]"]', 'Berlin');
+
+    expect(Order::query()->sole()->isPlaced())->toBeFalse();
+    Mail::assertNothingSent();
+
+    OnlineGateway::$outcome = PaymentStatus::Paid;
+
+    $page->assertSee('Vielen Dank für Ihre Bestellung');
+
+    expect(Order::query()->sole()->isPlaced())->toBeTrue();
+    Mail::assertSent(OrderConfirmation::class, 1);
 });
 
 test('an incomplete order puts focus on the first invalid field and says why', function () {

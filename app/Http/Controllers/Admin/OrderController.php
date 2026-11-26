@@ -18,6 +18,7 @@ class OrderController extends Controller
         $search = $request->string('q')->toString();
 
         $orders = Order::query()
+            ->placed()
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->when($search !== '', fn ($query) => $query->where(fn ($q) => $q
                 ->where('number', 'like', "%{$search}%")

@@ -55,7 +55,7 @@ class StatisticsController extends Controller
                 'cart' => $reached('#^/[a-z]{2}/cart$#'),
                 'checkout' => $reached('#^/[a-z]{2}/checkout$#'),
                 // Orders are counted from the orders themselves: exact, and independent of who is counted as a visitor.
-                'orders' => Order::query()->where('created_at', '>=', $from)->count(),
+                'orders' => Order::query()->placed()->where('created_at', '>=', $from)->count(),
             ],
         ]);
     }

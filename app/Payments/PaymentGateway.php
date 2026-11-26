@@ -16,9 +16,19 @@ interface PaymentGateway
     public function available(): bool;
 
     /**
-     * Create a payment for the order and return the URL to send the customer to.
+     * Whether the order is placed before the money arrives (a bank transfer).
+     * Otherwise it is placed when the payment is confirmed.
      */
-    public function start(Order $order, string $returnUrl, string $webhookUrl): string;
+    public function paysLater(): bool;
+
+    /**
+     * Create a payment for the order and return the URL to send the customer
+     * to. When the provider needs nothing more from the customer, that is the
+     * return URL.
+     *
+     * @param  array{method?: string|null, card_token?: string|null}  $options  what the customer chose at checkout
+     */
+    public function start(Order $order, string $returnUrl, string $webhookUrl, array $options = []): string;
 
     /**
      * Pull the current status from the provider and apply it.

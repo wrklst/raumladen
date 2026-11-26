@@ -30,6 +30,11 @@ const props = {
     cart,
     countries: { DE: 'Deutschland', AT: 'Österreich' },
     gateways: ['mollie', 'bank_transfer'],
+    payment_choices: [
+        { gateway: 'mollie', method: null, label: null, image: null },
+        { gateway: 'bank_transfer', method: null, label: null, image: null },
+    ],
+    card_fields: null,
     defaults: {
         email: null,
         billing_address: null,

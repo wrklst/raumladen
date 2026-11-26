@@ -355,7 +355,7 @@ test('a failing gateway still leaves the placed order and sends the customer to 
     Exceptions::fake();
     app()->bind(BankTransferGateway::class, fn () => new class(app(MarkOrderPaid::class)) extends BankTransferGateway
     {
-        public function start(Order $order, string $returnUrl, string $webhookUrl): string
+        public function start(Order $order, string $returnUrl, string $webhookUrl, array $options = []): string
         {
             throw new RuntimeException('gateway down');
         }

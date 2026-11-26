@@ -26,7 +26,12 @@ class BankTransferGateway implements PaymentGateway
         return config('shop.seller.iban') !== '';
     }
 
-    public function start(Order $order, string $returnUrl, string $webhookUrl): string
+    public function paysLater(): bool
+    {
+        return true;
+    }
+
+    public function start(Order $order, string $returnUrl, string $webhookUrl, array $options = []): string
     {
         // One transfer per order: a second attempt reuses the pending payment.
         $order->payments()->firstOrCreate([

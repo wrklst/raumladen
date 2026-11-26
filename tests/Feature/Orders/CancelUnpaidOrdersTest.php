@@ -85,9 +85,9 @@ test('running the command twice returns the stock only once', function () {
     expect($product->refresh()->stock)->toBe(2);
 });
 
-test('the command runs daily', function () {
+test('the command runs every quarter of an hour', function () {
     $event = collect(app(Schedule::class)->events())->first(fn ($event) => str_contains($event->command, 'orders:cancel-unpaid'));
 
-    expect($event)->not->toBeNull()->and($event->expression)->toBe('0 0 * * *')
+    expect($event)->not->toBeNull()->and($event->expression)->toBe('*/15 * * * *')
         ->and(app(CancelUnpaidOrders::class)->getName())->toBe('orders:cancel-unpaid');
 });

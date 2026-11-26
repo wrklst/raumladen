@@ -43,6 +43,8 @@ Route::prefix('{locale}')
 
         Route::get('orders/{order}/payment', [PaymentController::class, 'return'])->name('payments.return');
         Route::post('orders/{order}/payment', [PaymentController::class, 'retry'])->name('payments.retry');
+        Route::get('orders/{order}/payment/status', [PaymentController::class, 'status'])->name('payments.status');
+        Route::delete('orders/{order}/payment', [PaymentController::class, 'cancel'])->name('payments.cancel');
         Route::get('orders/{order}/complete', OrderCompleteController::class)->name('orders.complete');
 
         Route::get('withdraw', [WithdrawalController::class, 'create'])->name('withdrawal.create');

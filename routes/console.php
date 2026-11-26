@@ -9,7 +9,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('orders:cancel-unpaid')->daily();
+Schedule::command('orders:cancel-unpaid')->everyFifteenMinutes();
 
 // Visitor statistics older than thirteen months are deleted.
 Schedule::command('model:prune', ['--model' => [SiteEvent::class]])->daily();

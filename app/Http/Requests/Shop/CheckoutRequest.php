@@ -33,6 +33,9 @@ class CheckoutRequest extends FormRequest
             'vat_id' => ['nullable', 'string', 'max:20'],
             'customer_note' => ['nullable', 'string', 'max:1000'],
             'gateway' => ['required', Rule::in(app(PaymentManager::class)->availableKeys())],
+            // The provider checks both: an unknown method or a spent token fails the payment, not the order.
+            'method' => ['nullable', 'string', 'max:40', 'regex:/^[a-z0-9_]+$/'],
+            'card_token' => ['nullable', 'string', 'max:255'],
         ];
     }
 

@@ -21,7 +21,7 @@ class PlaceOrder
 
     /**
      * @param  Collection<int, CartLine>  $cartLines
-     * @param  array{email: string, billing_address: array<string, string|null>, shipping_address: array<string, string|null>|null, vat_id: string|null, vat_id_valid: bool, customer_note: string|null, locale: string}  $data
+     * @param  array{email: string, billing_address: array<string, string|null>, shipping_address: array<string, string|null>|null, vat_id: string|null, vat_id_valid: bool, customer_note: string|null, locale: string, placed?: bool}  $data
      */
     public function handle(Collection $cartLines, ?User $user, CustomerGroup $group, array $data, ?Coupon $coupon): Order
     {
@@ -51,6 +51,7 @@ class PlaceOrder
                 'number' => NumberSequence::nextFormatted('order'),
                 'user_id' => $user->id,
                 'status' => OrderStatus::Pending,
+                'placed_at' => ($data['placed'] ?? true) ? now() : null,
                 'locale' => $data['locale'],
                 'currency' => config('shop.currency'),
                 'email' => $data['email'],

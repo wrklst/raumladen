@@ -10,7 +10,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\CheckoutRequest;
 use App\Mail\OrderReceived;
 use App\Models\Coupon;
+use App\Models\Order;
 use App\Models\Page;
+use App\Orders\DiscardDraft;
+use App\Payments\MollieGateway;
+use App\Payments\PaymentGateway;
 use App\Payments\PaymentManager;
 use App\Policies\OrderPolicy;
 use App\Seo\Seo;
@@ -27,6 +31,11 @@ use Throwable;
 
 class CheckoutController extends Controller
 {
+    /**
+     * Session key: the uuid of the order this visitor is paying for online.
+     */
+    public const string DRAFT_KEY = 'checkout.draft';
+
     public function __construct(
         private Cart $cart,
         private CartCalculator $calculator,
@@ -52,6 +61,9 @@ class CheckoutController extends Controller
             'cart' => $totals->toArray(),
             'countries' => Countries::options(),
             'gateways' => $this->payments->availableKeys(),
+            'payment_choices' => $this->payments->choices(app()->getLocale()),
+            // For card fields in the page (Mollie Components); null without Mollie.
+            'card_fields' => in_array('mollie', $this->payments->availableKeys(), true) ? app(MollieGateway::class)->components() : null,
             'defaults' => [
                 'email' => $user?->email,
                 'billing_address' => $user?->billing_address,
@@ -65,7 +77,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function store(CheckoutRequest $request, PlaceOrder $placeOrder): SymfonyResponse
+    public function store(CheckoutRequest $request, PlaceOrder $placeOrder, DiscardDraft $discardDraft): SymfonyResponse
     {
         $lines = $this->cart->lines();
 
@@ -91,6 +103,15 @@ class CheckoutController extends Controller
             }
         }
 
+        $gateway = $this->payments->gateway($request->validated('gateway'));
+
+        // A second try: the attempt before it is over, unless its money did arrive after all.
+        if ($previous = $this->draft($request)) {
+            if (! $discardDraft->handle($previous)) {
+                return $this->afterPayment($request, $previous);
+            }
+        }
+
         $coupon = $this->cart->couponCode() === null ? null : Coupon::findByCode($this->cart->couponCode());
 
         try {
@@ -102,6 +123,8 @@ class CheckoutController extends Controller
                 'vat_id_valid' => $vatIdValid,
                 'customer_note' => $request->validated('customer_note'),
                 'locale' => app()->getLocale(),
+                // Paid online, the order is placed when the payment is confirmed.
+                'placed' => $gateway->paysLater(),
             ], $coupon);
         } catch (OutOfStockException $e) {
             return to_route('shop.cart.index')->withErrors([
@@ -122,21 +145,28 @@ class CheckoutController extends Controller
         ]);
 
         $request->session()->push(OrderPolicy::SESSION_KEY, $order->uuid);
+
+        return $gateway->paysLater()
+            ? $this->placeAndPayLater($request, $order, $gateway)
+            : $this->payNow($request, $order, $gateway, $discardDraft);
+    }
+
+    /**
+     * Bank transfer: the order stands, the customer is told where to send the money.
+     */
+    private function placeAndPayLater(CheckoutRequest $request, Order $order, PaymentGateway $gateway): SymfonyResponse
+    {
         $this->cart->clear();
 
         try {
-            Mail::to($order->email)->locale($order->locale)->send(new OrderReceived($order, $request->validated('gateway') === 'bank_transfer'));
+            Mail::to($order->email)->locale($order->locale)->send(new OrderReceived($order, true));
         } catch (Throwable $e) {
             // The order stands; a mail problem must not strand the customer before payment.
             report($e);
         }
 
         try {
-            $url = $this->payments->gateway($request->validated('gateway'))->start(
-                $order,
-                route('shop.payments.return', $order),
-                route('webhooks.payments', $request->validated('gateway')),
-            );
+            $url = $gateway->start($order, route('shop.payments.return', $order), route('webhooks.payments', $gateway->key()));
         } catch (Throwable $e) {
             report($e);
 
@@ -144,5 +174,73 @@ class CheckoutController extends Controller
         }
 
         return Inertia::location($url);
+    }
+
+    /**
+     * Online payment: the customer stays at the checkout. The cart is kept
+     * and no mail goes out until the payment is confirmed; whatever the
+     * provider needs from the customer opens in a window over the checkout
+     * (see pages/shop/checkout.tsx), which is told where to look by flash data.
+     */
+    private function payNow(CheckoutRequest $request, Order $order, PaymentGateway $gateway, DiscardDraft $discardDraft): SymfonyResponse
+    {
+        $request->session()->put(self::DRAFT_KEY, $order->uuid);
+
+        try {
+            $url = $gateway->start(
+                $order,
+                route('shop.payments.return', ['order' => $order, 'window' => 1]),
+                route('webhooks.payments', $gateway->key()),
+                ['method' => $request->validated('method'), 'card_token' => $request->validated('card_token')],
+            );
+        } catch (Throwable $e) {
+            report($e);
+            $discardDraft->handle($order);
+
+            return back()->withErrors(['gateway' => __('The payment could not be started. Please try again or choose another payment method.')]);
+        }
+
+        $order->refresh();
+        $payment = $order->payments()->latest('id')->first();
+
+        // A card that its bank does not ask about is charged, or refused, at once.
+        if ($order->isPlaced()) {
+            return $this->afterPayment($request, $order);
+        }
+
+        if ($payment?->status->hasFailed()) {
+            $discardDraft->handle($order);
+
+            return back()->withErrors(['gateway' => __('The payment was declined. Please check your details or choose another payment method.')]);
+        }
+
+        Inertia::flash('payment', [
+            'url' => $url,
+            'status' => route('shop.payments.status', $order),
+            'cancel' => route('shop.payments.cancel', $order),
+        ]);
+
+        return back();
+    }
+
+    /**
+     * The draft this visitor is paying for, if any.
+     */
+    private function draft(Request $request): ?Order
+    {
+        $uuid = $request->session()->get(self::DRAFT_KEY);
+
+        return $uuid === null ? null : Order::query()->where('uuid', $uuid)->first();
+    }
+
+    /**
+     * The money is here or on its way: the cart is done with.
+     */
+    private function afterPayment(Request $request, Order $order): RedirectResponse
+    {
+        $this->cart->clear();
+        $request->session()->forget(self::DRAFT_KEY);
+
+        return to_route('shop.orders.complete', $order);
     }
 }

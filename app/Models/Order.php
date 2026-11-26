@@ -6,6 +6,8 @@ use App\Enums\OrderStatus;
 use App\Enums\TaxTreatment;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,7 +50,7 @@ use Illuminate\Support\Str;
  * @property string|null $customer_note
  */
 #[Fillable([
-    'number', 'user_id', 'status', 'locale', 'currency', 'email', 'customer_group_code', 'prices_include_tax',
+    'number', 'user_id', 'status', 'placed_at', 'locale', 'currency', 'email', 'customer_group_code', 'prices_include_tax',
     'billing_address', 'shipping_address', 'country', 'vat_id', 'vat_id_valid', 'tax_treatment', 'tax_note',
     'coupon_id', 'coupon_code', 'subtotal_net_cents', 'discount_cents', 'shipping_net_cents', 'shipping_tax_cents',
     'shipping_tax_rate', 'tax_cents', 'total_cents', 'tax_summary', 'payment_gateway', 'paid_at', 'shipped_at',
@@ -137,6 +139,24 @@ class Order extends Model
         return $this->items->every(fn (OrderItem $item) => $item->refundableQuantity() === 0) && $this->shippingCredited();
     }
 
+    /**
+     * An order paid online is placed once its payment is confirmed; until
+     * then it is a draft nobody but the paying customer sees.
+     */
+    public function isPlaced(): bool
+    {
+        return $this->placed_at !== null;
+    }
+
+    /**
+     * @param  Builder<Order>  $query
+     */
+    #[Scope]
+    protected function placed(Builder $query): void
+    {
+        $query->whereNotNull('placed_at');
+    }
+
     public function isOpen(): bool
     {
         return $this->status === OrderStatus::Pending;
@@ -154,6 +174,7 @@ class Order extends Model
     {
         return [
             'status' => OrderStatus::class,
+            'placed_at' => 'datetime',
             'tax_treatment' => TaxTreatment::class,
             'prices_include_tax' => 'boolean',
             'vat_id_valid' => 'boolean',
