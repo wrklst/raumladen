@@ -55,7 +55,8 @@ export default function ShopLayout({ children }: PropsWithChildren) {
         previousPath.current = path;
         // Typing in the search leads here too; the caret must stay in the field.
         if (document.activeElement?.id !== 'site-search') {
-            document.getElementById('main')?.focus();
+            // Focus for the keyboard and screen readers, without moving the page: a new page starts at its top.
+            document.getElementById('main')?.focus({ preventScroll: true });
         }
 
         setAnnouncement(title);
