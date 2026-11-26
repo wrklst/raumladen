@@ -6,6 +6,7 @@ use App\Enums\ProductType;
 use App\Enums\TaxClass;
 use App\Models\Concerns\HasTranslations;
 use App\Shop\ProductSearch;
+use App\Support\Html;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -131,6 +132,22 @@ class Product extends Model
             'locale' => $locale,
             'product' => $this->translate('slug', $locale),
         ]);
+    }
+
+    /**
+     * The description as staff wrote it, with the little HTML they may use, safe to put into a page.
+     */
+    public function descriptionHtml(?string $locale = null): ?string
+    {
+        return Html::clean($this->translate('description', $locale));
+    }
+
+    /**
+     * The description as text alone: for search, feeds and metadata.
+     */
+    public function descriptionText(?string $locale = null): ?string
+    {
+        return Html::text($this->translate('description', $locale));
     }
 
     public function backCoverUrl(): ?string

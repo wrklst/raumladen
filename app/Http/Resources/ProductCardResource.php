@@ -37,7 +37,8 @@ class ProductCardResource extends JsonResource
             'authors' => $this->specs['authors'] ?? null,
             'series' => $this->specs['series'] ?? null,
             // For themes that set the cover in type from the book's own text.
-            'description' => $this->translate('description'),
+            // HTML, cleaned (see App\Support\Html): pages put it in as it is.
+            'description' => $this->descriptionHtml(),
             'isbn' => $this->specs['isbn'] ?? null,
             'publisher' => $this->specs['publisher'] ?? null,
             'back_cover' => $this->backCoverUrl(),

@@ -55,7 +55,7 @@ class ProductController extends Controller
             'delivery_days' => Arr::first(config('shop.shipping'), fn (array $zone) => $zone['code'] === config('shop.tax.home_country'))['delivery_days'] ?? null,
             'seo' => Seo::make(
                 title: $product->translate('title'),
-                description: $product->translate('description'),
+                description: $product->descriptionText(),
                 canonical: $product->urlFor($locale),
                 alternates: $alternates,
                 jsonLd: [

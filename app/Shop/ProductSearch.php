@@ -176,7 +176,7 @@ class ProductSearch
                 $text = [];
 
                 foreach (config('shop.locales') as $locale) {
-                    $text[$locale] = self::normalize($product->translate('description', $locale).' '.($specs['publisher'] ?? ''));
+                    $text[$locale] = self::normalize($product->descriptionText($locale).' '.($specs['publisher'] ?? ''));
                 }
 
                 return [

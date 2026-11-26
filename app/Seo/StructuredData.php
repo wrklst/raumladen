@@ -80,7 +80,7 @@ class StructuredData
             '@type' => ['Product', $product->type->schemaType()],
             '@id' => $product->urlFor($locale),
             'name' => $product->translate('title', $locale),
-            'description' => $product->translate('description', $locale),
+            'description' => $product->descriptionText($locale),
             'image' => $product->imageUrl(),
             'sku' => $product->sku,
             'isbn' => $isbn,

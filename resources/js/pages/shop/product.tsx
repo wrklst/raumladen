@@ -212,8 +212,12 @@ export default function Product({
 
                 {product.description && (
                     <div className="prose">
+                        {/* HTML written by staff and cleaned on the server (App\Support\Html). */}
                         {product.description.split(/\n{2,}/).map((para, i) => (
-                            <p key={i}>{para}</p>
+                            <p
+                                key={i}
+                                dangerouslySetInnerHTML={{ __html: para }}
+                            />
                         ))}
                     </div>
                 )}

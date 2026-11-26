@@ -35,7 +35,7 @@ class CartController extends Controller
             // What a theme needs to set a cover in type, by product id.
             'covers' => $this->cart->lines()->mapWithKeys(fn ($line): array => [$line->product->id => [
                 'authors' => $line->product->specs['authors'] ?? null,
-                'description' => $line->product->translate('description'),
+                'description' => $line->product->descriptionHtml(),
                 'isbn' => $line->product->specs['isbn'] ?? null,
                 'imprint' => $line->product->specs['publisher'] ?? null,
                 'back' => $line->product->backCoverUrl(),

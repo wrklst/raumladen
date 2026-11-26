@@ -23,6 +23,10 @@ which; none of it is legal or tax advice.
   while typing. Up to 300 visible books (`shop.search.browser_index_max`)
   the browser downloads the catalogue index once and searches locally; above
   that every search is answered by the server from a cached index.
+- **Descriptions** may use simple HTML (italics, bold, links, lists). It is
+  cleaned whenever it is shown: scripts, styles, images and every attribute
+  but a link's address are removed, so a description can never run code in a
+  visitor's browser.
 - **Authors.** Each author on a book's page links to all books by that
   author. Authors entered in the backend (Catalogue → Authors) with a few
   lines about them have that text shown above their books; a book and an

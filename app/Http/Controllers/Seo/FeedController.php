@@ -32,7 +32,7 @@ class FeedController extends Controller
                 return [
                     'id' => $product->sku ?: 'P'.$product->id,
                     'title' => $product->translate('title', $locale),
-                    'description' => $product->translate('description', $locale) ?? $product->translate('title', $locale),
+                    'description' => $product->descriptionText($locale) ?: $product->translate('title', $locale),
                     'link' => $product->urlFor($locale),
                     'image_link' => $product->imageUrl(),
                     'availability' => $product->hasStockFor(1) ? 'in_stock' : 'out_of_stock',

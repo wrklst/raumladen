@@ -355,6 +355,11 @@ export default function ProductForm({
                                                     ] ?? ''
                                                 }
                                             />
+                                            <p className="text-xs text-muted-foreground">
+                                                {t(
+                                                    'A blank line starts a new paragraph. Simple HTML is allowed, for example <i>italics</i>, <b>bold</b> and links; anything else is removed.',
+                                                )}
+                                            </p>
                                         </Field>
                                     </CardContent>
                                 </Card>
