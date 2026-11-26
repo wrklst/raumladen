@@ -290,3 +290,39 @@ html[data-a11y-links='underline']
         scroll-behavior: auto !important;
     }
 }
+
+/* Card fields at the checkout (Mollie Components): each field is a frame of
+   the provider inside an element of this page, which gives it the look of
+   the shop's own inputs. */
+.mollie-card-component {
+    margin-bottom: 0.75rem;
+}
+
+.mollie-card-component__label,
+.mollie-card-component label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.mollie-component {
+    height: 2.5rem;
+    border: 1px solid var(--input);
+    background: var(--background);
+    padding: 0.5rem 0.75rem;
+}
+
+.mollie-component.has-focus {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+}
+
+.mollie-component.is-invalid {
+    border-color: var(--destructive);
+}
+
+.mollie-card-component__error,
+.mollie-card-component .field-error {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+}

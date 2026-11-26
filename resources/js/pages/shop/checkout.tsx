@@ -41,7 +41,10 @@ type Payment = { url: string; status: string; cancel: string };
 
 type MollieComponent = { mount: (target: HTMLElement) => void };
 type MollieClient = {
-    createComponent: (type: 'card') => MollieComponent;
+    createComponent: (
+        type: 'card',
+        options?: { styles: Record<string, Record<string, string>> },
+    ) => MollieComponent;
     createToken: () => Promise<{
         token?: string;
         error?: { message: string };
@@ -168,7 +171,17 @@ export default function Checkout({
                 locale: locale === 'de' ? 'de_DE' : 'en_US',
                 testmode: card_fields.testmode,
             });
-            mollie.current.createComponent('card').mount(cardFields.current);
+            // The fields are frames of the provider: they are told the page's text colour, the rest is in app.css.
+            mollie.current
+                .createComponent('card', {
+                    styles: {
+                        base: {
+                            color: getComputedStyle(cardFields.current).color,
+                            fontSize: '16px',
+                        },
+                    },
+                })
+                .mount(cardFields.current);
         };
 
         if (window.Mollie) {
@@ -480,7 +493,7 @@ export default function Checkout({
                                             <div
                                                 ref={cardFields}
                                                 hidden={index !== chosen}
-                                                className="border-t bg-white p-3"
+                                                className="border-t p-3"
                                             />
                                         )}
                                 </div>
