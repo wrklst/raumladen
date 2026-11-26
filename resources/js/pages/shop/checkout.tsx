@@ -617,7 +617,23 @@ export default function Checkout({
                                                     <span className="block">
                                                         {t(
                                                             'The new, secure European way to pay: straight from your bank account, without a detour through third parties.',
-                                                        )}
+                                                        )}{' '}
+                                                        <a
+                                                            href="https://wero-wallet.eu"
+                                                            target="_blank"
+                                                            rel="noopener"
+                                                            className="underline underline-offset-4"
+                                                        >
+                                                            {t(
+                                                                'More about Wero',
+                                                            )}
+                                                            <span className="sr-only">
+                                                                {' '}
+                                                                {t(
+                                                                    '(opens in a new tab)',
+                                                                )}
+                                                            </span>
+                                                        </a>
                                                     </span>
                                                 )}
                                             <span
@@ -806,7 +822,10 @@ export default function Checkout({
                             disabled={processing || preparing}
                             onClick={beforeOrder}
                         >
-                            {t('Place binding order')}
+                            {/* Paying online, the order is placed by paying: the button says so. */}
+                            {choice && !choice.pays_later
+                                ? t('Pay to order')
+                                : t('Place binding order')}
                         </Button>
 
                         {payment && (

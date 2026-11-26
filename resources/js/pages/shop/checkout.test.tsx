@@ -58,7 +58,7 @@ const props = {
     legal_pages: [{ slug: 'terms', title: 'AGB' }],
 };
 
-test('address and payment are grouped and labelled; ordering needs no extra tick', () => {
+test('address and payment are grouped and labelled; ordering needs no extra tick', async () => {
     render(<Checkout {...props} />);
 
     const billing = screen.getByRole('group', { name: 'Billing address' });
@@ -98,6 +98,11 @@ test('address and payment are grouped and labelled; ordering needs no extra tick
         country.compareDocumentPosition(street) &
             Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    // The button says what it does: paying online places the order, a bank transfer is ordered first.
+    expect(screen.getByRole('button', { name: 'Pay to order' })).toBeTruthy();
+    await userEvent.click(
+        screen.getByRole('radio', { name: /Prepayment by bank transfer/ }),
+    );
     expect(
         screen.getByRole('button', { name: 'Place binding order' }),
     ).toBeTruthy();

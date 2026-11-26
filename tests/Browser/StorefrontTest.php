@@ -151,7 +151,8 @@ test('paying online stays at the checkout: the provider opens in a window and th
         ->type('[name="billing_address[zip]"]', '10115')
         ->type('[name="billing_address[city]"]', 'Berlin')
         ->radio('payment_choice', 'online')
-        ->press('Zahlungspflichtig bestellen')
+        // Paying online places the order: the button says so.
+        ->press('Kaufen und bezahlen')
         ->assertSee('Zahlung abschließen')
         ->assertPathIs('/de/checkout')
         // What was typed is still there, should the payment fail.
