@@ -4,6 +4,7 @@ use App\Enums\UserRole;
 use App\Models\CustomerGroup;
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -81,8 +82,18 @@ test('every backend user manages their own profile and security, customers do no
 test('backend users of any role sign in with their password, not with a mailed code', function (UserRole $role) {
     $user = staff($role);
 
+    Mail::fake();
+
+    // They are sent on to the backend's login, their address filled in.
     $this->post(route('shop.account.login.code', ['locale' => 'en']), ['email' => $user->email])
-        ->assertSessionHasErrors('email');
+        ->assertRedirect(route('login'));
+
+    Mail::assertNothingSent();
+
+    $this->get(route('login'))->assertInertia(fn (Assert $page) => $page
+        ->component('auth/login')
+        ->where('email', $user->email)
+        ->where('status', __('Administrators sign in with their password.')));
 })->with([UserRole::Admin, UserRole::Manager, UserRole::Fulfilment, UserRole::Editor, UserRole::Accounting]);
 
 test('a backend user lands in the backend, a customer in their account', function () {

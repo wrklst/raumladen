@@ -14,10 +14,11 @@ import PasskeyVerify from '@/components/passkey-verify';
 
 type Props = {
     status?: string;
+    email?: string | null;
     canResetPassword: boolean;
 };
 
-export default function Login({ status, canResetPassword }: Props) {
+export default function Login({ status, email, canResetPassword }: Props) {
     const { t } = useTrans();
 
     return (
@@ -42,6 +43,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     id="email"
                                     type="email"
                                     name="email"
+                                    defaultValue={email ?? undefined}
                                     required
                                     autoFocus
                                     tabIndex={1}

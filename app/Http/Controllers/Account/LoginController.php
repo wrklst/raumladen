@@ -40,9 +40,10 @@ class LoginController extends Controller
         $data = $request->validate(['email' => ['required', 'email', 'max:255']]);
         $email = mb_strtolower($data['email']);
 
-        // Backend users sign in with their password (and second factor), never with a mailed code.
+        // Backend users sign in with their password (and second factor), never with a mailed code:
+        // they are sent on to the backend's login, their address filled in.
         if (User::query()->where('email', $email)->where('role', '!=', UserRole::Customer)->exists()) {
-            return back()->withErrors(['email' => __('Administrators sign in with their password.')]);
+            return to_route('login')->with(['status' => __('Administrators sign in with their password.'), 'login_email' => $email]);
         }
 
         $code = (string) random_int(10 ** (config('shop.login_code.length') - 1), 10 ** config('shop.login_code.length') - 1);

@@ -63,10 +63,12 @@ test('requesting a code validates the email', function (string $email) {
     Mail::assertNothingSent();
 })->with(['', 'not-an-email']);
 
-test('administrators are refused a code and pointed to the password login', function () {
+test('administrators are refused a code and sent on to the password login', function () {
     User::factory()->admin()->create(['email' => 'admin@example.com']);
 
-    $this->post(loginUrl('shop.account.login.code'), ['email' => 'Admin@Example.com'])->assertSessionHasErrors('email');
+    $this->post(loginUrl('shop.account.login.code'), ['email' => 'Admin@Example.com'])
+        ->assertRedirect(route('login'))
+        ->assertSessionHas('login_email', 'admin@example.com');
 
     Mail::assertNothingSent();
     $this->assertNull(session('login.email'));
