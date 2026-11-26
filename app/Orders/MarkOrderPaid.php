@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Mail;
  */
 class MarkOrderPaid
 {
-    public function __construct(private InvoiceIssuer $issuer) {}
+    public function __construct(private InvoiceIssuer $issuer, private AnnounceOrder $announceOrder) {}
 
     public function handle(Order $order, string $gateway): void
     {
@@ -41,9 +41,15 @@ class MarkOrderPaid
             return;
         }
 
+        // Paid online, the order is placed by this payment: now is when the shop's people hear of it.
+        $placedNow = ! $order->isPlaced();
         $order->refresh();
 
         // ponytail: synchronous send; queue it once a worker runs in production.
         Mail::to($order->email)->locale($order->locale)->send(new OrderConfirmation($order, $invoice));
+
+        if ($placedNow) {
+            $this->announceOrder->handle($order);
+        }
     }
 }

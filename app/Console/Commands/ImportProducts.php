@@ -95,6 +95,11 @@ class ImportProducts extends Command
                 }
 
                 $product->fill($attributes)->save();
+
+                // Authors named in the file become linked entries.
+                if (isset($entry['specs']['authors'])) {
+                    $product->syncAuthorNames(explode(',', (string) $entry['specs']['authors']));
+                }
             }
         });
 

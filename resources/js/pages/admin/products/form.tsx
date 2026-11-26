@@ -2,6 +2,7 @@ import { Form, Head } from '@inertiajs/react';
 import { useState, type ReactNode } from 'react';
 import ProductController from '@/actions/App/Http/Controllers/Admin/ProductController';
 import InputError from '@/components/input-error';
+import { AuthorsField } from '@/components/authors-field';
 import { PairsField } from '@/components/pairs-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { useTrans } from '@/hooks/use-translation';
 import { useLabels } from '@/hooks/use-labels';
 import { index } from '@/routes/admin/products';
@@ -34,6 +36,7 @@ type Product = {
     weight_grams: number | null;
     images: { path: string; url: string }[];
     back_cover: string | null;
+    author_ids: number[];
     specs: Record<string, string>;
     is_active: boolean;
     published_at: string | null;
@@ -41,6 +44,8 @@ type Product = {
 };
 
 type Props = {
+    /** Every author the shop knows, to link to the book. */
+    authors: { id: number; name: string }[];
     product: Product | null;
     locales: string[];
     groups: { id: number; name: string; code: string; is_default: boolean }[];
@@ -77,15 +82,17 @@ function Field({
     label,
     htmlFor,
     error,
+    className,
     children,
 }: {
     label: string;
     htmlFor?: string;
     error?: string;
+    className?: string;
     children: ReactNode;
 }) {
     return (
-        <div className="grid gap-2">
+        <div className={cn('grid content-start gap-2', className)}>
             <Label htmlFor={htmlFor}>{label}</Label>
             {children}
             <InputError message={error} />
@@ -99,6 +106,7 @@ export default function ProductForm({
     groups,
     types,
     tax_classes,
+    authors,
 }: Props) {
     const { t } = useTrans();
     const labels = useLabels();
@@ -379,10 +387,32 @@ export default function ProductForm({
                                                     label={specLabel(field)}
                                                     htmlFor={`spec_${field}`}
                                                     error={
-                                                        errors[`specs.${field}`]
+                                                        errors[
+                                                            `specs.${field}`
+                                                        ] ??
+                                                        (inputType === 'authors'
+                                                            ? (errors.author_ids ??
+                                                              errors.new_authors)
+                                                            : undefined)
+                                                    }
+                                                    // What grows (authors, credits, long texts) has a row to itself.
+                                                    className={
+                                                        inputType === 'text'
+                                                            ? undefined
+                                                            : 'sm:col-span-2'
                                                     }
                                                 >
-                                                    {inputType === 'pairs' ? (
+                                                    {inputType === 'authors' ? (
+                                                        <AuthorsField
+                                                            id={`spec_${field}`}
+                                                            authors={authors}
+                                                            defaultValue={
+                                                                product?.author_ids ??
+                                                                []
+                                                            }
+                                                        />
+                                                    ) : inputType ===
+                                                      'pairs' ? (
                                                         <PairsField
                                                             id={`spec_${field}`}
                                                             name={`specs[${field}]`}

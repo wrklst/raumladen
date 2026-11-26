@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use App\Models\Setting;
+use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
@@ -93,6 +94,13 @@ class ShopSettings
                     ['name' => 'mail_scheme', 'path' => 'mail.mailers.smtp.scheme', 'type' => 'select', 'label' => __('Encryption'), 'options' => ['' => __('STARTTLS (port 587)'), 'smtps' => __('TLS (port 465)')], 'rules' => ['nullable', Rule::in(['smtps'])]],
                     $text('mail_username', 'mail.mailers.smtp.username', __('SMTP user')),
                     ['name' => 'mail_password', 'path' => 'mail.mailers.smtp.password', 'type' => 'secret', 'label' => __('SMTP password'), 'rules' => ['nullable', 'string', 'max:255'], 'help' => __('Leave empty to keep the saved password.')],
+                    ['name' => 'order_notify', 'path' => 'shop.orders.notify', 'type' => 'lines', 'label' => __('Who is told about a new order (one address per line)'), 'rules' => ['nullable', 'string', 'max:2000', function (string $attribute, mixed $value, Closure $fail): void {
+                        foreach (preg_split('/\R/', (string) $value) ?: [] as $line) {
+                            if (trim($line) !== '' && filter_var(trim($line), FILTER_VALIDATE_EMAIL) === false) {
+                                $fail(__(':address is not an email address.', ['address' => trim($line)]));
+                            }
+                        }
+                    }], 'help' => __('They get a mail when an order is placed: at once for prepayment, with the confirmed payment otherwise.')],
                     ['name' => 'mail_from_address', 'path' => 'mail.from.address', 'type' => 'email', 'label' => __('Sender address'), 'rules' => ['required', 'email', 'max:255']],
                     $text('mail_from_name', 'mail.from.name', __('Sender name'), 100, true),
                 ],

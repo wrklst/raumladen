@@ -295,6 +295,8 @@ return [
 
     'orders' => [
         'unpaid_cancel_days' => 14,
+        // Who is told by mail when an order has been placed.
+        'notify' => [],
         // An attempt to pay online holds its stock this long before it is given up.
         'draft_minutes' => 120,
     ],

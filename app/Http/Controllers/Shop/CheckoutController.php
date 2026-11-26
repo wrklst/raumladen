@@ -12,6 +12,7 @@ use App\Mail\OrderReceived;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Page;
+use App\Orders\AnnounceOrder;
 use App\Orders\DiscardDraft;
 use App\Payments\MollieGateway;
 use App\Payments\PaymentGateway;
@@ -186,6 +187,8 @@ class CheckoutController extends Controller
             // The order stands; a mail problem must not strand the customer before payment.
             report($e);
         }
+
+        app(AnnounceOrder::class)->handle($order);
 
         try {
             $url = $gateway->start($order, route('shop.payments.return', $order), route('webhooks.payments', $gateway->key()));

@@ -32,6 +32,8 @@ class AuthorController extends Controller
     public function update(Request $request, Author $author): RedirectResponse
     {
         $author->update($this->validated($request, $author));
+        // The books carry the name as text as well.
+        $author->products->each->writeAuthorNames();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Author updated.')]);
 
@@ -40,7 +42,9 @@ class AuthorController extends Controller
 
     public function destroy(Author $author): RedirectResponse
     {
+        $books = $author->products;
         $author->delete();
+        $books->each->writeAuthorNames();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Author deleted.')]);
 

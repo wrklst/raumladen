@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\ProductType;
 use App\Enums\TaxClass;
+use App\Models\Author;
 use App\Models\Product;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -34,6 +35,9 @@ class ProductRequest extends FormRequest
             'tax_class' => ['required', Rule::enum(TaxClass::class)],
             'price' => ['required', 'numeric', 'min:0', 'max:99999'],
             'cost' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            'author_ids' => ['nullable', 'array', 'max:30'],
+            'author_ids.*' => ['integer', 'distinct', Rule::exists(Author::class, 'id')],
+            'new_authors' => ['nullable', 'string', 'max:500'],
             'stock' => ['required', 'integer', 'min:0'],
             'track_stock' => ['boolean'],
             'weight_grams' => ['nullable', 'integer', 'min:0'],

@@ -27,10 +27,12 @@ which; none of it is legal or tax advice.
   cleaned whenever it is shown: scripts, styles, images and every attribute
   but a link's address are removed, so a description can never run code in a
   visitor's browser.
-- **Authors.** Each author on a book's page links to all books by that
-  author. Authors entered in the backend (Catalogue → Authors) with a few
-  lines about them have that text shown above their books; a book and an
-  author are matched by name.
+- **Authors** are entries of their own (Catalogue → Authors), each with a
+  few lines about them, and are linked to their books in the product form,
+  one or several per book, in the order they are named on it. Each author
+  on a book's page links to all books by that author, with the text about
+  them above. A catalogue file may still name authors as text; they become
+  entries when it is loaded.
 - **Product page.** Price with the VAT note, delivery time, stock, book
   details (ISBN, publisher, pages, binding, language, year, series), the
   credits, a text about the authors, the manufacturer (product safety), and
@@ -116,6 +118,9 @@ net price is derived from that and the rate of the destination applied.
   for an attempt already given up is refunded automatically.
 - **Bank transfer in advance.** Offered as soon as an IBAN is set. The order
   waits until someone with the payments role confirms the transfer.
+- **Told about new orders.** The people named under Shop settings → Email
+  get a mail when an order is placed: at once for prepayment, with the
+  confirmed payment otherwise.
 - An unpaid order can be paid again with another method.
 - Unpaid orders are cancelled after 14 days (configurable) and their stock
   returned.

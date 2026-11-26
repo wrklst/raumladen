@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -57,6 +58,59 @@ class Product extends Model
         static::updated(ProductSearch::forget(...));
         static::deleted(ProductSearch::forget(...));
         static::restored(ProductSearch::forget(...));
+    }
+
+    /**
+     * Who wrote the book, in the order they are named on it.
+     *
+     * @return BelongsToMany<Author, $this>
+     */
+    public function authors(): BelongsToMany
+    {
+        return $this->belongsToMany(Author::class)->withPivot('position')->orderByPivot('position');
+    }
+
+    /**
+     * Link these authors, in this order. Their names are also written to
+     * specs.authors, the text that listings, search, feeds and metadata read.
+     *
+     * @param  list<int>  $ids
+     */
+    public function syncAuthors(array $ids): void
+    {
+        $ids = array_values(array_unique($ids));
+
+        $this->authors()->sync(collect($ids)->mapWithKeys(fn (int $id, int $position): array => [$id => ['position' => $position]])->all());
+        $this->writeAuthorNames();
+    }
+
+    /**
+     * Link the authors of these names, creating those the shop does not know yet.
+     *
+     * @param  list<string>  $names
+     */
+    public function syncAuthorNames(array $names): void
+    {
+        $names = array_values(array_filter(array_map(trim(...), $names)));
+
+        $this->syncAuthors(array_map(fn (string $name): int => (Author::named($name) ?? Author::query()->create(['name' => $name]))->id, $names));
+    }
+
+    /**
+     * Bring specs.authors in line with the linked authors (after a rename or a removal).
+     */
+    public function writeAuthorNames(): void
+    {
+        $names = $this->authors()->pluck('name')->implode(', ');
+        $specs = $this->specs ?? [];
+
+        if ($names === '') {
+            unset($specs['authors']);
+        } else {
+            $specs['authors'] = $names;
+        }
+
+        $this->update(['specs' => $specs]);
     }
 
     /**

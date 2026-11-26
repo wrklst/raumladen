@@ -8,6 +8,7 @@ use Database\Factories\AuthorFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * An author with a few lines about them, shown above their books. A book
@@ -22,6 +23,14 @@ class Author extends Model
 {
     /** @use HasFactory<AuthorFactory> */
     use HasFactory, HasTranslations;
+
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class);
+    }
 
     /**
      * The author a book or a listing names, whatever the capitals and accents.

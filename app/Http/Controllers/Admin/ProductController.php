@@ -6,6 +6,7 @@ use App\Enums\ProductType;
 use App\Enums\TaxClass;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ProductRequest;
+use App\Models\Author;
 use App\Models\CustomerGroup;
 use App\Models\Product;
 use App\Models\ProductPrice;
@@ -105,6 +106,13 @@ class ProductController extends Controller
 
         $product->update(['images' => array_values($images), 'back_cover' => $back]);
 
+        // The linked authors, in the order chosen, then those typed in as new (created where unknown).
+        $product->syncAuthors(array_values(array_map(intval(...), (array) $request->validated('author_ids'))));
+
+        if ($request->filled('new_authors')) {
+            $product->syncAuthorNames(array_values([...$product->authors()->pluck('name')->map(strval(...))->all(), ...explode(',', (string) $request->validated('new_authors'))]));
+        }
+
         foreach ($request->input('group_prices', []) as $groupId => $price) {
             if ($price === null || $price === '') {
                 ProductPrice::query()->where('product_id', $product->id)->where('customer_group_id', $groupId)->delete();
@@ -142,6 +150,7 @@ class ProductController extends Controller
                 'weight_grams' => $product->weight_grams,
                 'images' => array_map(fn (string $path) => ['path' => $path, 'url' => asset('storage/'.$path)], $product->images ?? []),
                 'back_cover' => $product->backCoverUrl(),
+                'author_ids' => $product->authors()->pluck('authors.id')->all(),
                 'specs' => $product->specs ?? [],
                 'is_active' => $product->is_active,
                 'published_at' => $product->published_at?->format('Y-m-d'),
@@ -150,6 +159,7 @@ class ProductController extends Controller
                 ]),
             ],
             'locales' => config('shop.locales'),
+            'authors' => Author::query()->orderBy('name')->get(['id', 'name']),
             'groups' => CustomerGroup::query()->orderBy('id')->get(['id', 'name', 'code', 'is_default']),
             'types' => collect(ProductType::cases())->map(fn (ProductType $type) => [
                 'value' => $type->value,

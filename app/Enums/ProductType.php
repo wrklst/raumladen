@@ -20,7 +20,8 @@ enum ProductType: string
         return match ($this) {
             self::Book => [
                 'isbn' => 'text',
-                'authors' => 'text',
+                // Linked entries (Catalogue → Authors); their names are kept here as text for listings and search.
+                'authors' => 'authors',
                 'publisher' => 'text',
                 'pages' => 'number',
                 'binding' => 'text',

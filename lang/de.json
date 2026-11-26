@@ -740,5 +740,15 @@
     "Formatting": "Formatierung",
     "Label": "Bezeichnung",
     "Content": "Inhalt",
-    "Add": "Hinzufügen"
+    "Add": "Hinzufügen",
+    "Who is told about a new order (one address per line)": "Wer über eine neue Bestellung informiert wird (eine Adresse pro Zeile)",
+    ":address is not an email address.": ":address ist keine E-Mail-Adresse.",
+    "They get a mail when an order is placed: at once for prepayment, with the confirmed payment otherwise.": "Sie bekommen eine Mail, sobald eine Bestellung aufgegeben ist: bei Vorkasse sofort, sonst mit der bestätigten Zahlung.",
+    "New order :number": "Neue Bestellung :number",
+    "Paid: the order can be shipped.": "Bezahlt: Die Bestellung kann versendet werden.",
+    "Not paid yet: the customer transfers the amount.": "Noch nicht bezahlt: Die Kundin oder der Kunde überweist den Betrag.",
+    "Open the order": "Bestellung öffnen",
+    "Remove :name": ":name entfernen",
+    "Add an author": "Autor:in hinzufügen",
+    "New authors, separated by commas": "Neue Autor:innen, durch Kommas getrennt"
 }
