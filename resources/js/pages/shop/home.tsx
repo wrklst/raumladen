@@ -9,10 +9,13 @@ export default function Home({
     products,
     filters,
     author,
+    about,
 }: {
     products: ResourcePaginated<ProductCard>;
     filters?: { q: string; author: string };
     author?: { name: string; bio: string } | null;
+    /** The shop's own words above the plain catalogue: HTML, cleaned on the server. */
+    about?: string | null;
 }) {
     const { t, locale } = useTrans();
     const filtered = Boolean(filters?.q || filters?.author);
@@ -48,6 +51,13 @@ export default function Home({
                     </p>
                 )}
             </div>
+
+            {about && !filtered && (
+                <div
+                    className="prose max-w-prose"
+                    dangerouslySetInnerHTML={{ __html: about }}
+                />
+            )}
 
             {products.data.length === 0 ? (
                 <p>

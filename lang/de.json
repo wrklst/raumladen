@@ -727,5 +727,15 @@
     "About the author": "Über die Autorin / den Autor",
     "Really delete this author?": "Diese:n Autor:in wirklich löschen?",
     "The name must match the name on the book. The text appears in the shop above the books of that author.": "Der Name muss dem Namen am Buch entsprechen. Der Text erscheint im Shop über den Büchern dieser Autorin oder dieses Autors.",
-    "A blank line starts a new paragraph. Simple HTML is allowed, for example <i>italics</i>, <b>bold</b> and links; anything else is removed.": "Eine Leerzeile beginnt einen neuen Absatz. Einfaches HTML ist erlaubt, zum Beispiel <i>kursiv</i>, <b>fett</b> und Links; alles andere wird entfernt."
+    "A blank line starts a new paragraph. Simple HTML is allowed, for example <i>italics</i>, <b>bold</b> and links; anything else is removed.": "Eine Leerzeile beginnt einen neuen Absatz. Einfaches HTML ist erlaubt, zum Beispiel <i>kursiv</i>, <b>fett</b> und Links; alles andere wird entfernt.",
+    "Text above the catalogue (:language)": "Text über dem Katalog (:language)",
+    "Shown on the start page above the books. Leave empty to show none.": "Erscheint auf der Startseite über den Büchern. Leer lassen, um keinen Text zu zeigen.",
+    "Bold": "Fett",
+    "Italic": "Kursiv",
+    "Heading": "Überschrift",
+    "Paragraph": "Absatz",
+    "List": "Liste",
+    "Link": "Link",
+    "Address of the link": "Adresse des Links",
+    "Formatting": "Formatierung"
 }

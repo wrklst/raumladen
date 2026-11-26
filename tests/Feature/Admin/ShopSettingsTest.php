@@ -330,3 +330,17 @@ test('every settings group is labelled with text in every backend language', fun
 
     expect(array_column(ShopSettings::groups(), 'label'))->each->toBeString();
 })->with(['de', 'en']);
+
+test('a text about the shop is written in the backend and shown, cleaned, above the plain catalogue', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->put(route('admin.settings.update', 'appearance'), ['about_en' => '<p>About <b>us</b><script>alert(1)</script></p>', 'language_de' => '1', 'language_en' => '1'])
+        ->assertSessionHasNoErrors();
+
+    $this->get('/en')->assertInertia(fn (Assert $page) => $page->where('about', '<p>About <b>us</b></p>'));
+
+    // Not above search results, an author's books, a later page, or in a language without a text.
+    $this->get('/en?q=x')->assertInertia(fn (Assert $page) => $page->where('about', null));
+    $this->get('/en?author=x')->assertInertia(fn (Assert $page) => $page->where('about', null));
+    $this->get('/en?page=2')->assertInertia(fn (Assert $page) => $page->where('about', null));
+    $this->get('/de')->assertInertia(fn (Assert $page) => $page->where('about', null));
+});

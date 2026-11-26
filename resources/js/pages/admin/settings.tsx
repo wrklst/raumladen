@@ -1,6 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import SettingsController from '@/actions/App/Http/Controllers/Admin/SettingsController';
 import InputError from '@/components/input-error';
+import { RichText } from '@/components/rich-text';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -26,6 +27,7 @@ type Field = {
         | 'select'
         | 'lines'
         | 'textarea'
+        | 'html'
         | 'image';
     label: string;
     help: string | null;
@@ -112,6 +114,13 @@ function SettingField({
                         </label>
                     )}
                 </div>
+            ) : field.type === 'html' ? (
+                <RichText
+                    id={field.name}
+                    name={field.name}
+                    defaultValue={String(value ?? '')}
+                    describedBy={describedBy}
+                />
             ) : field.type === 'lines' || field.type === 'textarea' ? (
                 <textarea
                     id={field.name}

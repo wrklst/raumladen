@@ -73,6 +73,8 @@ return [
         'description' => [],
         // Profiles and websites that belong to the shop (JSON-LD sameAs).
         'same_as' => [],
+        // Per language: a text about the shop, shown above the catalogue (HTML, cleaned when shown).
+        'about' => [],
     ],
 
     /*

@@ -89,17 +89,17 @@ deploy) so the cached configuration is rebuilt.
 
 **Administration → Shop settings** in the backend:
 
-| Group                       | What you set                                                                                                                                 |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Seller                      | The legal entity: name, address, register, board, VAT ID or tax number, bank details. Printed on invoices and in the legal texts.            |
-| Payment                     | Mollie API key, days until an invoice is due, days until an unpaid order is cancelled.                                                       |
-| Email                       | SMTP server, sender, and a button that sends a test message.                                                                                 |
-| Shipping                    | Price, free-shipping threshold and delivery time per zone, carrier.                                                                          |
-| Tax                         | Small business, One-Stop-Shop registration.                                                                                                  |
-| DATEV export                | Consultant and client number, chart of accounts, revenue accounts.                                                                           |
-| Appearance                  | Logo, icon, a note on every invoice, the closing lines of emails.                                                                            |
-| Channels and search engines | The shop's description, indexing on or off, `llms.txt`, visitor statistics, product feeds for Google and Meta, verification codes, profiles. |
-| Hosting                     | Who hosts the shop and sends its mail, for imprint and privacy policy.                                                                       |
+| Group                       | What you set                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Seller                      | The legal entity: name, address, register, board, VAT ID or tax number, bank details. Printed on invoices and in the legal texts.                                    |
+| Payment                     | Mollie API key, days until an invoice is due, days until an unpaid order is cancelled.                                                                               |
+| Email                       | SMTP server, sender, and a button that sends a test message.                                                                                                         |
+| Shipping                    | Price, free-shipping threshold and delivery time per zone, carrier.                                                                                                  |
+| Tax                         | Small business, One-Stop-Shop registration.                                                                                                                          |
+| DATEV export                | Consultant and client number, chart of accounts, revenue accounts.                                                                                                   |
+| Appearance                  | The storefront's languages, a text about the shop above the catalogue (written in a small editor), logo, icon, a note on every invoice, the closing lines of emails. |
+| Channels and search engines | The shop's description, indexing on or off, `llms.txt`, visitor statistics, product feeds for Google and Meta, verification codes, profiles.                         |
+| Hosting                     | Who hosts the shop and sends its mail, for imprint and privacy policy.                                                                                               |
 
 Secrets are stored encrypted and never sent back to the browser: an empty
 field means "keep what is saved".

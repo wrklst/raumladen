@@ -16,7 +16,7 @@ use DOMNode;
  */
 final class Html
 {
-    private const array ALLOWED = ['p', 'br', 'em', 'i', 'strong', 'b', 'u', 's', 'small', 'sup', 'sub', 'span', 'cite', 'q', 'blockquote', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'a'];
+    private const array ALLOWED = ['p', 'div', 'br', 'em', 'i', 'strong', 'b', 'u', 's', 'small', 'sup', 'sub', 'span', 'cite', 'q', 'blockquote', 'ul', 'ol', 'li', 'h2', 'h3', 'h4', 'a'];
 
     private const array REMOVED_WITH_CONTENT = ['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'template', 'noscript', 'form', 'input', 'button', 'select', 'textarea', 'link', 'meta', 'base', 'audio', 'video', 'img', 'picture', 'source', 'canvas'];
 

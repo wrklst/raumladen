@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Seo\Seo;
 use App\Seo\StructuredData;
 use App\Shop\ProductSearch;
+use App\Support\Html;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
@@ -47,6 +48,8 @@ class HomeController extends Controller
         return Inertia::render('shop/home', [
             'products' => ProductCardResource::collection($products),
             'filters' => ['q' => $query, 'author' => $author],
+            // The shop's own words above the plain catalogue: HTML written in the backend, cleaned here.
+            'about' => $query === '' && $author === '' && $page === 1 ? Html::clean(config('shop.site.about.'.$locale)) : null,
             // A few lines about the author whose books are listed, where the shop has them.
             'author' => $author !== '' && $query === '' && ($about = Author::named($author)) && $about->translate('bio')
                 ? ['name' => $about->name, 'bio' => $about->translate('bio')]
