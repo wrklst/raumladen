@@ -20,7 +20,8 @@ class MollieGateway implements PaymentGateway
      * The order of the methods at the checkout: these first, in this order,
      * then whatever else the account offers, and PayPal last.
      */
-    private const array FIRST = ['wero', 'applepay', 'googlepay', 'creditcard'];
+    // Mollie offers Wero under the method "ideal" ("iDEAL | Wero") while iDEAL becomes Wero.
+    private const array FIRST = ['wero', 'ideal', 'applepay', 'googlepay', 'creditcard'];
 
     private const array LAST = ['paypal'];
 

@@ -83,6 +83,10 @@ declare global {
 
 const paymentWindow = 'popup,width=480,height=760';
 
+/** Wero, also where the provider still lists it with iDEAL ("iDEAL | Wero"). */
+const isWero = (option: { method: string | null; label: string | null }) =>
+    option.method === 'wero' || /wero/i.test(option.label ?? '');
+
 const xsrfToken = (): string =>
     decodeURIComponent(
         document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)?.[1] ?? '',
@@ -604,10 +608,10 @@ export default function Checkout({
                                                             option.gateway
                                                         ] ?? option.gateway,
                                                     )}
-                                                {option.method === 'wero' &&
+                                                {isWero(option) &&
                                                     ` · ${t('Recommended')}`}
                                             </span>
-                                            {option.method === 'wero' && (
+                                            {isWero(option) && (
                                                 <span className="block">
                                                     {t(
                                                         'The new, secure European way to pay: straight from your bank account, without a detour through third parties.',
