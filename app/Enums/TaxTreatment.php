@@ -65,10 +65,10 @@ enum TaxTreatment: string
     public function note(string $locale): ?string
     {
         $key = match ($this) {
-            self::IntraCommunity => 'tax.note.intra_community',
-            self::ReverseCharge => 'tax.note.reverse_charge',
-            self::Export => 'tax.note.export',
-            self::SmallBusiness => 'tax.note.small_business',
+            self::IntraCommunity => 'taxation.note.intra_community',
+            self::ReverseCharge => 'taxation.note.reverse_charge',
+            self::Export => 'taxation.note.export',
+            self::SmallBusiness => 'taxation.note.small_business',
             default => null,
         };
 

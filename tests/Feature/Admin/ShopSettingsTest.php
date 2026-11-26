@@ -322,3 +322,11 @@ test('with no storefront language selected all stay on', function () {
 
     expect(config('shop.locales'))->toBe(['de', 'en']);
 });
+
+test('every settings group is labelled with text in every backend language', function (string $locale) {
+    // Regression: "Tax" resolved to the translation file lang/en/tax.php on a
+    // case-insensitive file system, an array, and the settings page went blank.
+    app()->setLocale($locale);
+
+    expect(array_column(ShopSettings::groups(), 'label'))->each->toBeString();
+})->with(['de', 'en']);
