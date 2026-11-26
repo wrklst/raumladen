@@ -611,14 +611,19 @@ export default function Checkout({
                                                 {isWero(option) &&
                                                     ` · ${t('Recommended')}`}
                                             </span>
-                                            {isWero(option) && (
-                                                <span className="block">
-                                                    {t(
-                                                        'The new, secure European way to pay: straight from your bank account, without a detour through third parties.',
-                                                    )}
-                                                </span>
-                                            )}
-                                            <span className="block">
+                                            {/* What a method means is said for the chosen one only. */}
+                                            {index === chosen &&
+                                                isWero(option) && (
+                                                    <span className="block">
+                                                        {t(
+                                                            'The new, secure European way to pay: straight from your bank account, without a detour through third parties.',
+                                                        )}
+                                                    </span>
+                                                )}
+                                            <span
+                                                className="block"
+                                                hidden={index !== chosen}
+                                            >
                                                 {option.pays_later
                                                     ? t(
                                                           'Ships once your transfer has arrived, usually after 2–3 working days.',
