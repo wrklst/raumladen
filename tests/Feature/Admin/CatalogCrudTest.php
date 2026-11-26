@@ -1,5 +1,7 @@
 <?php
 
+use App\Cart\CartLine;
+use App\Checkout\PlaceOrder;
 use App\Enums\CouponType;
 use App\Enums\TaxClass;
 use App\Models\Coupon;
@@ -149,6 +151,28 @@ test('a back cover is stored, kept while its box stays ticked, and deleted when 
     Storage::disk('public')->assertMissing($path);
     expect($product->refresh()->back_cover)->toBeNull();
 })->skip(! extension_loaded('gd'), 'GD is required for fake images');
+
+test('what a copy costs is kept with the product, copied to each sale and never sent to the storefront', function () {
+    $product = Product::factory()->create(['price_cents' => 2000, 'stock' => 5]);
+
+    $this->put(route('admin.products.update', $product), productPayload(['cost' => '3.20']));
+    expect($product->refresh()->cost_cents)->toBe(320);
+
+    $order = app(PlaceOrder::class)->handle(collect([new CartLine($product, 2)]), null, CustomerGroup::default(), [
+        'email' => 'kunde@example.com',
+        'billing_address' => ['first_name' => 'E', 'last_name' => 'M', 'address1' => 'Weg 1', 'zip' => '10115', 'city' => 'Berlin', 'country' => 'DE'],
+        'shipping_address' => null, 'vat_id' => null, 'vat_id_valid' => false, 'customer_note' => null, 'locale' => 'de',
+    ], null);
+
+    // A later print run costs more: the sale keeps what it cost then.
+    $product->update(['cost_cents' => 500]);
+    expect($order->items->sole()->unit_cost_cents)->toBe(320);
+
+    $this->get($product->urlFor('de'))->assertDontSee('cost_cents')->assertDontSee('"cost"', false);
+
+    $this->put(route('admin.products.update', $product), productPayload(['cost' => '']));
+    expect($product->refresh()->cost_cents)->toBeNull();
+});
 
 test('only images are accepted as product images', function () {
     Storage::fake('public');

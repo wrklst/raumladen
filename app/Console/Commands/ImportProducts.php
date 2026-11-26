@@ -49,6 +49,7 @@ class ImportProducts extends Command
             'products.*.description.*' => ['nullable', 'string', 'max:20000'],
             'products.*.tax_class' => [Rule::enum(TaxClass::class)],
             'products.*.price' => ['required', 'numeric', 'min:0', 'max:99999'],
+            'products.*.cost' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'products.*.stock' => ['integer', 'min:0'],
             'products.*.track_stock' => ['boolean'],
             'products.*.weight_grams' => ['nullable', 'integer', 'min:0'],
@@ -76,6 +77,10 @@ class ImportProducts extends Command
             foreach ($entries as $entry) {
                 $attributes = Arr::only($entry, ['title', 'slug', 'description', 'tax_class', 'stock', 'track_stock', 'weight_grams', 'specs', 'is_active', 'published_at']);
                 $attributes['price_cents'] = (int) round((float) $entry['price'] * 100);
+
+                if (array_key_exists('cost', $entry)) {
+                    $attributes['cost_cents'] = $entry['cost'] === null ? null : (int) round((float) $entry['cost'] * 100);
+                }
                 $attributes['slug'] = [...array_map(Str::slug(...), $entry['title']), ...$entry['slug'] ?? []];
 
                 $product = Product::query()->firstOrNew(['sku' => $entry['sku']]);

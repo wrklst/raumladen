@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $line_gross_cents
  */
 #[Fillable([
-    'product_id', 'name', 'sku', 'quantity', 'unit_price_cents', 'tax_class', 'tax_rate', 'tax_category',
+    'product_id', 'name', 'sku', 'quantity', 'unit_price_cents', 'unit_cost_cents', 'tax_class', 'tax_rate', 'tax_category',
     'discount_cents', 'line_net_cents', 'line_tax_cents', 'line_gross_cents',
 ])]
 class OrderItem extends Model

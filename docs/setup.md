@@ -60,7 +60,8 @@ php artisan shop:import-products catalogue.json
 `sku`, `title` and `price` (gross, in euros) are required. A new book is
 active, tracks its stock and carries the reduced tax class unless the entry
 says otherwise (`is_active`, `track_stock`, `tax_class`); further keys are
-`slug`, `weight_grams`, `published_at` and `back_cover` (a picture of the
+`slug`, `weight_grams`, `published_at`, `cost` (what a copy costs the
+shop, net, in euros; never shown in the storefront) and `back_cover` (a picture of the
 book's back, as a path relative to the JSON file). A book whose `sku` exists is
 updated with the keys its entry carries and keeps the rest, so a file without
 `stock` does not overwrite the stock of a running shop. Nothing is written

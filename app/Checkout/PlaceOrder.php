@@ -84,6 +84,8 @@ class PlaceOrder
                 'sku' => $line['sku'],
                 'quantity' => $line['quantity'],
                 'unit_price_cents' => $line['unit_price_cents'],
+                // What the copy costs the shop today; the product's cost may change, this sale's does not.
+                'unit_cost_cents' => $products->get($line['product_id'])?->cost_cents,
                 'tax_class' => $line['tax_class'],
                 'tax_rate' => $line['tax_rate'],
                 'tax_category' => $line['tax_category'],

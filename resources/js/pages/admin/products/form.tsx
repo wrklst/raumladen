@@ -27,6 +27,7 @@ type Product = {
     description: Record<string, string>;
     tax_class: string;
     price: string;
+    cost: string | null;
     stock: number;
     track_stock: boolean;
     weight_grams: number | null;
@@ -208,6 +209,21 @@ export default function ProductForm({
                                             min="0"
                                             required
                                             defaultValue={product?.price ?? ''}
+                                        />
+                                    </Field>
+
+                                    <Field
+                                        label={t('Cost per copy (net, EUR)')}
+                                        htmlFor="cost"
+                                        error={errors.cost}
+                                    >
+                                        <Input
+                                            id="cost"
+                                            name="cost"
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            defaultValue={product?.cost ?? ''}
                                         />
                                     </Field>
 

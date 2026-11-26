@@ -136,6 +136,7 @@ class ProductController extends Controller
                 'description' => $product->description ?? [],
                 'tax_class' => $product->tax_class->value,
                 'price' => number_format($product->price_cents / 100, 2, '.', ''),
+                'cost' => $product->cost_cents === null ? null : number_format($product->cost_cents / 100, 2, '.', ''),
                 'stock' => $product->stock,
                 'track_stock' => $product->track_stock,
                 'weight_grams' => $product->weight_grams,
