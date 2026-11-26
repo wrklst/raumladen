@@ -88,11 +88,16 @@ class MollieGateway implements PaymentGateway
             $query = ['locale' => $locale === 'de' ? 'de_DE' : 'en_US'];
 
             // Wallets are only listed when asked for; an account that knows none of them is asked without.
-            foreach ([['includeWallets' => 'applepay,googlepay'], ['includeWallets' => 'applepay'], []] as $wallets) {
+            foreach ([['includeWallets' => ['applepay', 'googlepay']], ['includeWallets' => ['applepay']], []] as $wallets) {
                 try {
                     $methods = [];
 
                     foreach ($this->client()->methods->allEnabled([...$query, ...$wallets]) as $method) {
+                        // The shop's own bank transfer is the prepayment; Mollie's would be a second one beside it.
+                        if ($method->id === 'banktransfer') {
+                            continue;
+                        }
+
                         $methods[] = ['id' => (string) $method->id, 'label' => (string) $method->description, 'image' => $method->image->svg ?? null];
                     }
 
