@@ -1,4 +1,5 @@
 import { Form, Link, router, usePage } from '@inertiajs/react';
+import { Content as DialogContentPrimitive } from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
 import CheckoutController from '@/actions/App/Http/Controllers/Shop/CheckoutController';
 import InputError from '@/components/input-error';
@@ -6,6 +7,13 @@ import { AddressFields } from '@/components/shop/address-fields';
 import { Field } from '@/components/shop/field';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogDescription,
+    DialogOverlay,
+    DialogPortal,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-translation';
 import { formatMoney, formatRate } from '@/lib/money';
@@ -828,33 +836,42 @@ export default function Checkout({
                                 : t('Place binding order')}
                         </Button>
 
-                        {payment && (
-                            <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
-                                <div
-                                    role="dialog"
-                                    aria-modal="true"
-                                    aria-labelledby="payment-notice"
-                                    className="w-full max-w-md space-y-4 border bg-background p-6"
+                        {/* While the customer pays in the window: a dialog that takes the
+                            focus and keeps it (keyboard and screen reader stay with it),
+                            and cannot be dismissed by accident; its two buttons are the ways on. */}
+                        <Dialog open={payment !== null}>
+                            <DialogPortal>
+                                <DialogOverlay />
+                                <DialogContentPrimitive
+                                    onEscapeKeyDown={(event) =>
+                                        event.preventDefault()
+                                    }
+                                    onPointerDownOutside={(event) =>
+                                        event.preventDefault()
+                                    }
+                                    onInteractOutside={(event) =>
+                                        event.preventDefault()
+                                    }
+                                    className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 space-y-4 border bg-background p-6"
                                 >
-                                    <h2
-                                        id="payment-notice"
-                                        className="text-lg font-semibold"
-                                    >
+                                    <DialogTitle className="text-lg font-semibold">
                                         {t('Complete your payment')}
-                                    </h2>
-                                    <p className="text-sm">
+                                    </DialogTitle>
+                                    <DialogDescription className="text-sm text-foreground">
                                         {t(
                                             'Your payment of :total is waiting in a separate window. This page continues by itself as soon as it is confirmed.',
                                             {
                                                 total: money(cart.total_cents),
                                             },
                                         )}
-                                    </p>
+                                    </DialogDescription>
                                     <Button
                                         type="button"
                                         size="lg"
                                         className="w-full"
-                                        onClick={() => openWindow(payment.url)}
+                                        onClick={() =>
+                                            payment && openWindow(payment.url)
+                                        }
                                     >
                                         {t('Open the payment window')}
                                     </Button>
@@ -866,9 +883,9 @@ export default function Checkout({
                                     >
                                         {t('Choose another payment method')}
                                     </Button>
-                                </div>
-                            </div>
-                        )}
+                                </DialogContentPrimitive>
+                            </DialogPortal>
+                        </Dialog>
 
                         <p className="text-center text-xs text-muted-foreground">
                             <Link href={cartIndex()} className="underline">

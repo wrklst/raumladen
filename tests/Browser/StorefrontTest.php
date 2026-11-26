@@ -155,6 +155,11 @@ test('paying online stays at the checkout: the provider opens in a window and th
         ->press('Kaufen und bezahlen')
         ->assertSee('Zahlung abschließen')
         ->assertPathIs('/de/checkout')
+        // The notice is a dialog: keyboard and screen reader are in it, and Escape does not drop the payment.
+        ->assertScript('!!document.activeElement.closest("[role=dialog]")')
+        ->keys('[role=dialog]', 'Escape')
+        ->assertSee('Zahlung abschließen')
+        ->assertNoAccessibilityIssues()
         // What was typed is still there, should the payment fail.
         ->assertValue('[name="billing_address[city]"]', 'Berlin');
 
