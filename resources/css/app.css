@@ -294,8 +294,21 @@ html[data-a11y-links='underline']
 /* Card fields at the checkout (Mollie Components): each field is a frame of
    the provider inside an element of this page, which gives it the look of
    the shop's own inputs. */
+/* Holder and number take a line each; expiry date and security code share one. */
+:has(> .mollie-card-component) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
 .mollie-card-component {
-    margin-bottom: 0.75rem;
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.mollie-card-component--expiryDate,
+.mollie-card-component--verificationCode {
+    flex-basis: 0;
 }
 
 .mollie-card-component__label,
