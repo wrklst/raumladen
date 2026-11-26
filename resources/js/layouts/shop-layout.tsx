@@ -108,6 +108,7 @@ export default function ShopLayout({ children }: PropsWithChildren) {
                             meta: { links: [], total: hits.length },
                         },
                         filters: { q: query, author: '' },
+                        author: null,
                         seo: {
                             ...(current.seo as object),
                             title:

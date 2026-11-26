@@ -34,6 +34,7 @@ import { index as customers } from '@/routes/admin/customers';
 import { index as datev } from '@/routes/admin/datev';
 import { index as invoices } from '@/routes/admin/invoices';
 import { index as orders } from '@/routes/admin/orders';
+import { index as authors } from '@/routes/admin/authors';
 import { index as pages } from '@/routes/admin/pages';
 import { index as products } from '@/routes/admin/products';
 import { edit as shopSettings } from '@/routes/admin/settings';
@@ -75,6 +76,12 @@ const navGroups: {
                 href: products(),
                 icon: BookOpen,
                 area: 'catalog',
+            },
+            {
+                title: 'Authors',
+                href: authors(),
+                icon: UsersRound,
+                area: 'content',
             },
             { title: 'Pages', href: pages(), icon: FileText, area: 'content' },
         ],

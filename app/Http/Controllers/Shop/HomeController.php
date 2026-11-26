@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shop;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductCardResource;
+use App\Models\Author;
 use App\Models\Product;
 use App\Seo\Seo;
 use App\Seo\StructuredData;
@@ -46,6 +47,10 @@ class HomeController extends Controller
         return Inertia::render('shop/home', [
             'products' => ProductCardResource::collection($products),
             'filters' => ['q' => $query, 'author' => $author],
+            // A few lines about the author whose books are listed, where the shop has them.
+            'author' => $author !== '' && $query === '' && ($about = Author::named($author)) && $about->translate('bio')
+                ? ['name' => $about->name, 'bio' => $about->translate('bio')]
+                : null,
             'seo' => Seo::make(
                 title: match (true) {
                     $query !== '' => __('Search: :query', ['query' => $query]),

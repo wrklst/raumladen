@@ -8,9 +8,11 @@ import type { ProductCard, ResourcePaginated } from '@/types';
 export default function Home({
     products,
     filters,
+    author,
 }: {
     products: ResourcePaginated<ProductCard>;
     filters?: { q: string; author: string };
+    author?: { name: string; bio: string } | null;
 }) {
     const { t, locale } = useTrans();
     const filtered = Boolean(filters?.q || filters?.author);
@@ -38,6 +40,11 @@ export default function Home({
                         >
                             {t('Show all issues')}
                         </Link>
+                    </p>
+                )}
+                {author && (
+                    <p className="max-w-prose pt-3 whitespace-pre-line">
+                        {author.bio}
                     </p>
                 )}
             </div>

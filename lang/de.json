@@ -719,5 +719,12 @@
     "Paid at once: your order ships right away.": "Sofort bezahlt: Ihre Bestellung geht direkt in den Versand.",
     "Pay to order": "Kaufen und bezahlen",
     "More about Wero": "Mehr über Wero",
-    "Cost per copy (net, EUR)": "Kosten pro Exemplar (netto, EUR)"
+    "Cost per copy (net, EUR)": "Kosten pro Exemplar (netto, EUR)",
+    "Author created.": "Autor:in angelegt.",
+    "Author updated.": "Autor:in gespeichert.",
+    "Author deleted.": "Autor:in gelöscht.",
+    "New author": "Neue:r Autor:in",
+    "About the author": "Über die Autorin / den Autor",
+    "Really delete this author?": "Diese:n Autor:in wirklich löschen?",
+    "The name must match the name on the book. The text appears in the shop above the books of that author.": "Der Name muss dem Namen am Buch entsprechen. Der Text erscheint im Shop über den Büchern dieser Autorin oder dieses Autors."
 }

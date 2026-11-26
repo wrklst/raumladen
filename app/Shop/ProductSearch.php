@@ -193,7 +193,7 @@ class ProductSearch
             ->all());
     }
 
-    private static function normalize(string $text): string
+    public static function normalize(string $text): string
     {
         return trim((string) preg_replace('/\s+/', ' ', Str::lower(Str::ascii($text))));
     }

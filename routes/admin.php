@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AuthorController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CustomerGroupController;
@@ -40,6 +41,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'staff']
 
     Route::resource('products', ProductController::class)->except('show')->parameters(['products' => 'product:id'])->middleware('staff:catalog');
     Route::resource('pages', PageController::class)->except('show')->middleware('staff:content');
+    Route::resource('authors', AuthorController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('staff:content');
     Route::resource('coupons', CouponController::class)->except('show')->middleware('staff:coupons');
 
     Route::middleware('staff:customers')->group(function () {

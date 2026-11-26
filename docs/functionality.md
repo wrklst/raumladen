@@ -24,7 +24,9 @@ which; none of it is legal or tax advice.
   the browser downloads the catalogue index once and searches locally; above
   that every search is answered by the server from a cached index.
 - **Authors.** Each author on a book's page links to all books by that
-  author.
+  author. Authors entered in the backend (Catalogue → Authors) with a few
+  lines about them have that text shown above their books; a book and an
+  author are matched by name.
 - **Product page.** Price with the VAT note, delivery time, stock, book
   details (ISBN, publisher, pages, binding, language, year, series), the
   credits, a text about the authors, the manufacturer (product safety), and
