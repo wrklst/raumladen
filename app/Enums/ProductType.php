@@ -27,7 +27,8 @@ enum ProductType: string
                 'language' => 'text',
                 'published' => 'date',
                 'series' => 'text',
-                'credits' => 'textarea',
+                // Label and content groups, kept as a line each ("Editor: …").
+                'credits' => 'pairs',
                 'about_authors' => 'textarea',
             ],
         };

@@ -2,6 +2,7 @@ import { Form, Head } from '@inertiajs/react';
 import { useState, type ReactNode } from 'react';
 import ProductController from '@/actions/App/Http/Controllers/Admin/ProductController';
 import InputError from '@/components/input-error';
+import { PairsField } from '@/components/pairs-field';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -381,8 +382,18 @@ export default function ProductForm({
                                                         errors[`specs.${field}`]
                                                     }
                                                 >
-                                                    {inputType ===
-                                                    'textarea' ? (
+                                                    {inputType === 'pairs' ? (
+                                                        <PairsField
+                                                            id={`spec_${field}`}
+                                                            name={`specs[${field}]`}
+                                                            defaultValue={
+                                                                product?.specs[
+                                                                    field
+                                                                ] ?? ''
+                                                            }
+                                                        />
+                                                    ) : inputType ===
+                                                      'textarea' ? (
                                                         <textarea
                                                             id={`spec_${field}`}
                                                             name={`specs[${field}]`}
