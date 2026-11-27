@@ -154,17 +154,18 @@ test('a third country export is tax free', function () {
         ->and($totals->totalCents)->toBe(1869 + 1860);
 });
 
-test('a small business charges no VAT at all', function (string $country) {
+test('a small business charges no VAT at all and takes none out of its prices', function (string $country, int $shipping) {
     config(['shop.tax.small_business' => true]);
     $product = Product::factory()->create(['price_cents' => 2000]);
 
     $totals = calculateCart($product, $this->consumer, $country);
 
     expect($totals->treatment)->toBe(TaxTreatment::SmallBusiness)
-        ->and($totals->lines[0])->toMatchArray(['tax_rate' => 0.0, 'tax_category' => 'E', 'line_tax_cents' => 0])
+        ->and($totals->lines[0])->toMatchArray(['unit_price_cents' => 2000, 'tax_rate' => 0.0, 'tax_category' => 'E', 'line_tax_cents' => 0])
         ->and($totals->taxCents)->toBe(0)
-        ->and($totals->totalCents)->toBe($totals->subtotalNetCents + $totals->shippingNetCents);
-})->with(['DE', 'AT', 'CH']);
+        ->and($totals->shippingDisplayCents)->toBe($shipping)
+        ->and($totals->totalCents)->toBe(2000 + $shipping);
+})->with([['DE', 390], ['AT', 990], ['CH', 1990]]);
 
 test('a business group sees net prices and pays tax on top', function () {
     $business = CustomerGroup::factory()->business()->create();

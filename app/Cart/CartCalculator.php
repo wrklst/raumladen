@@ -49,7 +49,7 @@ class CartCalculator
         foreach ($cartLines as $cartLine) {
             $product = $cartLine->product;
             $rate = $rateCountry === null ? 0.0 : $product->tax_class->rateIn($rateCountry);
-            $netUnit = TaxMath::netOf($product->priceFor($group), $product->tax_class->rateIn($home));
+            $netUnit = TaxMath::netOf($product->priceFor($group), $this->includedRate($product->tax_class, $treatment));
             $unitDisplay = (int) round($pricesIncludeTax ? $netUnit * (1 + $rate / 100) : $netUnit);
 
             $lines[] = [
@@ -157,10 +157,19 @@ class CartCalculator
         $largest = collect($lines)->sortByDesc('line_net_cents')->first();
         $class = TaxClass::from($largest['tax_class']);
         $rate = $rateCountry === null ? 0.0 : $class->rateIn($rateCountry);
-        $netShipping = TaxMath::netOf($zone['price_cents'], $class->rateIn(config('shop.tax.home_country')));
+        $netShipping = TaxMath::netOf($zone['price_cents'], $this->includedRate($class, $treatment));
         $display = (int) round($pricesIncludeTax ? $netShipping * (1 + $rate / 100) : $netShipping);
 
         return ['display' => $display, 'rate' => $rate, ...TaxMath::split($display, $rate, $pricesIncludeTax)];
+    }
+
+    /**
+     * The VAT rate a stored price contains. A small business charges none, so
+     * its stored price is the price paid and nothing is taken out of it.
+     */
+    private function includedRate(TaxClass $class, TaxTreatment $treatment): float
+    {
+        return $treatment === TaxTreatment::SmallBusiness ? 0.0 : $class->rateIn(config('shop.tax.home_country'));
     }
 
     /**
