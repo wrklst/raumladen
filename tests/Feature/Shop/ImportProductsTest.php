@@ -42,6 +42,23 @@ test('a catalogue file creates products and a second run updates them without to
         ->and($product->stock)->toBe(7);
 });
 
+test('a catalogue entry links its authors and brings the text about them', function () {
+    $this->artisan('shop:import-products', ['file' => catalogueFile([[
+        'sku' => 'SI-1',
+        'title' => ['en' => 'On Rooms'],
+        'price' => 10,
+        'authors' => [
+            ['name' => 'A. Author', 'bio' => ['en' => 'Writes about rooms.']],
+            ['name' => 'B. Author'],
+        ],
+    ]])])->assertSuccessful();
+
+    $product = Product::query()->sole();
+
+    expect($product->specs['authors'])->toBe('A. Author, B. Author')
+        ->and($product->authors->pluck('bio.en')->all())->toBe(['Writes about rooms.', null]);
+});
+
 test('one invalid entry stops the whole import', function () {
     $this->artisan('shop:import-products', ['file' => catalogueFile([
         ['sku' => 'SI-1', 'title' => ['de' => 'Gut', 'en' => 'Good'], 'price' => 10],

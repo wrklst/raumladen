@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\ProductType;
 use App\Enums\TaxClass;
+use App\Models\Author;
 use App\Models\Product;
 use Closure;
 use Illuminate\Console\Attributes\Description;
@@ -56,6 +57,9 @@ class ImportProducts extends Command
             'products.*.specs.*' => ['nullable', 'string', 'max:5000'],
             'products.*.is_active' => ['boolean'],
             'products.*.published_at' => ['nullable', 'date'],
+            'products.*.authors' => ['array', 'list'],
+            'products.*.authors.*.name' => ['required', 'string', 'max:255'],
+            'products.*.authors.*.bio.*' => ['nullable', 'string', 'max:5000'],
             'products.*.back_cover' => ['nullable', 'string', function (string $attribute, mixed $value, Closure $fail) use ($folder): void {
                 if (! in_array(strtolower(pathinfo((string) $value, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'webp'], true) || @getimagesize($folder.'/'.$value) === false) {
                     $fail("{$value} is not a picture next to the catalogue file.");
@@ -96,8 +100,16 @@ class ImportProducts extends Command
 
                 $product->fill($attributes)->save();
 
-                // Authors named in the file become linked entries.
-                if (isset($entry['specs']['authors'])) {
+                // Authors named in the file become linked entries; a text about them is kept with the author.
+                if (isset($entry['authors'])) {
+                    $product->syncAuthorNames(array_column($entry['authors'], 'name'));
+
+                    foreach ($entry['authors'] as $author) {
+                        if (isset($author['bio'])) {
+                            Author::named($author['name'])?->update(['bio' => $author['bio']]);
+                        }
+                    }
+                } elseif (isset($entry['specs']['authors'])) {
                     $product->syncAuthorNames(explode(',', (string) $entry['specs']['authors']));
                 }
             }
