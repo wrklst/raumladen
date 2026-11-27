@@ -41,6 +41,9 @@ class PageVariables
             'carrier' => [config('shop.carrier'), 'Carrier'],
             'delivery_eu' => [$delivery(1), 'Delivery time EU'],
             'delivery_world' => [$delivery(2), 'Delivery time rest of the world'],
+            'vat_note' => [__(config('shop.tax.small_business')
+                ? 'As a small business within the meaning of § 19 UStG we charge no VAT and show none.'
+                : 'Prices include statutory VAT.', [], $locale), 'VAT'],
             'date' => [$page->updated_at?->format('d.m.Y'), 'Date'],
         ];
 

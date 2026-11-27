@@ -18,7 +18,7 @@ Vertragssprachen sind Deutsch und Englisch. Wir speichern den Vertragstext und s
 
 ### 4. Preise und Versandkosten
 
-Alle Preise sind Endpreise und enthalten die gesetzliche Umsatzsteuer. Für Bücher gilt in Deutschland die Buchpreisbindung. Hinzu kommen Versandkosten, die auf der Seite „Versand & Zahlung“, im Warenkorb und an der Kasse ausgewiesen werden. Bei Lieferungen in Länder außerhalb der Europäischen Union können Zölle, Einfuhrumsatzsteuer und Gebühren anfallen, die Sie als Empfängerin oder Empfänger tragen.
+Alle Preise sind Endpreise. :vat_note Für Bücher gilt in Deutschland die Buchpreisbindung. Hinzu kommen Versandkosten, die auf der Seite „Versand & Zahlung“, im Warenkorb und an der Kasse ausgewiesen werden. Bei Lieferungen in Länder außerhalb der Europäischen Union können Zölle, Einfuhrumsatzsteuer und Gebühren anfallen, die Sie als Empfängerin oder Empfänger tragen.
 
 ### 5. Lieferung
 

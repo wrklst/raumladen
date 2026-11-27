@@ -14,15 +14,16 @@ export function formatRate(rate: number): string {
 }
 
 /**
- * What stands beside a price: with VAT, net, or without VAT at all. A
- * product without a rate is sold by a small business (§ 19 UStG).
+ * What stands beside a price: with VAT, net, or nothing about VAT at all. A
+ * product without a rate is sold by a small business (§ 19 UStG), which says
+ * so once, in its terms and on the shipping page (`:vat_note`).
  */
 export function priceNote(
     product: { prices_include_tax: boolean; tax_rate: number | null },
     t: (key: string, params?: Record<string, string | number>) => string,
 ): string {
     if (product.tax_rate === null) {
-        return t('no VAT charged (§ 19 UStG), plus shipping');
+        return t('plus shipping');
     }
 
     return product.prices_include_tax

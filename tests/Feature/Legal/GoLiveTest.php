@@ -43,6 +43,13 @@ test('the legal texts follow the shop settings and mark what is not set', functi
     expect($imprint->renderedBody('de'))->toContain('DE123456789')->not->toContain('[TODO: USt-IdNr.]')
         ->and(Page::query()->where('slug', 'shipping')->sole()->renderedBody('de'))->toContain('4–8 Werktage');
 
+    // A small business says once, in its terms and on the shipping page, that it charges no VAT.
+    $terms = Page::query()->where('slug', 'terms')->sole();
+    expect($terms->renderedBody('en'))->toContain('Prices include statutory VAT.');
+    config(['shop.tax.small_business' => true]);
+    expect($terms->renderedBody('en'))->toContain('§ 19 UStG')->not->toContain('include statutory VAT')
+        ->and(Page::query()->where('slug', 'shipping')->sole()->renderedBody('de'))->toContain('Kleinunternehmer im Sinne von § 19 UStG');
+
     // No placeholder is left unresolved in any text.
     foreach (Page::query()->get() as $page) {
         foreach (['de', 'en'] as $locale) {

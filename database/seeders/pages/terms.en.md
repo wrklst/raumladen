@@ -20,7 +20,7 @@ The contract languages are German and English. We store the contract text and se
 
 ### 4. Prices and shipping costs
 
-All prices are final prices and include statutory VAT. Books are subject to fixed book prices in Germany. Shipping costs are added; they are shown on the page “Shipping & Payment”, in the cart and at checkout. Deliveries to countries outside the European Union may incur customs duties, import VAT and fees, which the recipient bears.
+All prices are final prices. :vat_note Books are subject to fixed book prices in Germany. Shipping costs are added; they are shown on the page “Shipping & Payment”, in the cart and at checkout. Deliveries to countries outside the European Union may incur customs duties, import VAT and fees, which the recipient bears.
 
 ### 5. Delivery
 
