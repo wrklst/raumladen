@@ -34,6 +34,8 @@ which; none of it is legal or tax advice.
   them above. A catalogue file may still name authors as text; they become
   entries when it is loaded. It may also list them (`authors`, each with a
   `name` and a `bio` per language), which brings the text about them along.
+  The pictures of a book can come with the file too: `images`, the cover
+  first, and `back_cover`, each a picture next to the catalogue file.
 - **Product page.** Price with the VAT note, delivery time, stock, book
   details (ISBN, publisher, pages, binding, language, year, series), the
   credits, a text about the authors, the manufacturer (product safety), and

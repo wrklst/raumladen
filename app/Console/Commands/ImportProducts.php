@@ -41,6 +41,12 @@ class ImportProducts extends Command
 
         $folder = dirname((string) realpath($this->argument('file')));
 
+        $picture = function (string $attribute, mixed $value, Closure $fail) use ($folder): void {
+            if (! in_array(strtolower(pathinfo((string) $value, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'webp'], true) || @getimagesize($folder.'/'.$value) === false) {
+                $fail("{$value} is not a picture next to the catalogue file.");
+            }
+        };
+
         $validator = Validator::make(['products' => $entries], [
             'products' => ['required', 'array', 'list'],
             'products.*.sku' => ['required', 'string', 'max:64', 'distinct'],
@@ -60,11 +66,9 @@ class ImportProducts extends Command
             'products.*.authors' => ['array', 'list'],
             'products.*.authors.*.name' => ['required', 'string', 'max:255'],
             'products.*.authors.*.bio.*' => ['nullable', 'string', 'max:5000'],
-            'products.*.back_cover' => ['nullable', 'string', function (string $attribute, mixed $value, Closure $fail) use ($folder): void {
-                if (! in_array(strtolower(pathinfo((string) $value, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'webp'], true) || @getimagesize($folder.'/'.$value) === false) {
-                    $fail("{$value} is not a picture next to the catalogue file.");
-                }
-            }],
+            'products.*.back_cover' => ['nullable', 'string', $picture],
+            'products.*.images' => ['array', 'list'],
+            'products.*.images.*' => ['string', $picture],
         ]);
 
         if ($validator->fails()) {
@@ -95,7 +99,14 @@ class ImportProducts extends Command
                 }
 
                 if (array_key_exists('back_cover', $entry)) {
-                    $attributes['back_cover'] = $this->storeBackCover($entry['back_cover'] === null ? null : $folder.'/'.$entry['back_cover'], $product->back_cover);
+                    $attributes['back_cover'] = $entry['back_cover'] === null ? null : $this->storePicture($folder.'/'.$entry['back_cover'], 'back');
+                    $this->forget(array_diff([$product->back_cover], [$attributes['back_cover']]));
+                }
+
+                // The pictures of the book, the cover first, replace the ones it had.
+                if (array_key_exists('images', $entry)) {
+                    $attributes['images'] = array_map(fn (string $image): string => $this->storePicture($folder.'/'.$image, 'image'), $entry['images']);
+                    $this->forget(array_diff($product->images ?? [], $attributes['images']));
                 }
 
                 $product->fill($attributes)->save();
@@ -125,19 +136,22 @@ class ImportProducts extends Command
      * Copies the picture into the public disk, named after its content, so a
      * changed picture gets a new address and an unchanged one is not copied again.
      */
-    private function storeBackCover(?string $file, ?string $current): ?string
+    private function storePicture(string $file, string $kind): string
     {
-        $disk = Storage::disk('public');
-        $path = $file === null ? null : 'products/back-'.md5_file($file).'.'.strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $path = "products/{$kind}-".md5_file($file).'.'.strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
-        if ($path !== null && ! $disk->exists($path)) {
-            $disk->put($path, (string) file_get_contents($file));
-        }
-
-        if ($current !== null && $current !== $path) {
-            $disk->delete($current);
+        if (! Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->put($path, (string) file_get_contents($file));
         }
 
         return $path;
+    }
+
+    /**
+     * @param  array<int, string|null>  $paths  Pictures a product no longer shows.
+     */
+    private function forget(array $paths): void
+    {
+        Storage::disk('public')->delete(array_filter($paths));
     }
 }

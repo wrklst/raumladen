@@ -93,3 +93,26 @@ test('a catalogue entry brings the picture of its back cover along', function ()
     Storage::disk('public')->assertMissing($path);
     expect(Product::query()->sole()->back_cover)->toBeNull();
 });
+
+test('a catalogue entry brings the pictures of the book along, the cover first', function () {
+    Storage::fake('public');
+    $file = catalogueFile([]);
+    imagepng(imagecreatetruecolor(4, 6), dirname($file).'/front.png');
+    imagepng(imagecreatetruecolor(6, 4), dirname($file).'/page.png');
+    $entry = ['sku' => 'SI-1', 'title' => ['de' => 'Raum', 'en' => 'Space'], 'price' => 10];
+
+    file_put_contents($file, json_encode([[...$entry, 'images' => ['front.png', 'page.png']]]));
+    $this->artisan('shop:import-products', ['file' => $file])->assertSuccessful();
+
+    [$front, $page] = Product::query()->sole()->images;
+    Storage::disk('public')->assertExists([$front, $page]);
+
+    file_put_contents($file, json_encode([[...$entry, 'images' => ['missing.png']]]));
+    $this->artisan('shop:import-products', ['file' => $file])->assertFailed();
+
+    file_put_contents($file, json_encode([[...$entry, 'images' => ['front.png']]]));
+    $this->artisan('shop:import-products', ['file' => $file])->assertSuccessful();
+
+    Storage::disk('public')->assertExists($front)->assertMissing($page);
+    expect(Product::query()->sole()->images)->toBe([$front]);
+});
