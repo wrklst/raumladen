@@ -25,7 +25,7 @@ Bestellbestätigungen, Rechnungen, Versandmitteilungen, Anmeldecodes und die Bes
 
 ### 6. Zahlung
 
-Zahlungen per Karte, PayPal, Lastschrift und weiteren Zahlungsarten wickelt Mollie B.V., Keizersgracht 126, 1015 CW Amsterdam, Niederlande, ab. Dafür übermitteln wir Bestellnummer, Betrag und Sprache; Ihre Zahlungsdaten geben Sie direkt bei Mollie ein und wir erhalten sie nicht. Mollie verarbeitet die Daten als eigener Verantwortlicher; es gilt die Datenschutzerklärung von Mollie. Bei Vorkasse sehen wir Ihre Kontoverbindung auf unserem Kontoauszug.
+Zahlungen, die Sie online leisten (je nach Angebot an der Kasse etwa per Karte, Wero, Apple Pay, Google Pay oder PayPal), wickelt Mollie B.V., Keizersgracht 126, 1015 CW Amsterdam, Niederlande, ab. Dafür übermitteln wir Bestellnummer, Betrag, Sprache und die gewählte Zahlungsart. Die Felder für Kartendaten an der Kasse stellt Mollie bereit und lädt sie von den eigenen Servern; dabei erhält Mollie Ihre IP-Adresse. Was Sie dort eingeben, geht direkt an Mollie, wir erhalten Ihre Kartendaten nicht. Verlangt der Anbieter der Zahlungsart oder Ihre Bank eine Freigabe, öffnet sich dafür deren Seite in einem eigenen Fenster; für diese Seiten sind die jeweiligen Anbieter verantwortlich. Mollie verarbeitet die Daten als eigener Verantwortlicher; es gilt die Datenschutzerklärung von Mollie. Bei Vorkasse sehen wir Ihre Kontoverbindung auf unserem Kontoauszug.
 
 ### 7. Versand
 

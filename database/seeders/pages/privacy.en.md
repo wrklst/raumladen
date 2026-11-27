@@ -27,7 +27,7 @@ We send order confirmations, invoices, shipping notices, sign-in codes and the c
 
 ### 6. Payment
 
-Payments by card, PayPal, direct debit and other methods are handled by Mollie B.V., Keizersgracht 126, 1015 CW Amsterdam, Netherlands. We transmit order number, amount and language; you enter your payment details directly with Mollie and we do not receive them. Mollie processes the data as an independent controller; Mollie's privacy policy applies. For prepayment we see your bank details on our account statement.
+Payments you make online (depending on what the checkout offers, for example by card, Wero, Apple Pay, Google Pay or PayPal) are handled by Mollie B.V., Keizersgracht 126, 1015 CW Amsterdam, Netherlands. We transmit order number, amount, language and the payment method you chose. The fields for card details at checkout are provided by Mollie and loaded from Mollie's servers; Mollie receives your IP address in the process. What you enter there goes directly to Mollie; we do not receive your card details. If the provider of the payment method or your bank asks for an approval, their page opens in a window of its own; those pages are the responsibility of the respective providers. Mollie processes the data as an independent controller; Mollie's privacy policy applies. For prepayment we see your bank details on our account statement.
 
 ### 7. Shipping
 
