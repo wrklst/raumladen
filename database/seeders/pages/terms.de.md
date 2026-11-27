@@ -6,9 +6,11 @@ Diese Geschäftsbedingungen gelten für alle Bestellungen, die Verbraucher und U
 
 ### 2. Vertragsschluss
 
-Die Darstellung der Bücher im Shop ist kein rechtlich bindendes Angebot, sondern eine Aufforderung zur Bestellung. Sie legen Bücher in den Warenkorb, geben an der Kasse Ihre Daten ein und wählen eine Zahlungsart. Bis zum Absenden können Sie alle Eingaben ändern oder den Vorgang abbrechen. Mit dem Klick auf „Zahlungspflichtig bestellen“ geben Sie ein verbindliches Angebot ab.
+Die Darstellung der Bücher im Shop ist kein rechtlich bindendes Angebot, sondern eine Aufforderung zur Bestellung. Sie legen Bücher in den Warenkorb, geben an der Kasse Ihre Daten ein und wählen eine Zahlungsart. Bis zum Absenden können Sie alle Eingaben ändern oder den Vorgang abbrechen. Mit dem Klick auf den Bestellknopf geben Sie ein verbindliches Angebot ab: Er heißt „Kaufen und bezahlen“, wenn Sie online zahlen, und „Zahlungspflichtig bestellen“ bei Vorkasse.
 
-Den Eingang Ihrer Bestellung bestätigen wir unverzüglich per E-Mail. Diese Eingangsbestätigung ist noch keine Annahme. Der Vertrag kommt zustande, wenn wir Ihr Angebot annehmen: bei Zahlung über den Zahlungsdienstleister mit der Bestätigung der Zahlung, bei Vorkasse mit der Zahlungsaufforderung in der Eingangsbestätigung, spätestens mit dem Versand der Ware.
+Zahlen Sie online, zahlen Sie an der Kasse; was der Anbieter der Zahlungsart oder Ihre Bank dafür zeigen muss, öffnet sich in einem Fenster über der Kasse. Ihre Bestellung ist aufgegeben, sobald die Zahlung bestätigt ist. Damit nehmen wir Ihr Angebot an, und Sie erhalten eine E-Mail mit den Bestelldaten und der Rechnung. Wird die Zahlung nicht bestätigt oder brechen Sie sie ab, kommt kein Vertrag zustande.
+
+Bei Vorkasse bestätigen wir den Eingang Ihrer Bestellung unverzüglich per E-Mail. Diese Eingangsbestätigung ist noch keine Annahme; der Vertrag kommt mit der Zahlungsaufforderung zustande, die sie enthält, spätestens mit dem Versand der Ware.
 
 ### 3. Vertragssprache und Vertragstext
 

@@ -8,9 +8,11 @@ These terms apply to all orders placed by consumers and businesses through this 
 
 ### 2. Conclusion of contract
 
-The presentation of books in the shop is not a legally binding offer but an invitation to order. You put books in the cart, enter your details at checkout and choose a payment method. Until you submit the order you can change every entry or cancel. By clicking “Place binding order” you submit a binding offer.
+The presentation of books in the shop is not a legally binding offer but an invitation to order. You put books in the cart, enter your details at checkout and choose a payment method. Until you submit the order you can change every entry or cancel. By clicking the order button you submit a binding offer: it reads “Pay to order” when you pay online and “Place binding order” for prepayment.
 
-We confirm receipt of your order by email without delay. This confirmation of receipt is not yet an acceptance. The contract is concluded when we accept your offer: with the confirmation of payment when you pay through the payment provider, with the payment request in the confirmation of receipt when you pay in advance by bank transfer, and at the latest when we ship the goods.
+When you pay online, you pay at checkout; whatever the provider of the payment method or your bank has to show for it opens in a window over the checkout. Your order is placed as soon as the payment is confirmed. With that we accept your offer, and you receive an email with the order details and the invoice. If the payment is not confirmed or you cancel it, no contract is concluded.
+
+For prepayment we confirm receipt of your order by email without delay. This confirmation of receipt is not yet an acceptance; the contract is concluded with the payment request it contains, and at the latest when we ship the goods.
 
 ### 3. Contract language and contract text
 

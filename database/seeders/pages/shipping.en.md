@@ -12,7 +12,7 @@ Deliveries to countries outside the European Union may incur customs duties, imp
 
 ## Payment
 
-- Credit card, PayPal, SEPA direct debit and other methods via Mollie
+- Online at checkout through Mollie, depending on what is offered there for example by card, Wero, Apple Pay, Google Pay or PayPal: the order is placed with the confirmed payment and goes to shipping right away.
 - Prepayment by bank transfer: please transfer within 14 days; the bank details are in the confirmation of receipt.
 
 All prices include statutory VAT.

@@ -12,7 +12,7 @@ Bei Lieferungen in Länder außerhalb der Europäischen Union können Zölle, Ei
 
 ## Zahlung
 
-- Kreditkarte, PayPal, SEPA-Lastschrift und weitere Zahlungsarten über Mollie
+- Online an der Kasse über Mollie, je nach Angebot dort etwa per Karte, Wero, Apple Pay, Google Pay oder PayPal: Die Bestellung ist mit der bestätigten Zahlung aufgegeben und geht gleich in den Versand.
 - Vorkasse per Überweisung: Bitte überweisen Sie innerhalb von 14 Tagen; die Bankverbindung steht in der Eingangsbestätigung.
 
 Alle Preise enthalten die gesetzliche Umsatzsteuer.
