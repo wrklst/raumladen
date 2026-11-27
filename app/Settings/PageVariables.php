@@ -53,6 +53,16 @@ class PageVariables
             $replacements[':'.$key] = (string) $value !== '' ? (string) $value : '[TODO: '.__($label, [], $locale).']';
         }
 
+        // What the texts say about languages follows the languages of the storefront.
+        $locales = (array) config('shop.locales');
+        $german = in_array('de', $locales, true);
+        $replacements[':binding_note'] = $german ? __('The German version is the binding one; this translation is for your convenience.', [], $locale) : '';
+        $replacements[':contract_languages'] = __(match (true) {
+            count($locales) > 1 => 'The contract languages are German and English.',
+            $german => 'The contract language is German.',
+            default => 'The contract language is English.',
+        }, [], $locale);
+
         return $replacements;
     }
 }

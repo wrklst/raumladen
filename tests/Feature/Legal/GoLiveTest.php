@@ -50,6 +50,12 @@ test('the legal texts follow the shop settings and mark what is not set', functi
     expect($terms->renderedBody('en'))->toContain('§ 19 UStG')->not->toContain('include statutory VAT')
         ->and(Page::query()->where('slug', 'shipping')->sole()->renderedBody('de'))->toContain('Kleinunternehmer im Sinne von § 19 UStG');
 
+    // What the texts say about languages follows the languages of the storefront.
+    expect($terms->renderedBody('en'))->toContain('The German version is the binding one', 'The contract languages are German and English.');
+    config(['shop.locales' => ['en']]);
+    expect($terms->renderedBody('en'))->toContain('The contract language is English.')->not->toContain('German version');
+    config(['shop.locales' => ['de', 'en']]);
+
     // No placeholder is left unresolved in any text.
     foreach (Page::query()->get() as $page) {
         foreach (['de', 'en'] as $locale) {

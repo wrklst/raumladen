@@ -1,6 +1,6 @@
 ## Withdrawal information
 
-The German version is the binding one; this translation is for your convenience.
+:binding_note
 
 ### Right of withdrawal
 

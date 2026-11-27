@@ -14,7 +14,7 @@ Bei Vorkasse bestätigen wir den Eingang Ihrer Bestellung unverzüglich per E-Ma
 
 ### 3. Vertragssprache und Vertragstext
 
-Vertragssprachen sind Deutsch und Englisch. Wir speichern den Vertragstext und senden Ihnen die Bestelldaten, diese Geschäftsbedingungen und die Widerrufsbelehrung per E-Mail zu. Ihre Bestellungen können Sie außerdem im Kundenkonto einsehen.
+:contract_languages Wir speichern den Vertragstext und senden Ihnen die Bestelldaten, diese Geschäftsbedingungen und die Widerrufsbelehrung per E-Mail zu. Ihre Bestellungen können Sie außerdem im Kundenkonto einsehen.
 
 ### 4. Preise und Versandkosten
 

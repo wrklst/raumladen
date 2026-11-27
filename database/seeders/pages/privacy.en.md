@@ -1,6 +1,6 @@
 ## Privacy policy
 
-The German version is the binding one; this translation is for your convenience.
+:binding_note
 
 ### 1. Controller
 

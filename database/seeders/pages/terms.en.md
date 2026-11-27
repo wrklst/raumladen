@@ -1,6 +1,6 @@
 ## Terms and Conditions
 
-The German version of these terms is the binding one; this translation is for your convenience.
+:binding_note
 
 ### 1. Scope and seller
 
@@ -16,7 +16,7 @@ For prepayment we confirm receipt of your order by email without delay. This con
 
 ### 3. Contract language and contract text
 
-The contract languages are German and English. We store the contract text and send you the order details, these terms and the withdrawal information by email. You can also view your orders in your customer account.
+:contract_languages We store the contract text and send you the order details, these terms and the withdrawal information by email. You can also view your orders in your customer account.
 
 ### 4. Prices and shipping costs
 
