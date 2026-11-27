@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-translation';
-import { formatMoney, formatRate } from '@/lib/money';
+import { formatMoney, priceNote } from '@/lib/money';
 import { home } from '@/routes/shop';
 import { show as pageShow } from '@/routes/shop/pages';
 import type { ProductDetail } from '@/types';
@@ -131,11 +131,7 @@ export default function Product({
                         )}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                        {product.prices_include_tax
-                            ? t('incl. :rate VAT, plus shipping', {
-                                  rate: formatRate(product.tax_rate),
-                              })
-                            : t('net, plus VAT and shipping')}
+                        {priceNote(product, t)}
                         {' · '}
                         <Link
                             href={pageShow({ page: 'shipping' })}

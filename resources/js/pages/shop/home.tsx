@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Pagination } from '@/components/pagination';
 import { useTrans } from '@/hooks/use-translation';
-import { formatMoney, formatRate } from '@/lib/money';
+import { formatMoney, priceNote } from '@/lib/money';
 import { home } from '@/routes/shop';
 import type { ProductCard, ResourcePaginated } from '@/types';
 
@@ -103,13 +103,7 @@ export default function Home({
                                     )}
                                     {!product.in_stock && ` · ${t('Sold out')}`}
                                     <br />
-                                    {product.prices_include_tax
-                                        ? t('incl. :rate VAT, plus shipping', {
-                                              rate: formatRate(
-                                                  product.tax_rate,
-                                              ),
-                                          })
-                                        : t('net, plus VAT and shipping')}
+                                    {priceNote(product, t)}
                                 </p>
                             </Link>
                         </li>

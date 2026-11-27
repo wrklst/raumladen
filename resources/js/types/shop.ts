@@ -43,7 +43,7 @@ export type ProductCard = {
     url: string;
     price_cents: number;
     prices_include_tax: boolean;
-    tax_rate: number;
+    tax_rate: number | null;
     currency: string;
     image: string | null;
     in_stock: boolean;

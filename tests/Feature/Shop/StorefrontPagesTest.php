@@ -45,6 +45,17 @@ test('a product page names its neighbours in the catalogue and what else can be 
     $this->get($new->urlFor('de'))->assertInertia(fn (Assert $page) => $page->where('next', null));
 });
 
+test('a small business names no VAT beside its prices', function () {
+    config(['shop.tax.small_business' => true]);
+    $product = Product::factory()->create(['price_cents' => 1000]);
+
+    $this->get($product->urlFor('en'))
+        ->assertInertia(fn ($page) => $page
+            ->where('product.tax_rate', null)
+            ->where('product.prices_include_tax', true)
+            ->where('product.price_cents', 1000));
+});
+
 test('inactive and unpublished products are not reachable', function () {
     $inactive = Product::factory()->inactive()->create();
     $future = Product::factory()->create(['published_at' => now()->addDay()]);

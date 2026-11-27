@@ -21,6 +21,8 @@ class ProductCardResource extends JsonResource
         $group = CurrentCustomer::group();
         $gross = $this->priceFor($group);
         $homeRate = $this->tax_class->rateIn(config('shop.tax.home_country'));
+        // A small business (§ 19 UStG) charges no VAT: one price for everyone, and no rate to name beside it.
+        $withoutVat = (bool) config('shop.tax.small_business');
 
         return [
             'id' => $this->id,
@@ -28,9 +30,9 @@ class ProductCardResource extends JsonResource
             'title' => $this->translate('title'),
             'slug' => $this->translate('slug'),
             'url' => $this->urlFor(app()->getLocale()),
-            'price_cents' => $group->prices_include_tax ? $gross : (int) round(TaxMath::netOf($gross, $homeRate)),
-            'prices_include_tax' => $group->prices_include_tax,
-            'tax_rate' => $homeRate,
+            'price_cents' => $withoutVat || $group->prices_include_tax ? $gross : (int) round(TaxMath::netOf($gross, $homeRate)),
+            'prices_include_tax' => $withoutVat || $group->prices_include_tax,
+            'tax_rate' => $withoutVat ? null : $homeRate,
             'currency' => $this->currency,
             'image' => $this->imageUrl(),
             'in_stock' => $this->hasStockFor(1),
