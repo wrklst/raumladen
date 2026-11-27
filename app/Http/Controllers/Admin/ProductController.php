@@ -10,9 +10,10 @@ use App\Models\Author;
 use App\Models\CustomerGroup;
 use App\Models\Product;
 use App\Models\ProductPrice;
+use App\Support\Picture;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -90,18 +91,16 @@ class ProductController extends Controller
         $images = $request->input('existing_images', []);
 
         foreach ($request->file('images', []) as $file) {
-            $images[] = $file->store('products', 'public');
+            $images[] = Picture::store($file->getRealPath(), Str::random(40));
         }
 
-        foreach (array_diff($product->images ?? [], $images) as $removed) {
-            Storage::disk('public')->delete($removed);
-        }
+        Picture::delete(array_diff($product->images ?? [], $images));
 
-        $back = $request->file('back_cover')?->store('products', 'public')
+        $back = ($request->file('back_cover') ? Picture::store($request->file('back_cover')->getRealPath(), Str::random(40)) : null)
             ?? ($request->boolean('keep_back_cover') ? $product->back_cover : null);
 
         if ($product->back_cover !== null && $product->back_cover !== $back) {
-            Storage::disk('public')->delete($product->back_cover);
+            Picture::delete([$product->back_cover]);
         }
 
         $product->update(['images' => array_values($images), 'back_cover' => $back]);

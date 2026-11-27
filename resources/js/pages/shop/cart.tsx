@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-translation';
 import { formatMoney, formatRate } from '@/lib/money';
+import { pictureSrcSet } from '@/lib/picture';
 import { home } from '@/routes/shop';
 import { show as checkout } from '@/routes/shop/checkout';
 import type { CartTotals } from '@/types';
@@ -73,6 +74,8 @@ export default function Cart({
                             {line.image ? (
                                 <img
                                     src={line.image}
+                                    srcSet={pictureSrcSet(line.image)}
+                                    sizes="60px"
                                     alt=""
                                     width={60}
                                     height={80}

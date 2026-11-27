@@ -105,7 +105,8 @@ test('a catalogue entry brings the pictures of the book along, the cover first',
     $this->artisan('shop:import-products', ['file' => $file])->assertSuccessful();
 
     [$front, $page] = Product::query()->sole()->images;
-    Storage::disk('public')->assertExists([$front, $page]);
+    Storage::disk('public')->assertExists([$front, $page, str_replace('.webp', '-600.webp', $page)]);
+    expect(getimagesizefromstring(Storage::disk('public')->get($front))['mime'])->toBe('image/webp');
 
     file_put_contents($file, json_encode([[...$entry, 'images' => ['missing.png']]]));
     $this->artisan('shop:import-products', ['file' => $file])->assertFailed();
@@ -113,6 +114,6 @@ test('a catalogue entry brings the pictures of the book along, the cover first',
     file_put_contents($file, json_encode([[...$entry, 'images' => ['front.png']]]));
     $this->artisan('shop:import-products', ['file' => $file])->assertSuccessful();
 
-    Storage::disk('public')->assertExists($front)->assertMissing($page);
+    Storage::disk('public')->assertExists($front)->assertMissing([$page, str_replace('.webp', '-600.webp', $page)]);
     expect(Product::query()->sole()->images)->toBe([$front]);
 });

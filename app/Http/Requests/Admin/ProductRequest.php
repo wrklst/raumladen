@@ -46,8 +46,9 @@ class ProductRequest extends FormRequest
             'is_active' => ['boolean'],
             'published_at' => ['nullable', 'date'],
             'images' => ['nullable', 'array', 'max:10'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'back_cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            // ponytail: GD holds a whole picture in memory, so very large ones are turned away; scale in tiles (vips) if staff need them
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=6000,max_height=6000'],
+            'back_cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120', 'dimensions:max_width=6000,max_height=6000'],
             'keep_back_cover' => ['boolean'],
             'existing_images' => ['nullable', 'array'],
             'existing_images.*' => ['string'],

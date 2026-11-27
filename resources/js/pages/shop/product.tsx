@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTrans } from '@/hooks/use-translation';
 import { formatMoney, priceNote } from '@/lib/money';
+import { pictureSrcSet } from '@/lib/picture';
 import { home } from '@/routes/shop';
 import { show as pageShow } from '@/routes/shop/pages';
 import type { ProductDetail } from '@/types';
@@ -84,6 +85,8 @@ export default function Product({
                             <img
                                 key={image}
                                 src={image}
+                                srcSet={pictureSrcSet(image)}
+                                sizes="150px"
                                 alt={t(':title, image :number', {
                                     title: product.title,
                                     number: index + 2,

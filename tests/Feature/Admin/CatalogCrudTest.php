@@ -124,14 +124,16 @@ test('uploaded images are stored and removed images are deleted from disk', func
     Storage::fake('public');
     $product = Product::factory()->create();
 
-    $this->post(route('admin.products.update', $product), productPayload(['_method' => 'PUT', 'images' => [UploadedFile::fake()->image('cover.jpg')]]));
+    $this->post(route('admin.products.update', $product), productPayload(['_method' => 'PUT', 'images' => [UploadedFile::fake()->image('cover.jpg', 1200, 1800)]]));
 
     $path = $product->refresh()->images[0];
-    Storage::disk('public')->assertExists($path);
+    $small = str_replace('.webp', '-600.webp', $path);
+    Storage::disk('public')->assertExists([$path, $small]);
+    expect(getimagesizefromstring(Storage::disk('public')->get($small)))->toMatchArray([0 => 600, 'mime' => 'image/webp']);
 
     $this->put(route('admin.products.update', $product), productPayload(['existing_images' => []]));
 
-    Storage::disk('public')->assertMissing($path);
+    Storage::disk('public')->assertMissing([$path, $small]);
     expect($product->refresh()->images)->toBe([]);
 })->skip(! extension_loaded('gd'), 'GD is required for fake images');
 

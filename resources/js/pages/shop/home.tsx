@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { Pagination } from '@/components/pagination';
 import { useTrans } from '@/hooks/use-translation';
 import { formatMoney, priceNote } from '@/lib/money';
+import { pictureSrcSet } from '@/lib/picture';
 import { home } from '@/routes/shop';
 import type { ProductCard, ResourcePaginated } from '@/types';
 
@@ -81,6 +82,8 @@ export default function Home({
                                 {product.image ? (
                                     <img
                                         src={product.image}
+                                        srcSet={pictureSrcSet(product.image)}
+                                        sizes="300px"
                                         // The title follows as text in the same link.
                                         alt=""
                                         width={300}

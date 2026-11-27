@@ -6,13 +6,13 @@ use App\Enums\ProductType;
 use App\Enums\TaxClass;
 use App\Models\Author;
 use App\Models\Product;
+use App\Support\Picture;
 use Closure;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -99,14 +99,14 @@ class ImportProducts extends Command
                 }
 
                 if (array_key_exists('back_cover', $entry)) {
-                    $attributes['back_cover'] = $entry['back_cover'] === null ? null : $this->storePicture($folder.'/'.$entry['back_cover'], 'back');
-                    $this->forget(array_diff([$product->back_cover], [$attributes['back_cover']]));
+                    $attributes['back_cover'] = $entry['back_cover'] === null ? null : Picture::store($folder.'/'.$entry['back_cover'], 'back-'.md5_file($folder.'/'.$entry['back_cover']));
+                    Picture::delete(array_diff([$product->back_cover], [$attributes['back_cover']]));
                 }
 
                 // The pictures of the book, the cover first, replace the ones it had.
                 if (array_key_exists('images', $entry)) {
-                    $attributes['images'] = array_map(fn (string $image): string => $this->storePicture($folder.'/'.$image, 'image'), $entry['images']);
-                    $this->forget(array_diff($product->images ?? [], $attributes['images']));
+                    $attributes['images'] = array_map(fn (string $image): string => Picture::store($folder.'/'.$image, 'image-'.md5_file($folder.'/'.$image)), $entry['images']);
+                    Picture::delete(array_diff($product->images ?? [], $attributes['images']));
                 }
 
                 $product->fill($attributes)->save();
@@ -130,28 +130,5 @@ class ImportProducts extends Command
         $this->info("Created {$created} and updated {$updated} product(s).");
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Copies the picture into the public disk, named after its content, so a
-     * changed picture gets a new address and an unchanged one is not copied again.
-     */
-    private function storePicture(string $file, string $kind): string
-    {
-        $path = "products/{$kind}-".md5_file($file).'.'.strtolower(pathinfo($file, PATHINFO_EXTENSION));
-
-        if (! Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->put($path, (string) file_get_contents($file));
-        }
-
-        return $path;
-    }
-
-    /**
-     * @param  array<int, string|null>  $paths  Pictures a product no longer shows.
-     */
-    private function forget(array $paths): void
-    {
-        Storage::disk('public')->delete(array_filter($paths));
     }
 }
